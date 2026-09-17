@@ -1,2 +1,9 @@
 packages:
   - "packages/*"
+  - "apps/*"
+allowBuilds:
+  '@nestjs/core': true
+  '@swc/core': true
+  cpu-features: true
+  esbuild: true
+  ssh2: true

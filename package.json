@@ -7,11 +7,11 @@
     "dev:server": "pnpm --filter @stacklane/server dev",
     "build": "turbo build",
     "build:pkg": "turbo build && pnpm --filter stacklane bundle",
-    "link:cli": "cd packages/cli && pnpm link --global",
+    "link:cli": "cd apps/cli && pnpm link --global",
     "unlink:cli": "pnpm uninstall --global stacklane",
-    "pack:cli": "cd packages/cli && pnpm pack",
-    "publish:dry": "cd packages/cli && pnpm publish --dry-run --no-git-checks",
-    "publish:npm": "cd packages/cli && pnpm publish --no-git-checks",
+    "pack:cli": "cd apps/cli && pnpm pack",
+    "publish:dry": "cd apps/cli && pnpm publish --dry-run --no-git-checks",
+    "publish:npm": "cd apps/cli && pnpm publish --no-git-checks",
     "lint": "turbo lint",
     "clean": "turbo clean"
   },
@@ -19,5 +19,5 @@
     "turbo": "^2.8.12",
     "typescript": "^5.9.3"
   },
-  "packageManager": "pnpm@10.30.3"
+  "packageManager": "pnpm@12.4.2"
 }

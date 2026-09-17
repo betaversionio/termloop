@@ -13,8 +13,8 @@ import { execSync } from "child_process";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const cliRoot = resolve(__dirname, "..");
-const serverDist = resolve(cliRoot, "../server/dist");
-const webDist = resolve(cliRoot, "../web/dist");
+const serverDist = resolve(cliRoot, "../../packages/server/dist");
+const webDist = resolve(cliRoot, "../../packages/web/dist");
 const targetServer = resolve(cliRoot, "dist/server");
 const targetWeb = resolve(cliRoot, "dist/web");
 

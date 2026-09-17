@@ -22,8 +22,8 @@
       "request": "launch",
       "runtimeExecutable": "node",
       "runtimeArgs": ["--import", "tsx/esm"],
-      "args": ["${workspaceFolder}/packages/cli/src/index.ts"],
-      "cwd": "${workspaceFolder}/packages/cli",
+      "args": ["${workspaceFolder}/apps/cli/src/index.ts"],
+      "cwd": "${workspaceFolder}/apps/cli",
       "console": "integratedTerminal",
       "skipFiles": ["<node_internals>/**", "**/node_modules/**"]
     },
@@ -31,8 +31,8 @@
       "name": "📦 Debug CLI (built)",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceFolder}/packages/cli/dist/index.js",
-      "cwd": "${workspaceFolder}/packages/cli",
+      "program": "${workspaceFolder}/apps/cli/dist/index.js",
+      "cwd": "${workspaceFolder}/apps/cli",
       "console": "integratedTerminal",
       "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
       "preLaunchTask": "📦 build:pkg"

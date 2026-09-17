@@ -246,6 +246,7 @@ packages/
   shared/    - Shared TypeScript types (API, connection, stats, etc.)
   server/    - NestJS backend (SSH, SFTP, WebSocket terminal, stats)
   web/       - React frontend (Vite + Tailwind CSS v4 + Radix UI)
+apps/
   cli/       - CLI entry point + npm package bundling
 ```
 
