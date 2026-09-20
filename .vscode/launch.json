@@ -36,6 +36,25 @@
       "console": "integratedTerminal",
       "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
       "preLaunchTask": "📦 build:pkg"
+    },
+    {
+      "name": "🤖 Debug MCP Server",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--import", "tsx/esm"],
+      "args": ["${workspaceFolder}/apps/cli/src/index.ts", "mcp"],
+      "cwd": "${workspaceFolder}/apps/cli",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"]
+    },
+    {
+      "name": "🧩 Debug VS Code Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}/apps/vscode-extension"],
+      "outFiles": ["${workspaceFolder}/apps/vscode-extension/dist/**/*.js"],
+      "preLaunchTask": "🧩 build:vscode-extension"
     }
   ]
 }

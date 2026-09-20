@@ -48,6 +48,14 @@
       "problemMatcher": ["$tsc"]
     },
     {
+      "label": "🧩 build:vscode-extension",
+      "detail": "Build the VS Code extension (and its workspace dependencies)",
+      "type": "shell",
+      "command": "npx turbo build --filter=termloop-vscode",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
       "label": "🧹 clean",
       "detail": "Clean all dist folders",
       "type": "shell",
