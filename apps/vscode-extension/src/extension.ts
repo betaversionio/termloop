@@ -68,10 +68,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     vscode.workspace.registerFileSystemProvider("termloop", fsProvider, { isCaseSensitive: true })
   );
 
-  let commandManifest: CommandManifest = await loadManifest();
+  let commandManifest: CommandManifest;
+  let manifestFolder: vscode.Uri | undefined;
+  ({ manifest: commandManifest, folder: manifestFolder } = await loadManifest());
   context.subscriptions.push(
     watchManifest(async () => {
-      commandManifest = await loadManifest();
+      ({ manifest: commandManifest, folder: manifestFolder } = await loadManifest());
     })
   );
 
@@ -153,10 +155,39 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       );
       if (!picked) return;
 
-      const result = resolveAlias(commandManifest, picked.label.slice(1), connection);
+      const alias = picked.label.slice(1);
+      const result = resolveAlias(commandManifest, alias, connection);
       if (result?.command !== undefined) {
         terminal.sendText(result.command, true);
-      } else if (result?.error !== undefined) {
+        return;
+      }
+
+      if (result?.localScript !== undefined) {
+        if (!manifestFolder) {
+          vscode.window.showErrorMessage("TermLoop: can't resolve local script — no workspace folder found.");
+          return;
+        }
+        try {
+          const scriptUri = vscode.Uri.joinPath(manifestFolder, result.localScript);
+          const bytes = await vscode.workspace.fs.readFile(scriptUri);
+          const content = new TextDecoder().decode(bytes);
+          const safeName = alias.replace(/[^a-zA-Z0-9_-]/g, "_");
+          const remotePath = `/tmp/.termloop-${safeName}-${Date.now()}.sh`;
+
+          await vscode.window.withProgress(
+            { location: vscode.ProgressLocation.Notification, title: `TermLoop: uploading ${result.localScript}...` },
+            () => client.sftp.writeFile(connection.id, remotePath, content)
+          );
+
+          terminal.sendText(`bash "${remotePath}"; rm -f "${remotePath}"`, true);
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          vscode.window.showErrorMessage(`TermLoop: failed to upload "${result.localScript}" — ${message}`);
+        }
+        return;
+      }
+
+      if (result?.error !== undefined) {
         vscode.window.showErrorMessage(result.error);
       }
     })

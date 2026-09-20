@@ -32,9 +32,31 @@
             }
           }
         ]
+      },
+      "localScript": {
+        "description": "Path to a local .sh file (relative to this workspace folder) to upload and run on the remote server — use instead of \"command\" when the script only exists locally. A single string runs everywhere; an object lets it differ per connection.",
+        "oneOf": [
+          {
+            "type": "string",
+            "description": "Runs the same local script for every connection."
+          },
+          {
+            "type": "object",
+            "description": "Keys are connection names or ids; \"default\" is used when nothing more specific matches.",
+            "properties": {
+              "default": {
+                "type": "string",
+                "description": "Used when no connection-specific entry matches."
+              }
+            },
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
-    "required": ["command"],
+    "anyOf": [{ "required": ["command"] }, { "required": ["localScript"] }],
     "additionalProperties": false
   }
 }

@@ -38,6 +38,11 @@ export class AliasLineBuffer {
 
         if (result?.command !== undefined) {
           toRemote += "\x15" + result.command + (rest ? " " + rest : "") + "\r";
+        } else if (result?.localScript !== undefined) {
+          // Running a localScript alias needs an async upload first — can't happen inline as
+          // keystrokes arrive. Reject here rather than sending the literal "/alias" text.
+          toRemote += "\x15";
+          toLocal += `\r\nTermLoop: "/${word.slice(1)}" runs a local script — use the Command Palette's "TermLoop: Insert Command Alias" instead of typing it.\r\n`;
         } else if (result?.error !== undefined) {
           toRemote += "\x15";
           toLocal += `\r\n${result.error}\r\n`;
