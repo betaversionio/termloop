@@ -22,6 +22,12 @@
     "onStartupFinished"
   ],
   "contributes": {
+    "jsonValidation": [
+      {
+        "fileMatch": "**/.termloop/commands.json",
+        "url": "./schemas/commands.schema.json"
+      }
+    ],
     "viewsContainers": {
       "activitybar": [
         {
@@ -71,6 +77,11 @@
         "icon": "$(globe)"
       },
       {
+        "command": "termloop.openOsDesktop",
+        "title": "TermLoop: Open OS Desktop",
+        "icon": "$(window)"
+      },
+      {
         "command": "termloop.copyMcpConnectCommand",
         "title": "TermLoop: Copy Claude MCP Connect Command",
         "icon": "$(copy)"
@@ -93,6 +104,10 @@
         "command": "termloop.openSessionInBrowser",
         "title": "TermLoop: Open Session in Browser",
         "icon": "$(globe)"
+      },
+      {
+        "command": "termloop.insertCommandAlias",
+        "title": "TermLoop: Insert Command Alias"
       }
     ],
     "menus": {
@@ -132,6 +147,10 @@
           "command": "termloop.openConnectionInBrowser",
           "when": "view == termloopConnections && viewItem == termloopConnection",
           "group": "inline"
+        },
+        {
+          "command": "termloop.openOsDesktop",
+          "when": "view == termloopConnections && viewItem == termloopConnection"
         },
         {
           "command": "termloop.attachSessionTerminal",

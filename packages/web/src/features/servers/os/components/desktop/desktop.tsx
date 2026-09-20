@@ -105,6 +105,11 @@ export function Desktop({ connectionId }: DesktopProps) {
       style={
         isImage
           ? {
+              // Network-hosted wallpapers (the default + all "photo-*" options) take a moment to
+              // load; without a fallback color, the page behind this overlay flashes through until
+              // then. The SVG pattern wallpapers already bake their own solid layer into the data
+              // URI itself, so this is only ever visible during that brief real-image load window.
+              backgroundColor: "#0a0a0a",
               backgroundImage: wp.value.startsWith('url(') ? wp.value : `url(${wp.value})`,
               backgroundSize: wp.value.startsWith('url("data:') ? 'auto' : 'cover',
               backgroundPosition: "center",

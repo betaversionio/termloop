@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TermLoop command aliases",
+  "description": "Bind short aliases to commands. Typing /<alias> in a TermLoop terminal runs the bound command.",
+  "type": "object",
+  "additionalProperties": {
+    "type": "object",
+    "description": "A command alias, triggered in a TermLoop terminal by typing /<alias-name>.",
+    "properties": {
+      "description": {
+        "type": "string",
+        "description": "Shown in the \"TermLoop: Insert Command Alias\" picker."
+      },
+      "command": {
+        "description": "The command to run. A single string runs everywhere; an object lets it differ per connection.",
+        "oneOf": [
+          {
+            "type": "string",
+            "description": "Runs the same command for every connection."
+          },
+          {
+            "type": "object",
+            "description": "Keys are connection names or ids; \"default\" is used when nothing more specific matches.",
+            "properties": {
+              "default": {
+                "type": "string",
+                "description": "Used when no connection-specific entry matches."
+              }
+            },
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "required": ["command"],
+    "additionalProperties": false
+  }
+}

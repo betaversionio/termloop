@@ -1,0 +1,13 @@
+{
+  "hostname": {
+    "description": "Show hostname, current user, and working directory",
+    "command": "hostname && whoami && pwd"
+  },
+  "restart": {
+    "description": "Restart the app service",
+    "command": {
+      "default": "echo would-restart-default-service",
+      "Exostudy": "echo would-restart-exostudy-service"
+    }
+  }
+}

@@ -11,6 +11,32 @@ This extension is a thin client for the [TermLoop](https://github.com/betaversio
 - **Remote file browsing** — `TermLoop: Browse Files` opens a server's filesystem as a workspace folder: browse, open, edit, and save files like any local project.
 - **Add Connection** — save a new server (host, port, username, password or key) without switching to the browser.
 - **Copy Claude MCP Connect Command** — copies a ready-to-run `claude mcp add --transport http termloop http://localhost:<port>/mcp` so Claude Code can drive your SSH connections too. No auth token needed.
+- **Command aliases** — bind short aliases to long commands per-repo (see below).
+- **OS Desktop** — `TermLoop: Open OS Desktop` opens the web app's full desktop shell (window manager, terminal/files/monitor/browser apps) in a VS Code panel, embedding the same live page the browser uses.
+
+## Command aliases
+
+Drop a `.termloop/commands.json` in your workspace to bind short aliases to long commands:
+
+```json
+{
+  "logs": {
+    "description": "Tail the last 200 lines of app logs",
+    "command": "docker logs -f my-app --tail 200"
+  },
+  "restart": {
+    "description": "Restart the app service",
+    "command": {
+      "default": "sudo systemctl restart my-app",
+      "my-connection-name": "sudo systemctl restart custom-service-name"
+    }
+  }
+}
+```
+
+Typing `/logs` and pressing Enter in a TermLoop terminal runs the bound command instead — `/logs --follow` appends `--follow` to it. `command` can be a single string (same command everywhere) or an object keyed by connection name (or id) plus an optional `"default"`, for when the right command differs per server. `description` is optional and shows up in the `TermLoop: Insert Command Alias` picker (Command Palette) — a searchable list of your aliases for when you don't remember the exact name, which runs the resolved command in the active TermLoop terminal. Edits to the file apply immediately, no reload needed, and the file itself gets real-time validation and property autocomplete as you edit it.
+
+Only a line that's *exactly* `/alias` or `/alias <args>` triggers expansion — a real path like `/usr/bin/env` is never affected, since "usr" isn't a defined alias. If you use arrow-key history recall or tab completion before pressing Enter, the line is sent through unchanged (no expansion attempted) rather than risk sending the wrong thing.
 
 ## Requirements
 
@@ -25,6 +51,8 @@ A TermLoop daemon needs to be running. If one isn't already up when the extensio
 | `TermLoop: Browse Files` | Open a connection's filesystem as a workspace folder |
 | `TermLoop: Refresh Connections` | Reload the connections list |
 | `TermLoop: Copy Claude MCP Connect Command` | Copy the `claude mcp add` command for this daemon |
+| `TermLoop: Insert Command Alias` | Pick a command alias to run in the active terminal |
+| `TermLoop: Open OS Desktop` | Open the web app's desktop shell in a VS Code panel |
 
 ## Known limitations
 

@@ -1,12 +1,28 @@
 import * as vscode from "vscode";
 import type { ServerConnection, TermLoopClient, TerminalHandle } from "@termloop/client";
+import { resolveAlias, type CommandManifest } from "./commandAliases.js";
+import { AliasLineBuffer } from "./aliasLineBuffer.js";
 
-export function openTerminal(client: TermLoopClient, connection: ServerConnection, sessionId?: string): void {
+export function openTerminal(
+  client: TermLoopClient,
+  connection: ServerConnection,
+  getManifest: () => CommandManifest,
+  sessionId?: string
+): vscode.Terminal {
   const writeEmitter = new vscode.EventEmitter<string>();
   const closeEmitter = new vscode.EventEmitter<number | void>();
+  const lineBuffer = new AliasLineBuffer();
 
   let handle: TerminalHandle | undefined;
   let pendingInput = "";
+
+  const feedInput = (data: string): string => {
+    const { toRemote, toLocal } = lineBuffer.feed(data, (alias) =>
+      resolveAlias(getManifest(), alias, connection)
+    );
+    if (toLocal) writeEmitter.fire(toLocal);
+    return toRemote;
+  };
 
   const pty: vscode.Pseudoterminal = {
     onDidWrite: writeEmitter.event,
@@ -36,10 +52,12 @@ export function openTerminal(client: TermLoopClient, connection: ServerConnectio
       handle?.close();
     },
     handleInput(data) {
+      const toRemote = feedInput(data);
+      if (!toRemote) return;
       if (handle) {
-        handle.write(data);
+        handle.write(toRemote);
       } else {
-        pendingInput += data;
+        pendingInput += toRemote;
       }
     },
     setDimensions(dimensions) {
@@ -49,4 +67,5 @@ export function openTerminal(client: TermLoopClient, connection: ServerConnectio
 
   const terminal = vscode.window.createTerminal({ name: connection.name, pty });
   terminal.show();
+  return terminal;
 }
