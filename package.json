@@ -1,6 +1,20 @@
 {
   "name": "termloop-monorepo",
+  "description": "Browser-based OS-like UI for managing remote servers via SSH",
   "private": true,
+  "license": "MIT",
+  "author": {
+    "name": "Satyam Lohiya",
+    "url": "https://github.com/betaversionio"
+  },
+  "homepage": "https://github.com/betaversionio/termloop#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/betaversionio/termloop.git"
+  },
+  "bugs": {
+    "url": "https://github.com/betaversionio/termloop/issues"
+  },
   "scripts": {
     "dev": "turbo dev",
     "dev:web": "pnpm --filter @termloop/web dev",
