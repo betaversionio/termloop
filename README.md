@@ -4,7 +4,7 @@
 
 TermLoop transforms how you interact with your remote servers by providing a powerful browser-based interface that combines terminal access, file management, performance monitoring, cloud storage integration, and remote desktop capabilities—all in one seamless application. No more juggling multiple tools and terminal windows.
 
-![Version](https://img.shields.io/badge/version-0.2.0-blue)
+![Version](https://img.shields.io/badge/version-0.3.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ![TermLoop Interface](https://raw.githubusercontent.com/betaversionio/termloop/main/images/09-file-manager.png)
