@@ -4,3 +4,4 @@ tsconfig.json
 .turbo/**
 dist/**/*.map
 .gitignore
+*.vsix
