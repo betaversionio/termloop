@@ -1,31 +1,23 @@
 ---
 name: build
-description: Build, link, and test the TermLoop CLI application
+description: Build and test the TermLoop CLI application
 disable-model-invocation: true
 allowed-tools:
   - Bash
 ---
 
-Build and test the TermLoop application by running the following steps sequentially:
+Build and test the TermLoop application by running the following steps sequentially, from the repo root.
 
 1. **Build all packages:**
    ```
    pnpm build:pkg
    ```
-   This runs `turbo build` across all packages (shared → server + web → cli) and bundles the CLI.
+   This runs `turbo build` across all packages (shared → server + web + client → cli) and bundles the CLI's `apps/cli/dist/`.
 
-2. **Link the CLI globally:**
+2. **Test the application:**
    ```
-   pnpm link:cli
+   node apps/cli/dist/index.js
    ```
-   This makes the `termloop` command available globally via `pnpm link --global`.
-
-3. **Test the application:**
-   ```
-   termloop
-   ```
-   This launches the TermLoop server and opens the browser UI.
+   This launches the TermLoop daemon and opens the browser UI. Run it directly from the built output rather than via a global link — `pnpm link --global` (what an older version of this skill used) no longer exists in this repo's pnpm version, and its replacement (`pnpm add --global ./apps/cli`) needs a one-time `pnpm setup` on the machine first to put pnpm's global bin directory on `PATH`. Running the built file directly needs neither.
 
 Run each step sequentially. If any step fails, stop and report the error — do NOT continue to the next step.
-
-All commands must be run from the project root directory: `C:\Users\lenovo\Documents\Code\BetaVersion.IO\TermLoop`

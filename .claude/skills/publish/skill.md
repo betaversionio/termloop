@@ -1,7 +1,7 @@
 ---
 name: publish
-description: Bump version across all files and publish TermLoop to npm
-argument-hint: "<new version e.g. 0.2.0>"
+description: Bump a package's version and push a release tag for termloop, create-termloop-app, @termloop/react, or the VS Code extension — CI does the actual publish
+argument-hint: "<package> <new version> e.g. cli 0.3.0"
 allowed-tools:
   - Bash
   - Read
@@ -12,74 +12,58 @@ allowed-tools:
   - AskUserQuestion
 ---
 
-Publish a new version of TermLoop to npm.
+Bump a package's version, commit, and push a git tag that triggers its GitHub Actions release workflow. This skill does **not** run `pnpm publish`/`vsce publish` itself — `.github/workflows/release-npm.yml` and `release-vscode.yml` do the actual build + publish once the tag lands on GitHub, using the repo's `NPM_TOKEN`/`VSCE_PAT` secrets.
 
 ## Steps
 
-### 1. Get the new version
+### 1. Determine which package to release
 
-If the user provided a version via `$ARGUMENTS`, use that. Otherwise, **ask the user** what version to publish using AskUserQuestion.
+Four release targets exist, each with its own git tag prefix that the matching CI workflow listens for:
+
+| Package | Directory | Tag prefix | `package.json` |
+| --- | --- | --- | --- |
+| `termloop` (CLI) | `apps/cli` | `cli-v` | `apps/cli/package.json` |
+| `create-termloop-app` | `apps/create-termloop-app` | `create-app-v` | `apps/create-termloop-app/package.json` |
+| `@termloop/react` | `packages/react` | `react-v` | `packages/react/package.json` |
+| VS Code extension | `apps/vscode-extension` | `vscode-v` | `apps/vscode-extension/package.json` |
+
+All paths are relative to the repo root. If the user provided both a package and a version via `$ARGUMENTS`, use those. Otherwise **ask** (AskUserQuestion) which package, then what version.
 
 ### 2. Detect the current version
 
-Read `C:\Users\lenovo\Documents\Code\BetaVersion.IO\TermLoop\packages\cli\package.json` and extract the current `"version"` value.
+Read the `"version"` field from that package's `package.json` (path from the table above).
 
-### 3. Bump version in all files
+### 3. Bump the version
 
-Replace the **current version** with the **new version** in these files:
+Update the `"version"` field in that package's `package.json` to the new version.
 
-1. **`C:\Users\lenovo\Documents\Code\BetaVersion.IO\TermLoop\packages\cli\package.json`**
-   - Update the `"version"` field
+If releasing the **CLI** (`apps/cli`), also update the version badge (`version-X.Y.Z-blue`) in these files, which mirror the CLI's version for display — the other three packages have no equivalent hardcoded display:
+- `README.md` (repo root)
+- `apps/cli/README.md`
+- the hardcoded version string in `packages/web/src/pages/settings/settings-page.tsx`
 
-2. **`C:\Users\lenovo\Documents\Code\BetaVersion.IO\TermLoop\README.md`**
-   - Update the version badge: `version-X.Y.Z-blue`
+Use the Edit tool with `replace_all: true` for each file.
 
-3. **`C:\Users\lenovo\Documents\Code\BetaVersion.IO\TermLoop\packages\cli\README.md`**
-   - Update the version badge: `version-X.Y.Z-blue`
+### 4. Commit
 
-4. **`C:\Users\lenovo\Documents\Code\BetaVersion.IO\TermLoop\packages\web\src\pages\settings\settings-page.tsx`**
-   - Update the hardcoded version string displayed in the UI
-
-Use the Edit tool with `replace_all: true` to ensure all occurrences of the old version are replaced in each file.
-
-### 4. Commit all changes
-
-Run `git status` to check if there are uncommitted changes. If there are, invoke the `/commit` skill with the hint `🔖 bump version to X.Y.Z` (where X.Y.Z is the new version) to commit everything using the project's gitmoji convention.
+Run `git status`. If there are uncommitted changes, invoke `/commit` with the hint `🔖 bump <package> to X.Y.Z`.
 
 ### 5. Tag the release
 
-After the commit is created, add a git tag for the new version:
-
 ```
-git tag vX.Y.Z
+git tag <prefix>X.Y.Z
 ```
 
-(where X.Y.Z is the new version)
+Using the tag prefix from the table in step 1 — e.g. `cli-v0.3.0`, `vscode-v0.2.0`. This exact prefix is what the workflows match on (see `on.push.tags` in `.github/workflows/release-npm.yml`/`release-vscode.yml`); a bare `vX.Y.Z` tag won't trigger anything.
 
-### 6. Build and publish
-
-Run the following commands sequentially from the project root (`C:\Users\lenovo\Documents\Code\BetaVersion.IO\TermLoop`):
-
-```
-pnpm build:pkg
-```
-
-If the build succeeds, publish:
-
-```
-pnpm publish:npm
-```
-
-If any step fails, stop and report the error.
-
-### 7. Push commit and tag
-
-Push the commit and tag to remote:
+### 6. Push commit and tag
 
 ```
 git push && git push --tags
 ```
 
-### 8. Report
+Pushing the tag triggers the matching GitHub Actions workflow, which builds, verifies the tag's version matches `package.json` (fails loudly on mismatch), and publishes — to npm for the three npm packages, to the VS Code Marketplace for the extension — then creates a GitHub Release. This skill's job ends here; do not also run `pnpm publish`/`vsce publish` locally, since CI already does it and a duplicate attempt would just fail on a version collision.
 
-After publishing, report the new version number and confirm success.
+### 7. Report
+
+Report the new version and the tag pushed, and point the user at `github.com/betaversionio/termloop/actions` to watch the release workflow run.
