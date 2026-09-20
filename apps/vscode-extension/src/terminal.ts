@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import type { ServerConnection, TermLoopClient, TerminalHandle } from "@termloop/client";
 
-export function openTerminal(client: TermLoopClient, connection: ServerConnection): void {
+export function openTerminal(client: TermLoopClient, connection: ServerConnection, sessionId?: string): void {
   const writeEmitter = new vscode.EventEmitter<string>();
   const closeEmitter = new vscode.EventEmitter<number | void>();
 
@@ -13,10 +13,13 @@ export function openTerminal(client: TermLoopClient, connection: ServerConnectio
     onDidClose: closeEmitter.event,
     async open(dimensions) {
       try {
-        handle = await client.terminal.open(connection.id, {
-          cols: dimensions?.columns ?? 80,
-          rows: dimensions?.rows ?? 24,
-        });
+        const cols = dimensions?.columns ?? 80;
+        const rows = dimensions?.rows ?? 24;
+        // Attach to an already-open session for this connection if one exists (e.g. one
+        // opened via the open_terminal MCP tool) rather than always starting a new shell.
+        handle =
+          (await client.terminal.attachToActiveSession(connection.id, sessionId)) ??
+          (await client.terminal.open(connection.id, { cols, rows }));
         handle.onData((data) => writeEmitter.fire(data));
         handle.onClose(() => closeEmitter.fire());
         if (pendingInput) {

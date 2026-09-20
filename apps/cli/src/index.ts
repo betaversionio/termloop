@@ -48,9 +48,9 @@ program
     app.use(express.static(webDist));
 
     // SPA catch-all: serve index.html for client-side routes,
-    // but let /api requests fall through to NestJS
+    // but let /api and /mcp requests fall through to NestJS
     app.get("{*path}", (req: Request, res: Response, next: NextFunction) => {
-      if (req.path.startsWith("/api")) {
+      if (req.path.startsWith("/api") || req.path === "/mcp") {
         return next();
       }
       res.sendFile(path.join(webDist, "index.html"));

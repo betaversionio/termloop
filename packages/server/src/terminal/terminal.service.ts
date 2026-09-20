@@ -62,6 +62,23 @@ export class TerminalService {
     });
   }
 
+  /** Returns any currently-open channel ids for a connection, oldest first. */
+  findChannelIds(connectionId: string): string[] {
+    const ids: string[] = [];
+    for (const [id, channel] of this.channels) {
+      if (channel.connectionId === connectionId) ids.push(id);
+    }
+    return ids;
+  }
+
+  /** Lists every currently-open session across all connections. */
+  listAll(): { sessionId: string; connectionId: string }[] {
+    return [...this.channels].map(([sessionId, channel]) => ({
+      sessionId,
+      connectionId: channel.connectionId,
+    }));
+  }
+
   write(channelId: string, data: string): void {
     this.channels.get(channelId)?.stream.write(data);
   }

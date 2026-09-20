@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { createClient, type ServerConnection, type ServerConnectionInput, type TermLoopClient } from "@termloop/client";
 import { ensureDaemon } from "./daemonManager.js";
 import { ConnectionsTreeProvider } from "./connectionsTreeProvider.js";
+import { SessionsTreeProvider, type SessionItem } from "./sessionsTreeProvider.js";
 import { openTerminal } from "./terminal.js";
 import { TermLoopFsProvider } from "./fileSystemProvider.js";
 
@@ -44,8 +45,9 @@ async function promptForConnection(): Promise<ServerConnectionInput | undefined>
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   let client: TermLoopClient;
+  let baseUrl: string;
   try {
-    const baseUrl = await ensureDaemon();
+    baseUrl = await ensureDaemon();
     client = createClient({ baseUrl });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Failed to connect to TermLoop";
@@ -55,6 +57,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   const treeProvider = new ConnectionsTreeProvider(client);
   context.subscriptions.push(vscode.window.registerTreeDataProvider("termloopConnections", treeProvider));
+
+  const sessionsProvider = new SessionsTreeProvider(client);
+  context.subscriptions.push(vscode.window.registerTreeDataProvider("termloopSessions", sessionsProvider));
 
   const fsProvider = new TermLoopFsProvider(client);
   context.subscriptions.push(
@@ -80,6 +85,28 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         uri: vscode.Uri.parse(`termloop://${connection.id}/`),
         name: connection.name,
       });
+    }),
+
+    vscode.commands.registerCommand("termloop.copyMcpConnectCommand", async () => {
+      const command = `claude mcp add --transport http termloop ${baseUrl}/mcp`;
+      await vscode.env.clipboard.writeText(command);
+      vscode.window.showInformationMessage(`Copied to clipboard: ${command}`);
+    }),
+
+    vscode.commands.registerCommand("termloop.refreshSessions", () => sessionsProvider.refresh()),
+
+    vscode.commands.registerCommand("termloop.attachSessionTerminal", async (session: SessionItem) => {
+      const connection = await client.connections.get(session.connectionId);
+      openTerminal(client, connection, session.sessionId);
+    }),
+
+    vscode.commands.registerCommand("termloop.copySessionId", async (session: SessionItem) => {
+      await vscode.env.clipboard.writeText(session.sessionId);
+      vscode.window.showInformationMessage(`Copied session id: ${session.sessionId}`);
+    }),
+
+    vscode.commands.registerCommand("termloop.openSessionInBrowser", (session: SessionItem) => {
+      vscode.env.openExternal(vscode.Uri.parse(`${baseUrl}/server/${session.connectionId}/terminal`));
     })
   );
 }

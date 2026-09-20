@@ -10,6 +10,7 @@ import { SftpModule } from "./sftp/sftp.module.js";
 import { StatsModule } from "./stats/stats.module.js";
 import { TerminalModule } from "./terminal/terminal.module.js";
 import { TunnelModule } from "./tunnel/tunnel.module.js";
+import { McpModule } from "./mcp/mcp.module.js";
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { TunnelModule } from "./tunnel/tunnel.module.js";
     StatsModule,
     TerminalModule,
     TunnelModule,
+    McpModule,
   ],
 })
 export class AppModule {}

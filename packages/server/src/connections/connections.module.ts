@@ -5,5 +5,6 @@ import { ConnectionsService } from "./connections.service.js";
 @Module({
   controllers: [ConnectionsController],
   providers: [ConnectionsService],
+  exports: [ConnectionsService],
 })
 export class ConnectionsModule {}

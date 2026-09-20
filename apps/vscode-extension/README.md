@@ -10,6 +10,7 @@ This extension is a thin client for the [TermLoop](https://github.com/betaversio
 - **Integrated terminal** — click a connection to open a real SSH shell in a VS Code terminal tab.
 - **Remote file browsing** — `TermLoop: Browse Files` opens a server's filesystem as a workspace folder: browse, open, edit, and save files like any local project.
 - **Add Connection** — save a new server (host, port, username, password or key) without switching to the browser.
+- **Copy Claude MCP Connect Command** — copies a ready-to-run `claude mcp add --transport http termloop http://localhost:<port>/mcp` so Claude Code can drive your SSH connections too. No auth token needed.
 
 ## Requirements
 
@@ -23,6 +24,7 @@ A TermLoop daemon needs to be running. If one isn't already up when the extensio
 | `TermLoop: Open Terminal` | Open an integrated terminal for a connection |
 | `TermLoop: Browse Files` | Open a connection's filesystem as a workspace folder |
 | `TermLoop: Refresh Connections` | Reload the connections list |
+| `TermLoop: Copy Claude MCP Connect Command` | Copy the `claude mcp add` command for this daemon |
 
 ## Known limitations
 

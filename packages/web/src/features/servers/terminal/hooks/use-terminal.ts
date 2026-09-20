@@ -54,13 +54,12 @@ export function useTerminal(connectionId: string, settings: TerminalSettings) {
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
+    // Attach to an already-open session for this connection if one exists (e.g. one opened
+    // via the open_terminal MCP tool) rather than always starting a new shell.
+    let attachFailed = false;
+
     ws.onopen = () => {
-      const dims = { cols: term.cols, rows: term.rows };
-      const msg: WsMessage = {
-        type: 'terminal:input',
-        connectionId,
-        ...dims,
-      };
+      const msg: WsMessage = { type: 'terminal:attach', connectionId };
       ws.send(JSON.stringify(msg));
     };
 
@@ -74,7 +73,14 @@ export function useTerminal(connectionId: string, settings: TerminalSettings) {
           term.focus();
           break;
         case 'terminal:error':
-          term.writeln(`\r\n\x1b[31mError: ${msg.error}\x1b[0m`);
+          if (!attachFailed) {
+            attachFailed = true;
+            const dims = { cols: term.cols, rows: term.rows };
+            const openMsg: WsMessage = { type: 'terminal:input', connectionId, ...dims };
+            ws.send(JSON.stringify(openMsg));
+          } else {
+            term.writeln(`\r\n\x1b[31mError: ${msg.error}\x1b[0m`);
+          }
           break;
         case 'terminal:close':
           term.writeln('\r\n\x1b[33mConnection closed.\x1b[0m');

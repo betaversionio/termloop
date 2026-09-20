@@ -1,10 +1,15 @@
 import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
 import { WsAdapter } from "@nestjs/platform-ws";
+import { RequestMethod } from "@nestjs/common";
 import type { NestExpressApplication } from "@nestjs/platform-express";
 import type { Express } from "express";
 import type { Server } from "http";
 import { AppModule } from "./app.module.js";
+
+// MCP clients (e.g. `claude mcp add termloop http://localhost:<port>/mcp`) expect the
+// endpoint at a plain path, not nested under the REST API's /api prefix.
+const GLOBAL_PREFIX_OPTIONS = { exclude: [{ path: "mcp", method: RequestMethod.ALL }] };
 
 export async function createApp(port = 3721): Promise<{ app: Express; server: Server; port: number; init: () => Promise<void> }> {
   const nestApp = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -12,7 +17,7 @@ export async function createApp(port = 3721): Promise<{ app: Express; server: Se
     logger: false,
   });
 
-  nestApp.setGlobalPrefix("api");
+  nestApp.setGlobalPrefix("api", GLOBAL_PREFIX_OPTIONS);
   nestApp.useWebSocketAdapter(new WsAdapter(nestApp));
 
   const expressApp = nestApp.getHttpAdapter().getInstance() as Express;
@@ -31,7 +36,7 @@ export async function startServer(port = 3721) {
     cors: true,
   });
 
-  nestApp.setGlobalPrefix("api");
+  nestApp.setGlobalPrefix("api", GLOBAL_PREFIX_OPTIONS);
   nestApp.useWebSocketAdapter(new WsAdapter(nestApp));
 
   await nestApp.listen(port);

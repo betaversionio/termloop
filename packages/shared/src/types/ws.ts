@@ -4,7 +4,8 @@ export type WsMessageType =
   | "terminal:resize"
   | "terminal:connected"
   | "terminal:error"
-  | "terminal:close";
+  | "terminal:close"
+  | "terminal:attach";
 
 export interface WsMessage {
   type: WsMessageType;
@@ -13,4 +14,6 @@ export interface WsMessage {
   cols?: number;
   rows?: number;
   error?: string;
+  /** terminal:attach only — target this exact session instead of "any session for this connection". */
+  sessionId?: string;
 }

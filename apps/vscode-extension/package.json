@@ -22,11 +22,25 @@
     "onStartupFinished"
   ],
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "termloop",
+          "title": "TermLoop",
+          "icon": "media/connections.svg"
+        }
+      ]
+    },
     "views": {
-      "explorer": [
+      "termloop": [
         {
           "id": "termloopConnections",
-          "name": "TermLoop Connections",
+          "name": "Connections",
+          "icon": "media/connections.svg"
+        },
+        {
+          "id": "termloopSessions",
+          "name": "Active Sessions",
           "icon": "media/connections.svg"
         }
       ]
@@ -49,6 +63,30 @@
       {
         "command": "termloop.browseFiles",
         "title": "TermLoop: Browse Files"
+      },
+      {
+        "command": "termloop.copyMcpConnectCommand",
+        "title": "TermLoop: Copy Claude MCP Connect Command",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "termloop.refreshSessions",
+        "title": "TermLoop: Refresh Active Sessions",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "termloop.attachSessionTerminal",
+        "title": "TermLoop: Attach to Session"
+      },
+      {
+        "command": "termloop.copySessionId",
+        "title": "TermLoop: Copy Session ID",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "termloop.openSessionInBrowser",
+        "title": "TermLoop: Open Session in Browser",
+        "icon": "$(globe)"
       }
     ],
     "menus": {
@@ -62,6 +100,16 @@
           "command": "termloop.refreshConnections",
           "when": "view == termloopConnections",
           "group": "navigation"
+        },
+        {
+          "command": "termloop.copyMcpConnectCommand",
+          "when": "view == termloopConnections",
+          "group": "navigation"
+        },
+        {
+          "command": "termloop.refreshSessions",
+          "when": "view == termloopSessions",
+          "group": "navigation"
         }
       ],
       "view/item/context": [
@@ -72,6 +120,20 @@
         {
           "command": "termloop.browseFiles",
           "when": "view == termloopConnections && viewItem == termloopConnection"
+        },
+        {
+          "command": "termloop.attachSessionTerminal",
+          "when": "view == termloopSessions && viewItem == termloopSession"
+        },
+        {
+          "command": "termloop.copySessionId",
+          "when": "view == termloopSessions && viewItem == termloopSession",
+          "group": "inline"
+        },
+        {
+          "command": "termloop.openSessionInBrowser",
+          "when": "view == termloopSessions && viewItem == termloopSession",
+          "group": "inline"
         }
       ]
     }

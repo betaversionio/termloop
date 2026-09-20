@@ -10,6 +10,24 @@ export class TerminalGateway implements OnGatewayConnection {
 
   handleConnection(client: WebSocket) {
     let channelId: string | null = null;
+    // True only when this socket created the channel via openShell — only the owner tears
+    // it down on disconnect. A socket that attached to someone else's session must not.
+    let owns = false;
+
+    const wireChannel = (connectionId: string, id: string) => {
+      channelId = id;
+
+      sendMessage(client, { type: "terminal:connected", connectionId, sessionId: id });
+
+      this.terminal.onData(id, (data) => {
+        sendMessage(client, { type: "terminal:output", connectionId, data });
+      });
+
+      this.terminal.onClose(id, () => {
+        sendMessage(client, { type: "terminal:close", connectionId });
+        channelId = null;
+      });
+    };
 
     client.on("message", async (raw: Buffer) => {
       try {
@@ -25,31 +43,11 @@ export class TerminalGateway implements OnGatewayConnection {
                   cols: msg.cols || 80,
                   rows: msg.rows || 24,
                 });
-                channelId = opened.channelId;
-
-                sendMessage(client, {
-                  type: "terminal:connected",
-                  connectionId: msg.connectionId,
-                });
-
-                this.terminal.onData(channelId, (data) => {
-                  sendMessage(client, {
-                    type: "terminal:output",
-                    connectionId: msg.connectionId,
-                    data,
-                  });
-                });
-
-                this.terminal.onClose(channelId, () => {
-                  sendMessage(client, {
-                    type: "terminal:close",
-                    connectionId: msg.connectionId,
-                  });
-                  channelId = null;
-                });
+                owns = true;
+                wireChannel(msg.connectionId, opened.channelId);
 
                 if (msg.data) {
-                  this.terminal.write(channelId, msg.data);
+                  this.terminal.write(opened.channelId, msg.data);
                 }
               } catch (err: unknown) {
                 const error = err instanceof Error ? err.message : "SSH connection failed";
@@ -59,6 +57,28 @@ export class TerminalGateway implements OnGatewayConnection {
                   error,
                 });
               }
+            }
+            break;
+          }
+
+          case "terminal:attach": {
+            if (!channelId && msg.connectionId) {
+              const candidates = this.terminal.findChannelIds(msg.connectionId);
+              const existing = msg.sessionId
+                ? candidates.find((id) => id === msg.sessionId)
+                : candidates[0];
+
+              if (!existing) {
+                sendMessage(client, {
+                  type: "terminal:error",
+                  connectionId: msg.connectionId,
+                  error: "No active session",
+                });
+                break;
+              }
+
+              owns = false;
+              wireChannel(msg.connectionId, existing);
             }
             break;
           }
@@ -76,10 +96,10 @@ export class TerminalGateway implements OnGatewayConnection {
     });
 
     client.on("close", () => {
-      if (channelId) {
+      if (channelId && owns) {
         this.terminal.close(channelId);
-        channelId = null;
       }
+      channelId = null;
     });
   }
 }

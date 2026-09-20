@@ -12,6 +12,7 @@ import type {
 export type { RemoteFile, ServerConnection, ServerConnectionInput, ServerStats, ServerSystemInfo };
 
 export interface TerminalHandle {
+  readonly sessionId: string;
   write(data: string): void;
   resize(cols: number, rows: number): void;
   onData(cb: (data: string) => void): () => void;
@@ -28,6 +29,11 @@ export interface TermLoopClient {
   };
   terminal: {
     open(connectionId: string, opts: { cols: number; rows: number }): Promise<TerminalHandle>;
+    /** Attaches to an open session for this connection (a specific one if sessionId is given,
+     * otherwise whichever is found first), or resolves null if none is open. */
+    attachToActiveSession(connectionId: string, sessionId?: string): Promise<TerminalHandle | null>;
+    /** Lists every currently-open session across all connections. */
+    listSessions(): Promise<{ sessionId: string; connectionId: string }[]>;
   };
   sftp: {
     list(connectionId: string, path: string): Promise<RemoteFile[]>;
@@ -40,6 +46,71 @@ export interface TermLoopClient {
   stats: {
     get(connectionId: string): Promise<ServerStats>;
     systemInfo(connectionId: string): Promise<ServerSystemInfo>;
+  };
+}
+
+interface TerminalSocket {
+  ws: WebSocket;
+  sessionId: string;
+  dataListeners: Set<(data: string) => void>;
+  closeListeners: Set<() => void>;
+}
+
+/** Opens a /ws/terminal socket and sends the given handshake, resolving once the server confirms
+ * (or a distinguishable {error} if the server replies terminal:error — the socket is closed either way). */
+function connectTerminalSocket(
+  wsUrl: string,
+  handshake: WsMessage
+): Promise<TerminalSocket | { error: string }> {
+  return new Promise((resolve, reject) => {
+    const ws = new WebSocket(`${wsUrl}/ws/terminal`);
+    const dataListeners = new Set<(data: string) => void>();
+    const closeListeners = new Set<() => void>();
+    let settled = false;
+
+    ws.on("open", () => ws.send(JSON.stringify(handshake)));
+
+    ws.on("message", (raw) => {
+      const msg: WsMessage = JSON.parse(raw.toString());
+      if (msg.type === "terminal:connected" && !settled) {
+        settled = true;
+        resolve({ ws, sessionId: msg.sessionId ?? "", dataListeners, closeListeners });
+      } else if (msg.type === "terminal:output" && msg.data) {
+        for (const cb of dataListeners) cb(msg.data);
+      } else if (msg.type === "terminal:error" && !settled) {
+        settled = true;
+        ws.close();
+        resolve({ error: msg.error || "Terminal error" });
+      } else if (msg.type === "terminal:close") {
+        for (const cb of closeListeners) cb();
+      }
+    });
+
+    ws.on("error", (err) => {
+      if (!settled) {
+        settled = true;
+        reject(err);
+      }
+    });
+
+    ws.on("close", () => {
+      for (const cb of closeListeners) cb();
+    });
+  });
+}
+
+function terminalHandle(connectionId: string, socket: TerminalSocket): TerminalHandle {
+  const { ws, sessionId, dataListeners, closeListeners } = socket;
+  return {
+    sessionId,
+    write: (data) => ws.send(JSON.stringify({ type: "terminal:input", connectionId, data } satisfies WsMessage)),
+    resize: (c, r) => ws.send(JSON.stringify({ type: "terminal:resize", connectionId, cols: c, rows: r } satisfies WsMessage)),
+    onData: (cb) => {
+      dataListeners.add(cb);
+      return () => dataListeners.delete(cb);
+    },
+    onClose: (cb) => closeListeners.add(cb),
+    close: () => ws.close(),
   };
 }
 
@@ -72,54 +143,17 @@ export function createClient(opts: { baseUrl: string }): TermLoopClient {
     },
 
     terminal: {
-      open(connectionId, { cols, rows }) {
-        return new Promise((resolve, reject) => {
-          const ws = new WebSocket(`${wsUrl}/ws/terminal`);
-          const dataListeners = new Set<(data: string) => void>();
-          const closeListeners = new Set<() => void>();
-          let settled = false;
-
-          ws.on("open", () => {
-            const handshake: WsMessage = { type: "terminal:input", connectionId, cols, rows };
-            ws.send(JSON.stringify(handshake));
-          });
-
-          ws.on("message", (raw) => {
-            const msg: WsMessage = JSON.parse(raw.toString());
-            if (msg.type === "terminal:connected" && !settled) {
-              settled = true;
-              resolve({
-                write: (data) => ws.send(JSON.stringify({ type: "terminal:input", connectionId, data } satisfies WsMessage)),
-                resize: (c, r) => ws.send(JSON.stringify({ type: "terminal:resize", connectionId, cols: c, rows: r } satisfies WsMessage)),
-                onData: (cb) => {
-                  dataListeners.add(cb);
-                  return () => dataListeners.delete(cb);
-                },
-                onClose: (cb) => closeListeners.add(cb),
-                close: () => ws.close(),
-              });
-            } else if (msg.type === "terminal:output" && msg.data) {
-              for (const cb of dataListeners) cb(msg.data);
-            } else if (msg.type === "terminal:error" && !settled) {
-              settled = true;
-              reject(new Error(msg.error || "Terminal error"));
-            } else if (msg.type === "terminal:close") {
-              for (const cb of closeListeners) cb();
-            }
-          });
-
-          ws.on("error", (err) => {
-            if (!settled) {
-              settled = true;
-              reject(err);
-            }
-          });
-
-          ws.on("close", () => {
-            for (const cb of closeListeners) cb();
-          });
-        });
+      async open(connectionId, { cols, rows }) {
+        const result = await connectTerminalSocket(wsUrl, { type: "terminal:input", connectionId, cols, rows });
+        if ("error" in result) throw new Error(result.error);
+        return terminalHandle(connectionId, result);
       },
+      async attachToActiveSession(connectionId, sessionId) {
+        const result = await connectTerminalSocket(wsUrl, { type: "terminal:attach", connectionId, sessionId });
+        if ("error" in result) return null;
+        return terminalHandle(connectionId, result);
+      },
+      listSessions: () => request<{ sessionId: string; connectionId: string }[]>("/terminal/sessions"),
     },
 
     sftp: {
