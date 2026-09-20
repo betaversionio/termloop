@@ -4,6 +4,8 @@ Manage your remote SSH servers without leaving VS Code — connections list, an 
 
 This extension is a thin client for the [TermLoop](https://github.com/betaversionio/termloop) daemon (the same one behind `npx termloop` and the `termloop mcp` server) — it doesn't manage its own SSH connections, so anything you do here shows up in the TermLoop web UI too, and vice versa.
 
+![An AI agent driving a live SSH terminal session in VS Code](https://raw.githubusercontent.com/betaversionio/termloop/main/apps/vscode-extension/media/screenshot-terminal.png)
+
 ## Features
 
 - **Connections view** — your saved servers, listed in the Explorer sidebar.
@@ -13,6 +15,8 @@ This extension is a thin client for the [TermLoop](https://github.com/betaversio
 - **Copy Claude MCP Connect Command** — copies a ready-to-run `claude mcp add --transport http termloop http://localhost:<port>/mcp` so Claude Code can drive your SSH connections too. No auth token needed.
 - **Command aliases** — bind short aliases to long commands per-repo (see below).
 - **OS Desktop** — `TermLoop: Open OS Desktop` opens the web app's full desktop shell (window manager, terminal/files/monitor/browser apps) in a VS Code panel, embedding the same live page the browser uses.
+
+![The OS Desktop feature embedded in a VS Code panel](https://raw.githubusercontent.com/betaversionio/termloop/main/apps/vscode-extension/media/screenshot-os-desktop.png)
 
 ## Command aliases
 
