@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Put, Delete, Param, Body, Res, Inject } from "@nestjs/common";
 import type { Response } from "express";
-import type { ApiResponse, ServerConnection, ServerConnectionInput } from "@stacklane/shared";
+import type { ApiResponse, ServerConnection, ServerConnectionInput } from "@termloop/shared";
 import { ConnectionsService } from "./connections.service.js";
 
 @Controller("connections")

@@ -1,6 +1,6 @@
 import { Injectable, Inject } from "@nestjs/common";
 import { v4 as uuid } from "uuid";
-import type { Project, ProjectInput } from "@stacklane/shared";
+import type { Project, ProjectInput } from "@termloop/shared";
 import { StoreService } from "../store/store.service.js";
 
 @Injectable()

@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { TickCircle, CloseCircle } from "iconsax-react";
-import type { ServerConnection, ServerConnectionInput } from "@stacklane/shared";
+import type { ServerConnection, ServerConnectionInput } from "@termloop/shared";
 import {
   useCreateConnection,
   useUpdateConnection,

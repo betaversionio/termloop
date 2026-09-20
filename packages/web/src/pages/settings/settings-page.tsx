@@ -47,7 +47,7 @@ export function SettingsPage() {
         <h2 className="text-lg font-semibold">About</h2>
         <div className="rounded-lg border border-border p-4 space-y-4">
           <div className="space-y-1">
-            <p className="text-sm font-medium">StackLane</p>
+            <p className="text-sm font-medium">TermLoop</p>
             <p className="text-sm text-muted-foreground">
               A browser-based, OS-like interface for managing remote servers,
               cloud storage, and infrastructure — all from a single dashboard.
@@ -75,7 +75,7 @@ export function SettingsPage() {
 
           <div className="flex gap-4 pt-1 text-sm">
             <a
-              href="https://github.com/betaversionio/stacklane"
+              href="https://github.com/betaversionio/termloop"
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary hover:underline"
@@ -83,7 +83,7 @@ export function SettingsPage() {
               GitHub
             </a>
             <a
-              href="https://www.npmjs.com/package/stacklane"
+              href="https://www.npmjs.com/package/termloop"
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary hover:underline"
@@ -91,7 +91,7 @@ export function SettingsPage() {
               npm
             </a>
             <a
-              href="https://github.com/betaversionio/stacklane/issues"
+              href="https://github.com/betaversionio/termloop/issues"
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary hover:underline"

@@ -156,10 +156,10 @@ export interface SeparatorProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 // ---------------------------------------------------------------------------
-//  SDK interface — injected at runtime by the StackLane host
+//  SDK interface — injected at runtime by the TermLoop host
 // ---------------------------------------------------------------------------
 
-export interface StackLaneSDK {
+export interface TermLoopSDK {
   /** The host's React instance — use this instead of importing React */
   React: typeof React;
 
@@ -299,7 +299,7 @@ export interface StackLaneSDK {
 //  App factory type
 // ---------------------------------------------------------------------------
 
-export type AppFactory = (sdk: StackLaneSDK) => {
+export type AppFactory = (sdk: TermLoopSDK) => {
   default: React.ComponentType<MarketplaceAppProps>;
 };
 
@@ -309,16 +309,16 @@ export type AppFactory = (sdk: StackLaneSDK) => {
 
 declare global {
   interface Window {
-    __stacklane_register?: (id: string, factory: AppFactory) => void;
+    __termloop_register?: (id: string, factory: AppFactory) => void;
   }
 }
 
 /**
- * Register a StackLane marketplace app.
+ * Register a TermLoop marketplace app.
  *
  * @example
  * ```tsx
- * import { defineApp, type StackLaneSDK, type MarketplaceAppProps } from '@stacklane/react';
+ * import { defineApp, type TermLoopSDK, type MarketplaceAppProps } from '@termloop/react';
  *
  * defineApp('my-image-viewer', (sdk) => {
  *   const { React, ui, hooks } = sdk;
@@ -346,13 +346,13 @@ declare global {
  * ```
  */
 export function defineApp(id: string, factory: AppFactory): void {
-  if (typeof window !== "undefined" && window.__stacklane_register) {
-    window.__stacklane_register(id, factory);
+  if (typeof window !== "undefined" && window.__termloop_register) {
+    window.__termloop_register(id, factory);
   } else {
     const check = setInterval(() => {
-      if (typeof window !== "undefined" && window.__stacklane_register) {
+      if (typeof window !== "undefined" && window.__termloop_register) {
         clearInterval(check);
-        window.__stacklane_register(id, factory);
+        window.__termloop_register(id, factory);
       }
     }, 50);
     setTimeout(() => clearInterval(check), 10_000);

@@ -1,7 +1,7 @@
 import { Injectable, Inject } from "@nestjs/common";
 import fs from "fs";
 import { Client } from "ssh2";
-import type { ServerConnection } from "@stacklane/shared";
+import type { ServerConnection } from "@termloop/shared";
 import { StoreService } from "../store/store.service.js";
 
 @Injectable()

@@ -3,7 +3,7 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CloudConnection } from "iconsax-react";
-import type { ServerConnectionInput } from "@stacklane/shared";
+import type { ServerConnectionInput } from "@termloop/shared";
 import { useCreateConnection } from "../hooks/use-connections";
 import { CustomDialog } from "@/components/ui/custom-dialog";
 import { Button } from "@/components/ui/button";

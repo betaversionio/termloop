@@ -1,24 +1,24 @@
 {
-  "name": "create-stacklane-app",
+  "name": "create-termloop-app",
   "version": "0.1.0",
-  "description": "Scaffold a new StackLane marketplace app with Vite, React, and TypeScript",
+  "description": "Scaffold a new TermLoop marketplace app with Vite, React, and TypeScript",
   "author": {
     "name": "Satyam Lohiya",
     "url": "https://github.com/betaversionio"
   },
   "license": "MIT",
-  "homepage": "https://github.com/betaversionio/stacklane#readme",
+  "homepage": "https://github.com/betaversionio/termloop#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/betaversionio/stacklane.git",
-    "directory": "apps/create-stacklane-app"
+    "url": "https://github.com/betaversionio/termloop.git",
+    "directory": "apps/create-termloop-app"
   },
   "bugs": {
-    "url": "https://github.com/betaversionio/stacklane/issues"
+    "url": "https://github.com/betaversionio/termloop/issues"
   },
   "type": "module",
   "bin": {
-    "create-stacklane-app": "./dist/index.js"
+    "create-termloop-app": "./dist/index.js"
   },
   "files": [
     "dist"
@@ -32,7 +32,7 @@
     "win32"
   ],
   "keywords": [
-    "stacklane",
+    "termloop",
     "create",
     "scaffold",
     "marketplace",

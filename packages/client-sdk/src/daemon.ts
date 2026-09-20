@@ -8,7 +8,7 @@ export interface DaemonInfo {
   startedAt: number;
 }
 
-const DAEMON_FILE = path.join(os.homedir(), ".stacklane", "daemon.json");
+const DAEMON_FILE = path.join(os.homedir(), ".termloop", "daemon.json");
 
 export function readDaemonFile(): DaemonInfo | null {
   try {
@@ -33,7 +33,7 @@ async function checkHealth(port: number, timeoutMs = 500): Promise<boolean> {
   }
 }
 
-/** Returns the port of an already-running, healthy StackLane daemon, or null if none is reachable. */
+/** Returns the port of an already-running, healthy TermLoop daemon, or null if none is reachable. */
 export async function findRunningDaemon(): Promise<{ port: number } | null> {
   const info = readDaemonFile();
   if (!info) return null;

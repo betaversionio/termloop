@@ -1,7 +1,7 @@
-import type { MarketplaceApp } from "@stacklane/shared";
+import type { MarketplaceApp } from "@termloop/shared";
 import type { MarketplaceAppType } from "../os/types/window";
 
-/** @deprecated Use `MarketplaceApp` from `@stacklane/shared` directly */
+/** @deprecated Use `MarketplaceApp` from `@termloop/shared` directly */
 export type MarketplaceAppManifest = MarketplaceApp;
 
 export interface InstalledApp {

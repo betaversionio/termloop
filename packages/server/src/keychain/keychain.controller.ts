@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Put, Delete, Param, Body, Res, Inject } from "@nestjs/common";
 import type { Response } from "express";
-import type { ApiResponse, SSHKey, SSHKeyInput } from "@stacklane/shared";
+import type { ApiResponse, SSHKey, SSHKeyInput } from "@termloop/shared";
 import { KeychainService } from "./keychain.service.js";
 
 @Controller("keychain")

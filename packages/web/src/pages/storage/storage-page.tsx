@@ -1,5 +1,5 @@
 import { Outlet, useParams, useOutletContext } from "react-router-dom";
-import type { StorageCredential } from "@stacklane/shared";
+import type { StorageCredential } from "@termloop/shared";
 import { useStorage } from "@/features/storage/hooks/use-storage";
 
 interface StorageContext {

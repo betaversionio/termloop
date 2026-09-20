@@ -2,7 +2,7 @@ import type {
   ApiResponse,
   ServerConnection,
   ServerConnectionInput,
-} from "@stacklane/shared";
+} from "@termloop/shared";
 import { request } from "@/lib/api";
 
 export const connectionsApi = {

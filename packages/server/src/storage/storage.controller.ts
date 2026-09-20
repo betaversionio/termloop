@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Put, Delete, Param, Body, Res, Inject } from "@nestjs/common";
 import type { Response } from "express";
-import type { ApiResponse, StorageCredential, StorageCredentialInput } from "@stacklane/shared";
+import type { ApiResponse, StorageCredential, StorageCredentialInput } from "@termloop/shared";
 import { StorageService } from "./storage.service.js";
 import { StorageClientService } from "./storage-client.service.js";
 

@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import { cn, formatBytes } from "@/lib/utils";
 import { sftpApi } from "../api";
 import { getFileIconUrl, getFolderIconUrl } from "../lib/file-icon";
-import type { RemoteFile } from "@stacklane/shared";
+import type { RemoteFile } from "@termloop/shared";
 
 interface FileRowProps {
   file: RemoteFile;

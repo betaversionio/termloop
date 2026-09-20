@@ -14,7 +14,7 @@ const emptyState: WindowManagerState = {
   windowCounter: 0,
 };
 
-const STORAGE_KEY = "stacklane-window-state";
+const STORAGE_KEY = "termloop-window-state";
 
 function loadState(): WindowManagerState {
   try {

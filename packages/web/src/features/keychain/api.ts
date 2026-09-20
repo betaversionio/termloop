@@ -1,4 +1,4 @@
-import type { ApiResponse, SSHKey, SSHKeyInput } from "@stacklane/shared";
+import type { ApiResponse, SSHKey, SSHKeyInput } from "@termloop/shared";
 import { request } from "@/lib/api";
 
 export const keychainApi = {

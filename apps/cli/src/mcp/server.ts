@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { createClient } from "@stacklane/client";
+import { createClient } from "@termloop/client";
 import { findRunningDaemon, registerAsDaemon } from "../daemon/discover.js";
 import { dynamicImport } from "../dynamicImport.js";
 
@@ -71,7 +71,7 @@ export async function runMcpServer(port: number): Promise<void> {
   const baseUrl = await ensureDaemon(port);
   const client = createClient({ baseUrl });
 
-  const server = new McpServer({ name: "stacklane", version: "0.1.0" });
+  const server = new McpServer({ name: "termloop", version: "0.1.0" });
 
   server.tool(
     "list_connections",

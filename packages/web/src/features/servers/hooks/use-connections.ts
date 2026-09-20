@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { ServerConnectionInput, ServerConnection } from "@stacklane/shared";
+import type { ServerConnectionInput, ServerConnection } from "@termloop/shared";
 import { connectionsApi } from "../api";
 
 export function useConnections() {

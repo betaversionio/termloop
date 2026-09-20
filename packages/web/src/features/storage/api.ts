@@ -4,7 +4,7 @@ import type {
   BucketInfo,
   BucketObjectListing,
   BucketStats,
-} from "@stacklane/shared";
+} from "@termloop/shared";
 import { request, BASE } from "@/lib/api";
 
 const enc = encodeURIComponent;

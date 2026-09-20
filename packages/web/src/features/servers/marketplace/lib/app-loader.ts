@@ -1,7 +1,7 @@
 import type { MarketplaceAppManifest } from "../types";
-import type { StackLaneSDK, MarketplaceAppProps } from "./sdk";
+import type { TermLoopSDK, MarketplaceAppProps } from "./sdk";
 
-type AppFactory = (sdk: StackLaneSDK) => {
+type AppFactory = (sdk: TermLoopSDK) => {
   default: React.ComponentType<MarketplaceAppProps>;
 };
 
@@ -11,7 +11,7 @@ interface LoadedApp {
 
 declare global {
   interface Window {
-    __stacklane_register?: (id: string, factory: AppFactory) => void;
+    __termloop_register?: (id: string, factory: AppFactory) => void;
     React?: typeof import("react");
   }
 }
@@ -25,7 +25,7 @@ export function setupGlobalRegister() {
 
 export async function loadMarketplaceApp(
   manifest: MarketplaceAppManifest,
-  sdk: StackLaneSDK
+  sdk: TermLoopSDK
 ): Promise<LoadedApp> {
   // Return from cache
   const cached = loadedApps.get(manifest.id);
@@ -41,7 +41,7 @@ export async function loadMarketplaceApp(
 
   const promise = new Promise<LoadedApp>((resolve, reject) => {
     // Set up the global register callback
-    window.__stacklane_register = (id: string, factory: AppFactory) => {
+    window.__termloop_register = (id: string, factory: AppFactory) => {
       if (id !== manifest.id) return;
 
       try {

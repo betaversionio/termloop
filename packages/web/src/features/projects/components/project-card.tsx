@@ -20,7 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { Project } from '@stacklane/shared';
+import type { Project } from '@termloop/shared';
 
 interface ProjectCardProps {
   project: Project;

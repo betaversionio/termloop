@@ -1,7 +1,7 @@
 import { Inject } from "@nestjs/common";
 import { WebSocketGateway, OnGatewayConnection } from "@nestjs/websockets";
 import type { WebSocket } from "ws";
-import type { WsMessage } from "@stacklane/shared";
+import type { WsMessage } from "@termloop/shared";
 import { TerminalService } from "./terminal.service.js";
 
 @WebSocketGateway({ path: "/ws/terminal" })

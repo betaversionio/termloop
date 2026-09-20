@@ -19,7 +19,7 @@ const DesktopSettingsContext = createContext<DesktopSettingsContext>({
   setIconPosition: () => {},
 });
 
-const STORAGE_KEY = "stacklane-desktop-settings";
+const STORAGE_KEY = "termloop-desktop-settings";
 
 interface StoredSettings {
   wallpaper?: string;

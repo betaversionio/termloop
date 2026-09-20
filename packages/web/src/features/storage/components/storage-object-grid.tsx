@@ -1,4 +1,4 @@
-import type { BucketObject } from "@stacklane/shared";
+import type { BucketObject } from "@termloop/shared";
 import { ExplorerGrid } from "@/components/shared/file-explorer";
 import type { FileItem, FolderItem } from "@/components/shared/file-explorer";
 

@@ -7,7 +7,7 @@ import type {
   ServerStats,
   ServerSystemInfo,
   WsMessage,
-} from "@stacklane/shared";
+} from "@termloop/shared";
 
 export type { RemoteFile, ServerConnection, ServerConnectionInput, ServerStats, ServerSystemInfo };
 
@@ -19,7 +19,7 @@ export interface TerminalHandle {
   close(): void;
 }
 
-export interface StackLaneClient {
+export interface TermLoopClient {
   connections: {
     list(): Promise<ServerConnection[]>;
     get(id: string): Promise<ServerConnection>;
@@ -43,7 +43,7 @@ export interface StackLaneClient {
   };
 }
 
-export function createClient(opts: { baseUrl: string }): StackLaneClient {
+export function createClient(opts: { baseUrl: string }): TermLoopClient {
   const baseUrl = opts.baseUrl.replace(/\/$/, "");
   const wsUrl = baseUrl.replace(/^http/, "ws");
 

@@ -1,6 +1,6 @@
 import { Injectable, Inject } from "@nestjs/common";
 import type { SFTPWrapper } from "ssh2";
-import type { RemoteFile } from "@stacklane/shared";
+import type { RemoteFile } from "@termloop/shared";
 import { StoreService } from "../store/store.service.js";
 import { SshService } from "../ssh/ssh.service.js";
 

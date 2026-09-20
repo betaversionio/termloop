@@ -37,7 +37,7 @@ function packageJson(name: string): string {
         build: "vite build",
       },
       dependencies: {
-        "@stacklane/react": "^0.1.0",
+        "@termloop/react": "^0.1.0",
       },
       devDependencies: {
         "@types/react": "^19.0.0",
@@ -98,19 +98,19 @@ export default defineConfig({
 
 function mainTsx(name: string): string {
   return `import { createApp } from "./App";
-import type { StackLaneSDK } from "@stacklane/react";
+import type { TermLoopSDK } from "@termloop/react";
 
-type AppFactory = (sdk: StackLaneSDK) => {
+type AppFactory = (sdk: TermLoopSDK) => {
   default: React.ComponentType<{ connectionId: string; payload?: Record<string, unknown> }>;
 };
 
 declare global {
   interface Window {
-    __stacklane_register?: (id: string, factory: AppFactory) => void;
+    __termloop_register?: (id: string, factory: AppFactory) => void;
   }
 }
 
-window.__stacklane_register?.("${name}", (sdk) => {
+window.__termloop_register?.("${name}", (sdk) => {
   return { default: createApp(sdk) };
 });
 `;
@@ -118,14 +118,14 @@ window.__stacklane_register?.("${name}", (sdk) => {
 
 function appTsx(name: string): string {
   const componentName = toPascal(name);
-  return `import type { StackLaneSDK } from "@stacklane/react";
+  return `import type { TermLoopSDK } from "@termloop/react";
 
 interface AppProps {
   connectionId: string;
   payload?: Record<string, unknown>;
 }
 
-export function createApp(sdk: StackLaneSDK) {
+export function createApp(sdk: TermLoopSDK) {
   const { useConnection } = sdk.hooks;
   const { Button, Card, CardHeader, CardTitle, CardContent } = sdk.ui;
 
@@ -159,11 +159,11 @@ function manifest(name: string): string {
     {
       id: name,
       name: toPascal(name),
-      description: `A StackLane marketplace app`,
+      description: `A TermLoop marketplace app`,
       author: "",
       version: "0.1.0",
       iconUrl: "",
-      bundleUrl: `https://registry.stacklane.dev/apps/${name}/${name}.js`,
+      bundleUrl: `https://registry.termloop.dev/apps/${name}/${name}.js`,
       fileAssociations: [],
       defaultSize: { width: 800, height: 600 },
       minWidth: 400,
@@ -187,12 +187,12 @@ function main() {
 
   if (!rawName || rawName === "--help" || rawName === "-h") {
     console.log(`
-Usage: create-stacklane-app <app-name>
+Usage: create-termloop-app <app-name>
 
-Scaffolds a new StackLane marketplace app project.
+Scaffolds a new TermLoop marketplace app project.
 
 Example:
-  npx create-stacklane-app my-app
+  npx create-termloop-app my-app
   cd my-app
   npm install
   npm run build
@@ -203,7 +203,7 @@ Example:
   const name = toKebab(basename(rawName));
   const dir = resolve(process.cwd(), rawName);
 
-  console.log(`\nCreating StackLane app in ${dir}\n`);
+  console.log(`\nCreating TermLoop app in ${dir}\n`);
 
   // Create directories
   mkdirSync(join(dir, "src"), { recursive: true });
@@ -215,7 +215,7 @@ Example:
     ["vite.config.ts", viteConfig(name)],
     ["src/main.tsx", mainTsx(name)],
     ["src/App.tsx", appTsx(name)],
-    ["stacklane.manifest.json", manifest(name)],
+    ["termloop.manifest.json", manifest(name)],
   ];
 
   for (const [path, content] of files) {

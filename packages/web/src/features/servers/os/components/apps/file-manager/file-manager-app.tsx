@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import type { RemoteFile } from "@stacklane/shared";
+import type { RemoteFile } from "@termloop/shared";
 import {
   useFileList,
   useDeleteFile,

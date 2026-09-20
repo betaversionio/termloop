@@ -10,9 +10,9 @@ export default defineConfig({
   // keep the bin entry at dist/index.js instead of tsdown's default dist/index.mjs.
   fixedExtension: false,
   // Workspace-only packages have no published npm version to depend on —
-  // inline them so the published `stacklane` package needs nothing unpublished.
+  // inline them so the published `termloop` package needs nothing unpublished.
   deps: {
-    alwaysBundle: ["@stacklane/client", "@stacklane/shared", "ws"],
+    alwaysBundle: ["@termloop/client", "@termloop/shared", "ws"],
     onlyBundle: false,
   },
 });

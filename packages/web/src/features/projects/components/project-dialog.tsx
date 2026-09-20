@@ -3,7 +3,7 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Monitor, CloudConnection } from "iconsax-react";
-import type { Project, ServerConnection, StorageCredential } from "@stacklane/shared";
+import type { Project, ServerConnection, StorageCredential } from "@termloop/shared";
 import { useCreateProject, useUpdateProject } from "../hooks/use-projects";
 import { useConnections } from "@/features/servers";
 import { useStorage } from "@/features/storage";

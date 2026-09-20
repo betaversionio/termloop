@@ -1,6 +1,6 @@
 import { Monitor } from "iconsax-react";
 import { PageHeader } from "@/components/shared/page-header";
-import type { ServerConnection } from "@stacklane/shared";
+import type { ServerConnection } from "@termloop/shared";
 import { useConnections, useDeleteConnection, AddServerDropdown } from "@/features/servers";
 import { ServerCard } from "@/features/servers";
 

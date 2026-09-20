@@ -20,7 +20,7 @@ import type {
   BucketObject,
   BucketObjectListing,
   BucketStats,
-} from "@stacklane/shared";
+} from "@termloop/shared";
 
 interface CachedClient {
   client: S3Client | Storage;

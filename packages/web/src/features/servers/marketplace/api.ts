@@ -1,4 +1,4 @@
-import type { MarketplaceApp } from "@stacklane/shared";
+import type { MarketplaceApp } from "@termloop/shared";
 
 const REGISTRY_URL =
   import.meta.env.VITE_REGISTRY_URL ?? "/registry/catalog.json";

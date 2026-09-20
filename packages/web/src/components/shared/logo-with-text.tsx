@@ -18,7 +18,7 @@ export function LogoWithText({
       <span
         className={cn('text-lg font-semibold tracking-tight', textClassName)}
       >
-        StackLane
+        TermLoop
       </span>
     </div>
   );

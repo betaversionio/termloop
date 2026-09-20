@@ -1,4 +1,4 @@
-import type { StorageCredential } from "@stacklane/shared";
+import type { StorageCredential } from "@termloop/shared";
 import { Badge } from "@/components/ui/badge";
 import { StorageStatsBar } from "@/features/storage/components/storage-stats-bar";
 import { useStorageBucketList } from "@/features/storage/hooks/use-storage-explorer";

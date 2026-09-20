@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Monitor, CloudConnection } from "iconsax-react";
-import type { ServerConnection, StorageCredential } from "@stacklane/shared";
+import type { ServerConnection, StorageCredential } from "@termloop/shared";
 import { CustomDialog } from "@/components/ui/custom-dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";

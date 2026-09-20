@@ -10,7 +10,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { useStorage } from "@/features/storage/hooks/use-storage";
-import type { StorageCredential } from "@stacklane/shared";
+import type { StorageCredential } from "@termloop/shared";
 import { StorageSidebar } from "@/features/storage/components/storage-sidebar";
 
 function StorageHeader() {

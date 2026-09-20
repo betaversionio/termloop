@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trash, TickCircle, CloseCircle, Key } from 'iconsax-react';
-import type { StorageCredential } from '@stacklane/shared';
+import type { StorageCredential } from '@termloop/shared';
 import {
   useDeleteStorage,
   useTestStorageCredential,

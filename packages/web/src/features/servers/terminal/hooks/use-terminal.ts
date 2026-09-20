@@ -3,7 +3,7 @@ import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
 import type { ITheme } from '@xterm/xterm';
-import type { WsMessage } from '@stacklane/shared';
+import type { WsMessage } from '@termloop/shared';
 import { terminalThemesMap } from '../lib/terminal-themes';
 
 interface TerminalSettings {

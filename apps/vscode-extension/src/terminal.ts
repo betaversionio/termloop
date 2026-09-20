@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
-import type { ServerConnection, StackLaneClient, TerminalHandle } from "@stacklane/client";
+import type { ServerConnection, TermLoopClient, TerminalHandle } from "@termloop/client";
 
-export function openTerminal(client: StackLaneClient, connection: ServerConnection): void {
+export function openTerminal(client: TermLoopClient, connection: ServerConnection): void {
   const writeEmitter = new vscode.EventEmitter<string>();
   const closeEmitter = new vscode.EventEmitter<number | void>();
 

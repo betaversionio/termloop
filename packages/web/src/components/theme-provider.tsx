@@ -14,7 +14,7 @@ const ThemeContext = createContext<ThemeContext>({
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem("stacklane-theme") as Theme) || "dark"
+    () => (localStorage.getItem("termloop-theme") as Theme) || "dark"
   );
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       root.classList.add(theme);
     }
 
-    localStorage.setItem("stacklane-theme", theme);
+    localStorage.setItem("termloop-theme", theme);
   }, [theme]);
 
   return (

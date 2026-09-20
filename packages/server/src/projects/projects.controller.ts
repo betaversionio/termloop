@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Put, Delete, Param, Body, Res, Inject } from "@nestjs/common";
 import type { Response } from "express";
-import type { ApiResponse, Project, ProjectInput } from "@stacklane/shared";
+import type { ApiResponse, Project, ProjectInput } from "@termloop/shared";
 import { ProjectsService } from "./projects.service.js";
 
 @Controller("projects")

@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import type { SSHKey } from "@stacklane/shared";
+import type { SSHKey } from "@termloop/shared";
 
 dayjs.extend(relativeTime);
 

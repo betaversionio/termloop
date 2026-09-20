@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { spawn } from "child_process";
-import { findRunningDaemon } from "@stacklane/client";
+import { findRunningDaemon } from "@termloop/client";
 
 const POLL_INTERVAL_MS = 500;
 const POLL_TIMEOUT_MS = 15000;
@@ -10,10 +10,10 @@ function sleep(ms: number): Promise<void> {
 }
 
 function spawnDaemon(): void {
-  const child = spawn("stacklane", ["--no-open"], { detached: true, stdio: "ignore" });
+  const child = spawn("termloop", ["--no-open"], { detached: true, stdio: "ignore" });
   child.on("error", (err: NodeJS.ErrnoException) => {
     if (err.code === "ENOENT") {
-      spawn("npx", ["--yes", "stacklane", "--no-open"], { detached: true, stdio: "ignore" }).unref();
+      spawn("npx", ["--yes", "termloop", "--no-open"], { detached: true, stdio: "ignore" }).unref();
     }
   });
   child.unref();
@@ -29,7 +29,7 @@ async function waitForDaemon(): Promise<string | null> {
   return null;
 }
 
-/** Finds a running StackLane daemon, prompting the user to start one if none is found. */
+/** Finds a running TermLoop daemon, prompting the user to start one if none is found. */
 export async function ensureDaemon(): Promise<string> {
   const existing = await findRunningDaemon();
   if (existing) {
@@ -37,17 +37,17 @@ export async function ensureDaemon(): Promise<string> {
   }
 
   const choice = await vscode.window.showInformationMessage(
-    "StackLane isn't running.",
+    "TermLoop isn't running.",
     "Start"
   );
   if (choice !== "Start") {
-    throw new Error("StackLane daemon is not running");
+    throw new Error("TermLoop daemon is not running");
   }
 
   spawnDaemon();
   const url = await waitForDaemon();
   if (!url) {
-    throw new Error("Timed out waiting for the StackLane daemon to start");
+    throw new Error("Timed out waiting for the TermLoop daemon to start");
   }
   return url;
 }

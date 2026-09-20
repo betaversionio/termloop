@@ -1,9 +1,9 @@
 import fs from "fs";
 import os from "os";
 import path from "path";
-import { type DaemonInfo, readDaemonFile } from "@stacklane/client";
+import { type DaemonInfo, readDaemonFile } from "@termloop/client";
 
-const DATA_DIR = path.join(os.homedir(), ".stacklane");
+const DATA_DIR = path.join(os.homedir(), ".termloop");
 const DAEMON_FILE = path.join(DATA_DIR, "daemon.json");
 
 export function writeDaemonFile(info: DaemonInfo): void {

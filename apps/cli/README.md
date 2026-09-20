@@ -1,15 +1,15 @@
-# StackLane
+# TermLoop
 
 **A modern, all-in-one web platform for comprehensive server management**
 
-StackLane transforms how you interact with your remote servers by providing a powerful browser-based interface that combines terminal access, file management, performance monitoring, cloud storage integration, and remote desktop capabilities—all in one seamless application. No more juggling multiple tools and terminal windows.
+TermLoop transforms how you interact with your remote servers by providing a powerful browser-based interface that combines terminal access, file management, performance monitoring, cloud storage integration, and remote desktop capabilities—all in one seamless application. No more juggling multiple tools and terminal windows.
 
 ![Version](https://img.shields.io/badge/version-0.2.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-![StackLane Interface](https://raw.githubusercontent.com/betaversionio/stacklane/main/images/09-file-manager.png)
+![TermLoop Interface](https://raw.githubusercontent.com/betaversionio/termloop/main/images/09-file-manager.png)
 
-**Why StackLane?**
+**Why TermLoop?**
 
 - 🚀 **Quick Start**: Launch with a single `npx` command—no complex setup required
 - 🌐 **Browser-Based**: Access your servers from anywhere without installing SSH clients
@@ -21,14 +21,14 @@ StackLane transforms how you interact with your remote servers by providing a po
 ## Quick Start
 
 ```bash
-npx stacklane
+npx termloop
 ```
 
 Or install globally:
 
 ```bash
-npm i -g stacklane
-stacklane
+npm i -g termloop
+termloop
 ```
 
 Opens a browser UI at `http://localhost:3721` where you can manage SSH connections, browse files via SFTP, open terminals, and monitor server stats.
@@ -36,7 +36,7 @@ Opens a browser UI at `http://localhost:3721` where you can manage SSH connectio
 ## CLI Options
 
 ```
-stacklane [options]
+termloop [options]
 
 Options:
   -p, --port <number>  Port to run on (default: 3721)
@@ -51,7 +51,7 @@ Options:
 
 A fully-featured SSH terminal powered by xterm.js that brings the power of your remote servers directly to your browser. No need for separate terminal applications—everything runs seamlessly in your web browser with full support for colors, cursor movements, and special characters.
 
-![Terminal](https://raw.githubusercontent.com/betaversionio/stacklane/main/images/16-terminal-fullscreen.png)
+![Terminal](https://raw.githubusercontent.com/betaversionio/termloop/main/images/16-terminal-fullscreen.png)
 
 **Key Features:**
 
@@ -64,7 +64,7 @@ A fully-featured SSH terminal powered by xterm.js that brings the power of your 
 
 **App Catalog** - Deploy popular self-hosted applications with a single click:
 
-![App Catalog](https://raw.githubusercontent.com/betaversionio/stacklane/main/images/01-terminal-app-catalog.png)
+![App Catalog](https://raw.githubusercontent.com/betaversionio/termloop/main/images/01-terminal-app-catalog.png)
 
 Browse and install from a curated collection of self-hosted apps including:
 
@@ -79,7 +79,7 @@ Each app comes with pre-configured installation scripts that handle all dependen
 
 **Terminal Customization** - Personalize your terminal experience:
 
-![Terminal Appearance](https://raw.githubusercontent.com/betaversionio/stacklane/main/images/02-terminal-appearance.png)
+![Terminal Appearance](https://raw.githubusercontent.com/betaversionio/termloop/main/images/02-terminal-appearance.png)
 
 - 🎨 **14+ Color Themes**: From classic dark themes to modern palettes
 - 🔤 **Font Selection**: Choose from popular monospace fonts (JetBrains Mono, Fira Code, Cascadia Code, etc.)
@@ -90,7 +90,7 @@ Each app comes with pre-configured installation scripts that handle all dependen
 
 A powerful SFTP-based file manager that lets you browse, upload, download, edit, and manage files on your remote servers with an intuitive drag-and-drop interface. Think of it as a modern file explorer for your servers.
 
-![File Manager](https://raw.githubusercontent.com/betaversionio/stacklane/main/images/09-file-manager.png)
+![File Manager](https://raw.githubusercontent.com/betaversionio/termloop/main/images/09-file-manager.png)
 
 **Capabilities:**
 
@@ -109,7 +109,7 @@ A powerful SFTP-based file manager that lets you browse, upload, download, edit,
 
 Get instant visibility into your server's health and performance with comprehensive monitoring dashboards. Track CPU usage, memory consumption, disk space, and network activity—all updating in real-time.
 
-![Monitor](https://raw.githubusercontent.com/betaversionio/stacklane/main/images/11-monitor-stats.png)
+![Monitor](https://raw.githubusercontent.com/betaversionio/termloop/main/images/11-monitor-stats.png)
 
 **Monitoring Metrics:**
 
@@ -134,9 +134,9 @@ Perfect for identifying performance bottlenecks, planning upgrades, and ensuring
 
 ### 🗄️ Cloud Storage Management
 
-Seamlessly integrate and manage S3-compatible storage buckets from multiple providers. Upload, download, and organize your cloud files without leaving StackLane.
+Seamlessly integrate and manage S3-compatible storage buckets from multiple providers. Upload, download, and organize your cloud files without leaving TermLoop.
 
-![Storage](https://raw.githubusercontent.com/betaversionio/stacklane/main/images/14-storage-buckets.png)
+![Storage](https://raw.githubusercontent.com/betaversionio/termloop/main/images/14-storage-buckets.png)
 
 **Supported Providers:**
 
@@ -161,7 +161,7 @@ Seamlessly integrate and manage S3-compatible storage buckets from multiple prov
 
 Centralized SSH key management that eliminates the need to enter passwords repeatedly. Store your SSH private keys securely and use them across all your server connections with one-click authentication.
 
-![Keychain](https://raw.githubusercontent.com/betaversionio/stacklane/main/images/13-keychain.png)
+![Keychain](https://raw.githubusercontent.com/betaversionio/termloop/main/images/13-keychain.png)
 
 **Key Management:**
 
@@ -185,7 +185,7 @@ Centralized SSH key management that eliminates the need to enter passwords repea
 
 Access your server's graphical desktop environment directly from your browser using noVNC. Run GUI applications, configure desktop settings, and interact with your server visually—no separate VNC client needed.
 
-![OS Desktop](https://raw.githubusercontent.com/betaversionio/stacklane/main/images/07-os-desktop.png)
+![OS Desktop](https://raw.githubusercontent.com/betaversionio/termloop/main/images/07-os-desktop.png)
 
 **Desktop Features:**
 
@@ -219,8 +219,8 @@ Perfect for when you need more than just a terminal and want the full desktop ex
 ### Setup
 
 ```bash
-git clone https://github.com/betaversionio/stacklane.git
-cd StackLane
+git clone https://github.com/betaversionio/termloop.git
+cd TermLoop
 pnpm install
 ```
 
@@ -261,7 +261,7 @@ pnpm build:pkg      # Build + bundle into publishable CLI package
 ```bash
 pnpm build:pkg      # Full build
 pnpm link:cli       # Link globally
-stacklane           # Run it
+termloop           # Run it
 pnpm unlink:cli     # Unlink when done
 ```
 

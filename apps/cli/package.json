@@ -1,24 +1,24 @@
 {
-  "name": "stacklane",
+  "name": "termloop",
   "version": "0.2.0",
   "description": "Browser-based OS-like UI for managing remote servers via SSH",
   "author": {
     "name": "Satyam Lohiya",
     "url": "https://github.com/betaversionio"
   },
-  "homepage": "https://github.com/betaversionio/stacklane#readme",
+  "homepage": "https://github.com/betaversionio/termloop#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/betaversionio/stacklane.git",
+    "url": "https://github.com/betaversionio/termloop.git",
     "directory": "apps/cli"
   },
   "bugs": {
-    "url": "https://github.com/betaversionio/stacklane/issues"
+    "url": "https://github.com/betaversionio/termloop/issues"
   },
   "license": "MIT",
   "type": "module",
   "bin": {
-    "stacklane": "./dist/index.js"
+    "termloop": "./dist/index.js"
   },
   "files": [
     "dist"
@@ -61,7 +61,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@stacklane/client": "workspace:*",
+    "@termloop/client": "workspace:*",
     "@types/express": "^5.0.6",
     "tsdown": "^0.23.0",
     "tsx": "^4.23.13",

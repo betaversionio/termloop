@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { ProjectInput, Project } from "@stacklane/shared";
+import type { ProjectInput, Project } from "@termloop/shared";
 import { projectsApi } from "../api";
 
 export function useProjects() {

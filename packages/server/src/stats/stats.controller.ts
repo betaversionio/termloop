@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Query, Res, Inject } from "@nestjs/common";
 import type { Response } from "express";
-import type { ApiResponse, ServerStats, ServerSystemInfo } from "@stacklane/shared";
+import type { ApiResponse, ServerStats, ServerSystemInfo } from "@termloop/shared";
 import { StatsService } from "./stats.service.js";
 
 @Controller("stats")

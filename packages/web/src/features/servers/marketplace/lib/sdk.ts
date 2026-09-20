@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import type { RemoteFile, ServerConnection, ServerStats, ApiResponse } from "@stacklane/shared";
+import type { RemoteFile, ServerConnection, ServerStats, ApiResponse } from "@termloop/shared";
 
 // ---------------------------------------------------------------------------
 //  Props
@@ -23,7 +23,7 @@ export interface MarketplaceAppProps {
 }
 
 // ---------------------------------------------------------------------------
-//  Domain hooks — real implementations that wrap the StackLane server API
+//  Domain hooks — real implementations that wrap the TermLoop server API
 // ---------------------------------------------------------------------------
 
 function useConnectionHook(connectionId: string) {
@@ -210,10 +210,10 @@ function useFileListHook(connectionId: string, path: string) {
 //  SDK interface
 // ---------------------------------------------------------------------------
 
-export interface StackLaneSDK {
+export interface TermLoopSDK {
   React: typeof React;
 
-  /** StackLane-specific hooks for server interaction */
+  /** TermLoop-specific hooks for server interaction */
   hooks: {
     /** Get connection details (host, username, etc.) */
     useConnection: typeof useConnectionHook;
@@ -273,7 +273,7 @@ export interface StackLaneSDK {
 //  Build the SDK object
 // ---------------------------------------------------------------------------
 
-export function buildSDK(): StackLaneSDK {
+export function buildSDK(): TermLoopSDK {
   return {
     React,
     hooks: {

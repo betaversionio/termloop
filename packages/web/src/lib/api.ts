@@ -1,4 +1,4 @@
-import type { ApiResponse } from "@stacklane/shared";
+import type { ApiResponse } from "@termloop/shared";
 
 export const BASE = "/api";
 

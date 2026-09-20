@@ -5,7 +5,7 @@ import type {
   Project,
   ServerConnection,
   StorageCredential,
-} from '@stacklane/shared';
+} from '@termloop/shared';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {

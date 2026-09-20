@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 
-const STORAGE_KEY = "stacklane:terminal-settings";
+const STORAGE_KEY = "termloop:terminal-settings";
 
 interface TerminalSettings {
   fontFamily: string;

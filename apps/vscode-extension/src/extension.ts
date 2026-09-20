@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
-import { createClient, type ServerConnection, type ServerConnectionInput, type StackLaneClient } from "@stacklane/client";
+import { createClient, type ServerConnection, type ServerConnectionInput, type TermLoopClient } from "@termloop/client";
 import { ensureDaemon } from "./daemonManager.js";
 import { ConnectionsTreeProvider } from "./connectionsTreeProvider.js";
 import { openTerminal } from "./terminal.js";
-import { StackLaneFsProvider } from "./fileSystemProvider.js";
+import { TermLoopFsProvider } from "./fileSystemProvider.js";
 
 async function promptForConnection(): Promise<ServerConnectionInput | undefined> {
   const name = await vscode.window.showInputBox({ prompt: "Connection name" });
@@ -43,41 +43,41 @@ async function promptForConnection(): Promise<ServerConnectionInput | undefined>
 }
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-  let client: StackLaneClient;
+  let client: TermLoopClient;
   try {
     const baseUrl = await ensureDaemon();
     client = createClient({ baseUrl });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Failed to connect to StackLane";
-    vscode.window.showErrorMessage(`StackLane: ${message}`);
+    const message = err instanceof Error ? err.message : "Failed to connect to TermLoop";
+    vscode.window.showErrorMessage(`TermLoop: ${message}`);
     return;
   }
 
   const treeProvider = new ConnectionsTreeProvider(client);
-  context.subscriptions.push(vscode.window.registerTreeDataProvider("stacklaneConnections", treeProvider));
+  context.subscriptions.push(vscode.window.registerTreeDataProvider("termloopConnections", treeProvider));
 
-  const fsProvider = new StackLaneFsProvider(client);
+  const fsProvider = new TermLoopFsProvider(client);
   context.subscriptions.push(
-    vscode.workspace.registerFileSystemProvider("stacklane", fsProvider, { isCaseSensitive: true })
+    vscode.workspace.registerFileSystemProvider("termloop", fsProvider, { isCaseSensitive: true })
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("stacklane.refreshConnections", () => treeProvider.refresh()),
+    vscode.commands.registerCommand("termloop.refreshConnections", () => treeProvider.refresh()),
 
-    vscode.commands.registerCommand("stacklane.addConnection", async () => {
+    vscode.commands.registerCommand("termloop.addConnection", async () => {
       const input = await promptForConnection();
       if (!input) return;
       await client.connections.create(input);
       treeProvider.refresh();
     }),
 
-    vscode.commands.registerCommand("stacklane.openTerminal", (connection: ServerConnection) => {
+    vscode.commands.registerCommand("termloop.openTerminal", (connection: ServerConnection) => {
       openTerminal(client, connection);
     }),
 
-    vscode.commands.registerCommand("stacklane.browseFiles", (connection: ServerConnection) => {
+    vscode.commands.registerCommand("termloop.browseFiles", (connection: ServerConnection) => {
       vscode.workspace.updateWorkspaceFolders(vscode.workspace.workspaceFolders?.length ?? 0, 0, {
-        uri: vscode.Uri.parse(`stacklane://${connection.id}/`),
+        uri: vscode.Uri.parse(`termloop://${connection.id}/`),
         name: connection.name,
       });
     })

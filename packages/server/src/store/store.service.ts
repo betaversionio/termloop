@@ -10,7 +10,7 @@ import { KeychainRepository } from './repositories/keychain.repository.js';
 import { StorageRepository } from './repositories/storage.repository.js';
 import { ProjectRepository } from './repositories/project.repository.js';
 
-const DATA_DIR = path.join(os.homedir(), '.stacklane');
+const DATA_DIR = path.join(os.homedir(), '.termloop');
 const DB_FILE = path.join(DATA_DIR, 'data.db');
 
 @Injectable()

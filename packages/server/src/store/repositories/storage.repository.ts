@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm';
-import type { StorageCredential } from '@stacklane/shared';
+import type { StorageCredential } from '@termloop/shared';
 import { storageCredentials } from '../schema.js';
 import { BaseRepository } from './base.repository.js';
 

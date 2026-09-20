@@ -1,6 +1,6 @@
 {
-  "name": "stacklane-vscode",
-  "displayName": "StackLane",
+  "name": "termloop-vscode",
+  "displayName": "TermLoop",
   "description": "Manage remote SSH servers, terminals, and files without leaving VS Code",
   "version": "0.1.0",
   "private": true,
@@ -8,7 +8,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/betaversionio/stacklane.git",
+    "url": "https://github.com/betaversionio/termloop.git",
     "directory": "apps/vscode-extension"
   },
   "engines": {
@@ -25,52 +25,52 @@
     "views": {
       "explorer": [
         {
-          "id": "stacklaneConnections",
-          "name": "StackLane Connections"
+          "id": "termloopConnections",
+          "name": "TermLoop Connections"
         }
       ]
     },
     "commands": [
       {
-        "command": "stacklane.refreshConnections",
-        "title": "StackLane: Refresh Connections",
+        "command": "termloop.refreshConnections",
+        "title": "TermLoop: Refresh Connections",
         "icon": "$(refresh)"
       },
       {
-        "command": "stacklane.addConnection",
-        "title": "StackLane: Add Connection",
+        "command": "termloop.addConnection",
+        "title": "TermLoop: Add Connection",
         "icon": "$(add)"
       },
       {
-        "command": "stacklane.openTerminal",
-        "title": "StackLane: Open Terminal"
+        "command": "termloop.openTerminal",
+        "title": "TermLoop: Open Terminal"
       },
       {
-        "command": "stacklane.browseFiles",
-        "title": "StackLane: Browse Files"
+        "command": "termloop.browseFiles",
+        "title": "TermLoop: Browse Files"
       }
     ],
     "menus": {
       "view/title": [
         {
-          "command": "stacklane.addConnection",
-          "when": "view == stacklaneConnections",
+          "command": "termloop.addConnection",
+          "when": "view == termloopConnections",
           "group": "navigation"
         },
         {
-          "command": "stacklane.refreshConnections",
-          "when": "view == stacklaneConnections",
+          "command": "termloop.refreshConnections",
+          "when": "view == termloopConnections",
           "group": "navigation"
         }
       ],
       "view/item/context": [
         {
-          "command": "stacklane.openTerminal",
-          "when": "view == stacklaneConnections && viewItem == stacklaneConnection"
+          "command": "termloop.openTerminal",
+          "when": "view == termloopConnections && viewItem == termloopConnection"
         },
         {
-          "command": "stacklane.browseFiles",
-          "when": "view == stacklaneConnections && viewItem == stacklaneConnection"
+          "command": "termloop.browseFiles",
+          "when": "view == termloopConnections && viewItem == termloopConnection"
         }
       ]
     }
@@ -82,7 +82,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@stacklane/client": "workspace:*"
+    "@termloop/client": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

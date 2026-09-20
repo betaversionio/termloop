@@ -1,7 +1,7 @@
 {
-  "name": "@stacklane/react",
+  "name": "@termloop/react",
   "version": "0.1.0",
-  "description": "SDK for building StackLane marketplace apps",
+  "description": "SDK for building TermLoop marketplace apps",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -30,7 +30,7 @@
     "typescript": "^7.0.2"
   },
   "keywords": [
-    "stacklane",
+    "termloop",
     "marketplace",
     "sdk",
     "react"

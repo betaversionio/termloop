@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Trash, Edit2, TickCircle, CloseCircle, Key, Lock, Monitor } from "iconsax-react";
-import type { ServerConnection } from "@stacklane/shared";
+import type { ServerConnection } from "@termloop/shared";
 import {
   useDeleteConnection,
   useTestConnection,

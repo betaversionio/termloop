@@ -3,7 +3,7 @@ import { Key, Add } from 'iconsax-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/shared/page-header';
-import type { SSHKey } from '@stacklane/shared';
+import type { SSHKey } from '@termloop/shared';
 import {
   useKeychain,
   useDeleteKey,

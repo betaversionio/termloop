@@ -1,4 +1,4 @@
-import type { RemoteFile } from "@stacklane/shared";
+import type { RemoteFile } from "@termloop/shared";
 import { getFileIconUrl, getFolderIconUrl } from "@/features/servers/files/lib/file-icon";
 import { useWindowManager } from "../../../context/window-manager-context";
 import { useMarketplace } from "@/features/servers/marketplace/components/marketplace-context";

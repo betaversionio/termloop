@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { FolderOpen, Add } from "iconsax-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/page-header";
-import type { Project } from "@stacklane/shared";
+import type { Project } from "@termloop/shared";
 import { ProjectCard, ProjectDialog, useProjects, useDeleteProject } from "@/features/projects";
 
 export function DashboardPage() {

@@ -7,7 +7,7 @@ import { TickCircle, CloseCircle } from 'iconsax-react';
 import type {
   StorageCredential,
   StorageCredentialInput,
-} from '@stacklane/shared';
+} from '@termloop/shared';
 import {
   useCreateStorage,
   useUpdateStorage,

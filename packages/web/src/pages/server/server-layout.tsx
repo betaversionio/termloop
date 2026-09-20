@@ -11,7 +11,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { useConnections } from '@/features/servers';
-import type { ServerConnection } from '@stacklane/shared';
+import type { ServerConnection } from '@termloop/shared';
 import { ServerSidebar } from '@/features/servers/components/server-sidebar';
 
 function ServerHeader() {

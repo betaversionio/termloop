@@ -1,4 +1,4 @@
-import type { ApiResponse, RemoteFile } from "@stacklane/shared";
+import type { ApiResponse, RemoteFile } from "@termloop/shared";
 import { request, BASE } from "@/lib/api";
 
 export const sftpApi = {

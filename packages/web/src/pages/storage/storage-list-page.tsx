@@ -4,7 +4,7 @@ import { CloudConnection, Add } from 'iconsax-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/shared/page-header';
 import { toast } from '@/hooks/use-toast';
-import type { StorageCredential } from '@stacklane/shared';
+import type { StorageCredential } from '@termloop/shared';
 import {
   useStorage,
   useDeleteStorage,

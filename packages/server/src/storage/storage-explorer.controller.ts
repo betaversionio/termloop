@@ -16,7 +16,7 @@ import type {
   BucketInfo,
   BucketObjectListing,
   BucketStats,
-} from "@stacklane/shared";
+} from "@termloop/shared";
 import { StorageClientService } from "./storage-client.service.js";
 
 @Controller("storage/:credentialId/explore")

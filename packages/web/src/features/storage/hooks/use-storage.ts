@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { StorageCredentialInput, StorageCredential } from "@stacklane/shared";
+import type { StorageCredentialInput, StorageCredential } from "@termloop/shared";
 import { storageApi } from "../api";
 
 export function useStorage() {

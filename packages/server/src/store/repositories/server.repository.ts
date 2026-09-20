@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm';
-import type { ServerConnection, ServerSystemInfo } from '@stacklane/shared';
+import type { ServerConnection, ServerSystemInfo } from '@termloop/shared';
 import { connections } from '../schema.js';
 import { BaseRepository } from './base.repository.js';
 

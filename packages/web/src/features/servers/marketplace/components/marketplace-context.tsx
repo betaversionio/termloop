@@ -18,11 +18,11 @@ import {
   getFileHandlers as getFileHandlersFn,
   type FileAssociationMap,
 } from "../lib/file-associations";
-import { buildSDK, type StackLaneSDK } from "../lib/sdk";
+import { buildSDK, type TermLoopSDK } from "../lib/sdk";
 import { loadMarketplaceApp, unloadMarketplaceApp } from "../lib/app-loader";
 import type { MarketplaceAppProps } from "../lib/sdk";
 
-const STORAGE_KEY = "stacklane-marketplace-installed";
+const STORAGE_KEY = "termloop-marketplace-installed";
 
 function loadInstalledApps(): InstalledApp[] {
   try {
@@ -65,7 +65,7 @@ export function MarketplaceProvider({ connectionId, children }: MarketplaceProvi
 
   const { data: catalog = [], isLoading: catalogLoading, error: catalogError } = useMarketplaceCatalog();
 
-  const sdk = useMemo<StackLaneSDK>(() => buildSDK(), []);
+  const sdk = useMemo<TermLoopSDK>(() => buildSDK(), []);
 
   // Rebuild association map when installed apps change
   const associationMap = useMemo<FileAssociationMap>(

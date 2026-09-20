@@ -8,7 +8,7 @@ import { AppearanceSheet } from './appearance-sheet';
 import { TerminalToolbar } from './terminal-toolbar';
 import type { InstallableApp } from '../lib/app-catalog.types';
 import { resolveInstallScript } from '../lib/resolve-install-script';
-import type { WsMessage } from '@stacklane/shared';
+import type { WsMessage } from '@termloop/shared';
 import { terminalThemesMap } from '../lib/terminal-themes';
 import { cn } from '@/lib/utils';
 

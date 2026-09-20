@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import type { RemoteFile, StackLaneClient } from "@stacklane/client";
+import type { RemoteFile, TermLoopClient } from "@termloop/client";
 
 function toFileType(type: RemoteFile["type"]): vscode.FileType {
   switch (type) {
@@ -23,11 +23,11 @@ function baseName(path: string): string {
   return trimmed.slice(trimmed.lastIndexOf("/") + 1);
 }
 
-export class StackLaneFsProvider implements vscode.FileSystemProvider {
+export class TermLoopFsProvider implements vscode.FileSystemProvider {
   private readonly emitter = new vscode.EventEmitter<vscode.FileChangeEvent[]>();
   readonly onDidChangeFile = this.emitter.event;
 
-  constructor(private readonly client: StackLaneClient) {}
+  constructor(private readonly client: TermLoopClient) {}
 
   watch(): vscode.Disposable {
     // No push-based change notifications from the daemon yet.

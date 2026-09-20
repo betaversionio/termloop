@@ -1,6 +1,6 @@
 import { Injectable, Inject } from "@nestjs/common";
 import { v4 as uuid } from "uuid";
-import type { ServerConnection, ServerConnectionInput } from "@stacklane/shared";
+import type { ServerConnection, ServerConnectionInput } from "@termloop/shared";
 import { StoreService } from "../store/store.service.js";
 import { SshService } from "../ssh/ssh.service.js";
 

@@ -19,7 +19,7 @@ import {
   ExplorerList,
 } from "@/components/shared/file-explorer";
 import type { FileItem, FolderItem } from "@/components/shared/file-explorer";
-import type { RemoteFile } from "@stacklane/shared";
+import type { RemoteFile } from "@termloop/shared";
 import {
   useFileList,
   useDeleteFile,

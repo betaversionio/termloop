@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { BucketObject } from "@stacklane/shared";
+import type { BucketObject } from "@termloop/shared";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";

@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import type { RemoteFile } from "@stacklane/shared";
+import type { RemoteFile } from "@termloop/shared";
 import { getFileIconUrl, getFolderIconUrl } from "@/features/servers/files/lib/file-icon";
 import { formatBytes } from "@/lib/utils";
 import { useWindowManager } from "../../../context/window-manager-context";

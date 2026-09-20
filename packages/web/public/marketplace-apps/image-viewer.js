@@ -1,6 +1,6 @@
-// Image Viewer — StackLane Marketplace App
+// Image Viewer — TermLoop Marketplace App
 (function () {
-  window.__stacklane_register("image-viewer", function (sdk) {
+  window.__termloop_register("image-viewer", function (sdk) {
     var React = sdk.React;
     var useState = React.useState;
     var useEffect = React.useEffect;

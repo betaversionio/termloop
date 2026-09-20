@@ -3,7 +3,7 @@
     "id": "image-viewer",
     "name": "Image Viewer",
     "description": "View images from your remote server with zoom and fit controls.",
-    "author": "StackLane",
+    "author": "TermLoop",
     "version": "1.0.0",
     "iconUrl": "/marketplace-icons/image-viewer.svg",
     "bundleUrl": "/marketplace-apps/image-viewer.js",

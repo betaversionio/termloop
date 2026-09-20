@@ -35,7 +35,7 @@ export async function startServer(port = 3721) {
   nestApp.useWebSocketAdapter(new WsAdapter(nestApp));
 
   await nestApp.listen(port);
-  console.log(`StackLane server running on http://localhost:${port}`);
+  console.log(`TermLoop server running on http://localhost:${port}`);
 
   return nestApp.getHttpServer();
 }

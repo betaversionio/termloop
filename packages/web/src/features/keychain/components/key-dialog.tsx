@@ -3,7 +3,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { SSHKey, SSHKeyInput } from '@stacklane/shared';
+import type { SSHKey, SSHKeyInput } from '@termloop/shared';
 import { useCreateKey, useUpdateKey } from '@/features/keychain';
 import { keychainApi } from '../api';
 import { CustomDialog } from '@/components/ui/custom-dialog';

@@ -14,7 +14,7 @@ import {
 import { FileInterceptor } from "@nestjs/platform-express";
 import type { Response } from "express";
 import archiver from "archiver";
-import type { ApiResponse, RemoteFile } from "@stacklane/shared";
+import type { ApiResponse, RemoteFile } from "@termloop/shared";
 import { SftpService } from "./sftp.service.js";
 
 @Controller("sftp")

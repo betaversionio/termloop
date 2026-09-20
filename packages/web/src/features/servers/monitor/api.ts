@@ -1,4 +1,4 @@
-import type { ServerStats, ServerSystemInfo } from "@stacklane/shared";
+import type { ServerStats, ServerSystemInfo } from "@termloop/shared";
 import { request } from "@/lib/api";
 
 export const statsApi = {

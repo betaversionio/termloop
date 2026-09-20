@@ -1,6 +1,6 @@
 import { Controller, Post, Get, Delete, Param, Body, Res, Inject } from "@nestjs/common";
 import type { Response } from "express";
-import type { ApiResponse } from "@stacklane/shared";
+import type { ApiResponse } from "@termloop/shared";
 import { TunnelService } from "./tunnel.service.js";
 
 interface TunnelBody {

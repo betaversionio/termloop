@@ -2,7 +2,7 @@ import { createContext, useContext, useCallback, useState, type ReactNode } from
 import { ConnectionDialog } from "./connection-dialog";
 import { ProviderDialog, type CloudProvider } from "./provider-dialog";
 import { SSHConfigImportDialog } from "./ssh-config-import-dialog";
-import type { ServerConnection } from "@stacklane/shared";
+import type { ServerConnection } from "@termloop/shared";
 
 interface ConnectionDialogContextValue {
   openAddDialog: () => void;

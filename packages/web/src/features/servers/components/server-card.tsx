@@ -25,7 +25,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useConnectionDialog } from "@/features/servers";
-import type { ServerConnection } from "@stacklane/shared";
+import type { ServerConnection } from "@termloop/shared";
 
 interface ServerCardProps {
   connection: ServerConnection;

@@ -1,6 +1,6 @@
 import { Injectable, Inject } from "@nestjs/common";
 import { Client } from "ssh2";
-import type { ServerStats, ServerSystemInfo } from "@stacklane/shared";
+import type { ServerStats, ServerSystemInfo } from "@termloop/shared";
 import { StoreService } from "../store/store.service.js";
 import { SshService } from "../ssh/ssh.service.js";
 

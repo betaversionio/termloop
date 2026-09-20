@@ -13,7 +13,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const program = new Command();
 
 program
-  .name("stacklane")
+  .name("termloop")
   .description("Browser-based OS-like UI for managing remote servers via SSH")
   .version("0.1.1")
   .option("-p, --port <number>", "Port to run on", "3721")
@@ -26,7 +26,7 @@ program
     const dim = (s: string) => `\x1b[2m${s}\x1b[0m`;
     const bold = (s: string) => `\x1b[1m${s}\x1b[0m`;
 
-    console.log(`\n  ${dim("Starting")} ${bold(cyan("StackLane"))}${dim("...")}\n`);
+    console.log(`\n  ${dim("Starting")} ${bold(cyan("TermLoop"))}${dim("...")}\n`);
 
     const existing = await findRunningDaemon();
     if (existing) {
@@ -76,7 +76,7 @@ program
     server.listen(port, () => {
       registerAsDaemon(port);
       const url = `http://localhost:${port}`;
-      console.log(`  ${green("Ready!")} ${bold("StackLane")} is running at ${cyan(url)}`);
+      console.log(`  ${green("Ready!")} ${bold("TermLoop")} is running at ${cyan(url)}`);
       console.log(`\n  ${dim("Press")} ${dim(bold("Ctrl+C"))} ${dim("to stop")}\n`);
 
       if (opts.open !== false) {

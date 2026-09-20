@@ -1,5 +1,5 @@
 import { Outlet, useParams, useOutletContext } from "react-router-dom";
-import type { ServerConnection } from "@stacklane/shared";
+import type { ServerConnection } from "@termloop/shared";
 import { useConnections } from "@/features/servers";
 
 interface ServerContext {

@@ -1,4 +1,4 @@
-export { findRunningDaemon } from "@stacklane/client";
+export { findRunningDaemon } from "@termloop/client";
 import { writeDaemonFile, removeDaemonFileIfOwned } from "./lockfile.js";
 
 /** Records this process as the daemon and cleans up the lockfile on exit. */

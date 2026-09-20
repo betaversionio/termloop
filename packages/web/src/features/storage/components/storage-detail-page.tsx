@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
-import type { BucketObject, StorageCredential } from "@stacklane/shared";
+import type { BucketObject, StorageCredential } from "@termloop/shared";
 import {
   useStorageBucketObjects,
   useDeleteObject,

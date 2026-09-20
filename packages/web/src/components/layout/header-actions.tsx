@@ -12,7 +12,7 @@ export function HeaderActions() {
         className="text-muted-foreground"
       >
         <a
-          href="https://stacklane.betaversion.io/docs"
+          href="https://termloop.betaversion.io/docs"
           target="_blank"
           rel="noopener noreferrer"
         >

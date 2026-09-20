@@ -1,4 +1,4 @@
-import type { Project, ProjectInput } from "@stacklane/shared";
+import type { Project, ProjectInput } from "@termloop/shared";
 import { request } from "@/lib/api";
 
 export const projectsApi = {

@@ -2,7 +2,7 @@ import { Cpu, Driver, Ram, Clock, RefreshCircle } from "iconsax-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatUptime } from "@/lib/utils";
-import type { ServerStats } from "@stacklane/shared";
+import type { ServerStats } from "@termloop/shared";
 import { useStats } from "../hooks/use-stats";
 import { StatCard } from "./stat-card";
 

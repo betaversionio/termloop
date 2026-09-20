@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm';
-import type { SSHKey } from '@stacklane/shared';
+import type { SSHKey } from '@termloop/shared';
 import { sshKeys } from '../schema.js';
 import { BaseRepository } from './base.repository.js';
 

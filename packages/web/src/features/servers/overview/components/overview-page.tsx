@@ -14,7 +14,7 @@ import {
   Hierarchy,
   Layer,
 } from "iconsax-react";
-import type { ServerStats, ServerSystemInfo, ServerConnection } from "@stacklane/shared";
+import type { ServerStats, ServerSystemInfo, ServerConnection } from "@termloop/shared";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn, formatUptime } from "@/lib/utils";

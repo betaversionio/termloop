@@ -1,11 +1,11 @@
 import * as vscode from "vscode";
-import type { ServerConnection, StackLaneClient } from "@stacklane/client";
+import type { ServerConnection, TermLoopClient } from "@termloop/client";
 
 export class ConnectionsTreeProvider implements vscode.TreeDataProvider<ServerConnection> {
   private readonly emitter = new vscode.EventEmitter<void>();
   readonly onDidChangeTreeData = this.emitter.event;
 
-  constructor(private readonly client: StackLaneClient) {}
+  constructor(private readonly client: TermLoopClient) {}
 
   refresh(): void {
     this.emitter.fire();
@@ -14,10 +14,10 @@ export class ConnectionsTreeProvider implements vscode.TreeDataProvider<ServerCo
   getTreeItem(connection: ServerConnection): vscode.TreeItem {
     const item = new vscode.TreeItem(connection.name, vscode.TreeItemCollapsibleState.None);
     item.description = `${connection.username}@${connection.host}:${connection.port}`;
-    item.contextValue = "stacklaneConnection";
+    item.contextValue = "termloopConnection";
     item.iconPath = new vscode.ThemeIcon("server");
     item.command = {
-      command: "stacklane.openTerminal",
+      command: "termloop.openTerminal",
       title: "Open Terminal",
       arguments: [connection],
     };

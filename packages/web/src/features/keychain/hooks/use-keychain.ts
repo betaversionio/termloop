@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { SSHKeyInput, SSHKey } from "@stacklane/shared";
+import type { SSHKeyInput, SSHKey } from "@termloop/shared";
 import { keychainApi } from "../api";
 
 export function useKeychain() {
