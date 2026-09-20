@@ -57,7 +57,7 @@ export function SettingsPage() {
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
               <p className="text-muted-foreground">Version</p>
-              <p className="font-medium">0.3.0</p>
+              <p className="font-medium">0.3.1</p>
             </div>
             <div>
               <p className="text-muted-foreground">Author</p>

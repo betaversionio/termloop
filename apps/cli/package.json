@@ -1,6 +1,6 @@
 {
   "name": "termloop",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Browser-based OS-like UI for managing remote servers via SSH",
   "author": {
     "name": "Satyam Lohiya",

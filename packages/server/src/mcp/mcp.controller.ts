@@ -2,7 +2,7 @@ import { Controller, Get, Post, Delete, Req, Res, Inject } from "@nestjs/common"
 import type { Request, Response } from "express";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { registerTermLoopTools } from "@termloop/client";
+import { registerTermLoopTools } from "./mcp-tools.js";
 import { ConnectionsService } from "../connections/connections.service.js";
 import { TerminalService } from "../terminal/terminal.service.js";
 import { SftpService } from "../sftp/sftp.service.js";
