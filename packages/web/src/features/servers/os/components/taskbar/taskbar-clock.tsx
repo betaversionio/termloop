@@ -9,7 +9,7 @@ export function TaskbarClock() {
   }, []);
 
   const time = now.toLocaleTimeString([], {
-    hour: "2-digit",
+    hour: "numeric",
     minute: "2-digit",
   });
 
@@ -20,11 +20,8 @@ export function TaskbarClock() {
   });
 
   return (
-    <div className="flex flex-col items-center leading-tight select-none">
-      <span className="text-[11px] font-medium text-white/85 tabular-nums">
-        {time}
-      </span>
-      <span className="text-[10px] text-white/50">{date}</span>
-    </div>
+    <span className="text-[13px] font-medium text-white/90 tabular-nums select-none whitespace-nowrap">
+      {date} {time}
+    </span>
   );
 }

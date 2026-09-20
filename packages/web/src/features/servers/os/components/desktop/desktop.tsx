@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useWindowManager } from "../../context/window-manager-context";
 import { useDesktopSettings } from "../../context/desktop-settings-context";
 import { useMarketplace } from "@/features/servers/marketplace/components/marketplace-context";
-import { TASKBAR_HEIGHT } from "../../lib/os-constants";
+import { TASKBAR_HEIGHT, MENU_BAR_HEIGHT } from "../../lib/os-constants";
 import { WALLPAPERS } from "../../lib/wallpapers";
 import { DesktopIcon } from "./desktop-icon";
 import { DesktopContextMenu } from "./desktop-context-menu";
@@ -21,7 +21,7 @@ function getDefaultPositions(
   containerHeight: number,
 ): Record<string, IconPosition> {
   const result: Record<string, IconPosition> = {};
-  const usableHeight = containerHeight - TASKBAR_HEIGHT;
+  const usableHeight = containerHeight - TASKBAR_HEIGHT - MENU_BAR_HEIGHT;
   const rows = Math.max(1, Math.floor(usableHeight / GRID_CELL));
 
   let col = 0;
@@ -32,7 +32,7 @@ function getDefaultPositions(
     } else {
       result[appType] = {
         x: col * GRID_CELL,
-        y: row * GRID_CELL,
+        y: MENU_BAR_HEIGHT + row * GRID_CELL,
       };
       row++;
       if (row >= rows) {

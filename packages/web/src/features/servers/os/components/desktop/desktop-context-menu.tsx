@@ -88,7 +88,7 @@ export function DesktopContextMenu({
   }));
 
   const items: MenuItem[] = [
-    { kind: "action", label: "Open This PC", onClick: () => onOpenApp("file-manager") },
+    { kind: "action", label: "Open Finder", onClick: () => onOpenApp("file-manager") },
     { kind: "action", label: "Open Terminal", onClick: () => onOpenApp("terminal") },
     { kind: "action", label: "Open Browser", onClick: () => onOpenApp("browser") },
     { kind: "separator" },

@@ -3,7 +3,7 @@ import type { WindowState } from "../../types/window";
 import { useWindowManager } from "../../context/window-manager-context";
 import { useWindowResize, RESIZE_EDGES } from "../../hooks/use-window-resize";
 import { WindowTitleBar } from "./window-title-bar";
-import { TASKBAR_HEIGHT } from "../../lib/os-constants";
+import { TASKBAR_HEIGHT, MENU_BAR_HEIGHT } from "../../lib/os-constants";
 import { cn } from "@/lib/utils";
 
 interface WindowFrameProps {
@@ -39,7 +39,7 @@ export function WindowFrame({ window: win, children }: WindowFrameProps) {
   const style: React.CSSProperties = win.minimized
     ? { position: "absolute", left: 0, top: 0, width: 0, height: 0, overflow: "hidden", pointerEvents: "none", opacity: 0 }
     : win.maximized
-      ? { position: "absolute", top: 0, left: 0, right: 0, bottom: TASKBAR_HEIGHT, zIndex: win.zIndex }
+      ? { position: "absolute", top: MENU_BAR_HEIGHT, left: 0, right: 0, bottom: TASKBAR_HEIGHT, zIndex: win.zIndex }
       : {
           position: "absolute",
           left: 0,
@@ -63,7 +63,7 @@ export function WindowFrame({ window: win, children }: WindowFrameProps) {
       onPointerDown={() => dispatch({ type: "FOCUS", id: win.id })}
       onAnimationEnd={onAnimationEnd}
     >
-      <WindowTitleBar window={win} containerRef={containerRef} onClose={handleClose} />
+      <WindowTitleBar window={win} onClose={handleClose} />
       <div className="flex-1 overflow-hidden">{children}</div>
 
       {/* Resize handles */}

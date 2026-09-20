@@ -1,14 +1,10 @@
-import { ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { useWindowManager } from "../../context/window-manager-context";
 import { useMarketplace } from "@/features/servers/marketplace/components/marketplace-context";
 import { TASKBAR_HEIGHT } from "../../lib/os-constants";
 import type { AppType } from "../../types/window";
 import { DockIcon } from "./dock-icon";
-import { TaskbarClock } from "./taskbar-clock";
 
 export function Taskbar() {
-  const navigate = useNavigate();
   const { state, dispatch } = useWindowManager();
   const { dockApps } = useMarketplace();
 
@@ -43,45 +39,44 @@ export function Taskbar() {
     }
   };
 
+  const runningTypes = [...new Set(state.windows.map((w) => w.appType))];
+  // Pinned apps show even when closed (like a real dock); anything running but not
+  // pinned gets appended after a divider, matching macOS's temporary-dock-icon behavior.
+  const extraRunning = runningTypes.filter((t) => !dockApps.includes(t));
+
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 flex items-center border-t border-white/[0.08]"
+      className="fixed bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-[6px] px-2 rounded-2xl border border-white/[0.1]"
       style={{
         height: TASKBAR_HEIGHT,
         zIndex: 9999,
-        backgroundColor: "rgba(20, 20, 20, 0.65)",
+        backgroundColor: "rgba(20, 20, 20, 0.55)",
         backdropFilter: "blur(50px) saturate(1.7)",
         WebkitBackdropFilter: "blur(50px) saturate(1.7)",
+        boxShadow: "0 8px 30px rgba(0,0,0,0.35), inset 0 0.5px 0 rgba(255,255,255,0.08)",
       }}
     >
-      {/* Left — back button */}
-      <div className="flex items-center px-3 shrink-0">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-white/50 hover:text-white hover:bg-white/[0.08] transition-colors duration-150"
-          title="Exit OS view"
-        >
-          <ArrowLeft className="h-[18px] w-[18px]" />
-        </button>
-      </div>
+      {dockApps.map((appType) => (
+        <DockIcon
+          key={appType}
+          appType={appType}
+          isRunning={runningTypes.includes(appType)}
+          isActive={appType === activeAppType}
+          onClick={() => handleAppClick(appType)}
+        />
+      ))}
 
-      {/* Center — only open app icons */}
-      <div className="flex-1 flex items-center justify-center gap-[6px]">
-        {[...new Set(state.windows.map((w) => w.appType))].map((appType) => (
-          <DockIcon
-            key={appType}
-            appType={appType}
-            isRunning={true}
-            isActive={appType === activeAppType}
-            onClick={() => handleAppClick(appType)}
-          />
-        ))}
-      </div>
+      {extraRunning.length > 0 && <div className="self-center w-px h-8 mx-1 bg-white/[0.15]" />}
 
-      {/* Right — clock */}
-      <div className="flex items-center px-4 shrink-0">
-        <TaskbarClock />
-      </div>
+      {extraRunning.map((appType) => (
+        <DockIcon
+          key={appType}
+          appType={appType}
+          isRunning={true}
+          isActive={appType === activeAppType}
+          onClick={() => handleAppClick(appType)}
+        />
+      ))}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useReducer, useRef, type ReactNode } from "react";
 import type { WindowState, WindowAction } from "../types/window";
-import { appRegistry, getDefaultBounds, TASKBAR_HEIGHT } from "../lib/os-constants";
+import { appRegistry, getDefaultBounds, TASKBAR_HEIGHT, MENU_BAR_HEIGHT } from "../lib/os-constants";
 
 interface WindowManagerState {
   windows: WindowState[];
@@ -102,7 +102,12 @@ function windowReducer(
                 maximized: true,
                 minimized: false,
                 prevBounds: w.bounds,
-                bounds: { x: 0, y: 0, width: window.innerWidth, height: window.innerHeight - TASKBAR_HEIGHT },
+                bounds: {
+                  x: 0,
+                  y: MENU_BAR_HEIGHT,
+                  width: window.innerWidth,
+                  height: window.innerHeight - TASKBAR_HEIGHT - MENU_BAR_HEIGHT,
+                },
                 zIndex: state.nextZIndex,
               }
             : w

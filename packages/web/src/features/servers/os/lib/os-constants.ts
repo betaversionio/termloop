@@ -13,7 +13,7 @@ export interface AppDefinition {
 export const BUILTIN_REGISTRY: Record<BuiltInAppType, AppDefinition> = {
   'file-manager': {
     type: 'file-manager',
-    title: 'This PC',
+    title: 'Finder',
     icon: 'folder-open',
     iconUrl: '/app-icons/finder.png',
     defaultSize: { width: 900, height: 600 },
@@ -102,6 +102,7 @@ export const BUILTIN_DOCK_APPS: BuiltInAppType[] = [
 export const TASKBAR_HEIGHT = 52;
 export const WINDOW_STAGGER = 30;
 export const TITLE_BAR_HEIGHT = 36;
+export const MENU_BAR_HEIGHT = 28;
 
 export const SIDEBAR_SHORTCUTS = [
   { label: 'Root', path: '/' },
