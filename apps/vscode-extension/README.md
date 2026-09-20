@@ -1,4 +1,4 @@
-# TermLoop for VS Code
+# SSH Agent - Termloop
 
 Manage your remote SSH servers without leaving VS Code — connections list, an integrated terminal, and remote file browsing that opens as normal editor tabs.
 
