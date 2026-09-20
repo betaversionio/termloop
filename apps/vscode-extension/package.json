@@ -62,7 +62,13 @@
       },
       {
         "command": "termloop.browseFiles",
-        "title": "TermLoop: Browse Files"
+        "title": "TermLoop: Browse Files",
+        "icon": "$(folder-opened)"
+      },
+      {
+        "command": "termloop.openConnectionInBrowser",
+        "title": "TermLoop: Open Connection in Browser",
+        "icon": "$(globe)"
       },
       {
         "command": "termloop.copyMcpConnectCommand",
@@ -119,7 +125,13 @@
         },
         {
           "command": "termloop.browseFiles",
-          "when": "view == termloopConnections && viewItem == termloopConnection"
+          "when": "view == termloopConnections && viewItem == termloopConnection",
+          "group": "inline"
+        },
+        {
+          "command": "termloop.openConnectionInBrowser",
+          "when": "view == termloopConnections && viewItem == termloopConnection",
+          "group": "inline"
         },
         {
           "command": "termloop.attachSessionTerminal",

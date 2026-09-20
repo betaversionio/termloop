@@ -87,6 +87,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       });
     }),
 
+    vscode.commands.registerCommand("termloop.openConnectionInBrowser", (connection: ServerConnection) => {
+      vscode.env.openExternal(vscode.Uri.parse(`${baseUrl}/server/${connection.id}/terminal`));
+    }),
+
     vscode.commands.registerCommand("termloop.copyMcpConnectCommand", async () => {
       const command = `claude mcp add --transport http termloop ${baseUrl}/mcp`;
       await vscode.env.clipboard.writeText(command);
