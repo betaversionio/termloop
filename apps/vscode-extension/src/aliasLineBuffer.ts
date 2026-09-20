@@ -7,6 +7,9 @@ export interface FeedResult {
   toRemote: string;
   /** Text to show locally in the terminal pane only (never sent to the remote) — e.g. an error. */
   toLocal?: string;
+  /** A localScript alias was submitted — the caller must upload it asynchronously and write the
+   * resulting command to the remote channel itself once ready (feed() can't await anything). */
+  pendingLocalScript?: { alias: string; localScript: string; args: string };
 }
 
 /**
@@ -27,6 +30,7 @@ export class AliasLineBuffer {
   feed(data: string, lookup: AliasLookup): FeedResult {
     let toRemote = "";
     let toLocal = "";
+    let pendingLocalScript: FeedResult["pendingLocalScript"];
 
     for (const ch of data) {
       if (ch === "\r" || ch === "\n") {
@@ -39,10 +43,11 @@ export class AliasLineBuffer {
         if (result?.command !== undefined) {
           toRemote += "\x15" + result.command + (rest ? " " + rest : "") + "\r";
         } else if (result?.localScript !== undefined) {
-          // Running a localScript alias needs an async upload first — can't happen inline as
-          // keystrokes arrive. Reject here rather than sending the literal "/alias" text.
+          // Uploading needs to be async — clear the remote's buffered line now (so it doesn't
+          // execute the literal "/alias" text) and let the caller finish the job once ready.
           toRemote += "\x15";
-          toLocal += `\r\nTermLoop: "/${word.slice(1)}" runs a local script — use the Command Palette's "TermLoop: Insert Command Alias" instead of typing it.\r\n`;
+          toLocal += `\r\nTermLoop: uploading ${result.localScript}...\r\n`;
+          pendingLocalScript = { alias: word.slice(1), localScript: result.localScript, args: rest };
         } else if (result?.error !== undefined) {
           toRemote += "\x15";
           toLocal += `\r\n${result.error}\r\n`;
@@ -71,6 +76,6 @@ export class AliasLineBuffer {
       }
     }
 
-    return toLocal ? { toRemote, toLocal } : { toRemote };
+    return { toRemote, ...(toLocal ? { toLocal } : {}), ...(pendingLocalScript ? { pendingLocalScript } : {}) };
   }
 }

@@ -1,12 +1,13 @@
 import * as vscode from "vscode";
 import type { ServerConnection, TermLoopClient, TerminalHandle } from "@termloop/client";
-import { resolveAlias, type CommandManifest } from "./commandAliases.js";
+import { resolveAlias, type LoadedManifest } from "./commandAliases.js";
 import { AliasLineBuffer } from "./aliasLineBuffer.js";
+import { uploadLocalScript } from "./localScriptRunner.js";
 
 export function openTerminal(
   client: TermLoopClient,
   connection: ServerConnection,
-  getManifest: () => CommandManifest,
+  getManifest: () => LoadedManifest,
   sessionId?: string
 ): vscode.Terminal {
   const writeEmitter = new vscode.EventEmitter<string>();
@@ -16,11 +17,35 @@ export function openTerminal(
   let handle: TerminalHandle | undefined;
   let pendingInput = "";
 
+  const writeToRemote = (text: string) => {
+    if (handle) {
+      handle.write(text);
+    } else {
+      pendingInput += text;
+    }
+  };
+
+  const runPendingLocalScript = async (pending: { alias: string; localScript: string; args: string }) => {
+    const { folder } = getManifest();
+    if (!folder) {
+      writeEmitter.fire(`\r\nTermLoop: can't resolve local script — no workspace folder found.\r\n`);
+      return;
+    }
+    try {
+      const cmd = await uploadLocalScript(client, connection, folder, pending.alias, pending.localScript, pending.args);
+      writeToRemote(cmd + "\r");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      writeEmitter.fire(`\r\nTermLoop: failed to upload "${pending.localScript}" — ${message}\r\n`);
+    }
+  };
+
   const feedInput = (data: string): string => {
-    const { toRemote, toLocal } = lineBuffer.feed(data, (alias) =>
-      resolveAlias(getManifest(), alias, connection)
+    const { toRemote, toLocal, pendingLocalScript } = lineBuffer.feed(data, (alias) =>
+      resolveAlias(getManifest().manifest, alias, connection)
     );
     if (toLocal) writeEmitter.fire(toLocal);
+    if (pendingLocalScript) void runPendingLocalScript(pendingLocalScript);
     return toRemote;
   };
 
@@ -53,12 +78,7 @@ export function openTerminal(
     },
     handleInput(data) {
       const toRemote = feedInput(data);
-      if (!toRemote) return;
-      if (handle) {
-        handle.write(toRemote);
-      } else {
-        pendingInput += toRemote;
-      }
+      if (toRemote) writeToRemote(toRemote);
     },
     setDimensions(dimensions) {
       handle?.resize(dimensions.columns, dimensions.rows);

@@ -7,6 +7,7 @@ import { openTerminal } from "./terminal.js";
 import { TermLoopFsProvider } from "./fileSystemProvider.js";
 import { loadManifest, watchManifest, resolveAlias, type CommandManifest } from "./commandAliases.js";
 import { openOsDesktop } from "./osWebview.js";
+import { uploadLocalScript } from "./localScriptRunner.js";
 
 async function promptForConnection(): Promise<ServerConnectionInput | undefined> {
   const name = await vscode.window.showInputBox({ prompt: "Connection name" });
@@ -93,7 +94,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     }),
 
     vscode.commands.registerCommand("termloop.openTerminal", (connection: ServerConnection) => {
-      const terminal = openTerminal(client, connection, () => commandManifest);
+      const terminal = openTerminal(client, connection, () => ({ manifest: commandManifest, folder: manifestFolder }));
       terminalConnections.set(terminal, connection);
     }),
 
@@ -122,7 +123,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
     vscode.commands.registerCommand("termloop.attachSessionTerminal", async (session: SessionItem) => {
       const connection = await client.connections.get(session.connectionId);
-      const terminal = openTerminal(client, connection, () => commandManifest, session.sessionId);
+      const terminal = openTerminal(
+        client,
+        connection,
+        () => ({ manifest: commandManifest, folder: manifestFolder }),
+        session.sessionId
+      );
       terminalConnections.set(terminal, connection);
     }),
 
@@ -168,18 +174,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
           return;
         }
         try {
-          const scriptUri = vscode.Uri.joinPath(manifestFolder, result.localScript);
-          const bytes = await vscode.workspace.fs.readFile(scriptUri);
-          const content = new TextDecoder().decode(bytes);
-          const safeName = alias.replace(/[^a-zA-Z0-9_-]/g, "_");
-          const remotePath = `/tmp/.termloop-${safeName}-${Date.now()}.sh`;
-
-          await vscode.window.withProgress(
+          const cmd = await vscode.window.withProgress(
             { location: vscode.ProgressLocation.Notification, title: `TermLoop: uploading ${result.localScript}...` },
-            () => client.sftp.writeFile(connection.id, remotePath, content)
+            () => uploadLocalScript(client, connection, manifestFolder!, alias, result.localScript!)
           );
-
-          terminal.sendText(`bash "${remotePath}"; rm -f "${remotePath}"`, true);
+          terminal.sendText(cmd, true);
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
           vscode.window.showErrorMessage(`TermLoop: failed to upload "${result.localScript}" — ${message}`);
