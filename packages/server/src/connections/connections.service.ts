@@ -44,7 +44,7 @@ export class ConnectionsService {
   }
 
   delete(id: string): boolean {
-    this.ssh.disconnectSSH(id);
+    this.ssh.forceDisconnect(id);
     return this.store.servers.delete(id);
   }
 
@@ -75,10 +75,10 @@ export class ConnectionsService {
     try {
       const client = await this.ssh.createSSHConnection(tempConnection);
       client.end();
-      this.ssh.disconnectSSH(tempConnection.id);
+      this.ssh.forceDisconnect(tempConnection.id);
       return { connected: true };
     } catch (err: unknown) {
-      this.ssh.disconnectSSH(tempConnection.id);
+      this.ssh.forceDisconnect(tempConnection.id);
       const error = err instanceof Error ? err.message : "Connection failed";
       return { error };
     }

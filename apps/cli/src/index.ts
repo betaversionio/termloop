@@ -5,6 +5,7 @@ import open from "open";
 import path from "path";
 import { fileURLToPath } from "url";
 import express, { type Request, type Response, type NextFunction } from "express";
+import { findRunningDaemon, registerAsDaemon } from "./daemon/discover.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -25,6 +26,16 @@ program
     const bold = (s: string) => `\x1b[1m${s}\x1b[0m`;
 
     console.log(`\n  ${dim("Starting")} ${bold(cyan("StackLane"))}${dim("...")}\n`);
+
+    const existing = await findRunningDaemon();
+    if (existing) {
+      const url = `http://localhost:${existing.port}`;
+      console.log(`  ${green("Already running")} at ${cyan(url)}\n`);
+      if (opts.open !== false) {
+        open(url);
+      }
+      return;
+    }
 
     // Dynamic import from bundled server directory (inside dist/)
     const serverModule = "./server/main.js";
@@ -47,7 +58,23 @@ program
 
     await init();
 
+    server.once("error", async (err: NodeJS.ErrnoException) => {
+      if (err.code === "EADDRINUSE") {
+        // Another process won the race to become the daemon since our check above.
+        const raced = await findRunningDaemon();
+        if (raced) {
+          const url = `http://localhost:${raced.port}`;
+          console.log(`  ${green("Already running")} at ${cyan(url)}\n`);
+          if (opts.open !== false) open(url);
+          return;
+        }
+      }
+      console.error(`  Failed to start: ${err.message}`);
+      process.exit(1);
+    });
+
     server.listen(port, () => {
+      registerAsDaemon(port);
       const url = `http://localhost:${port}`;
       console.log(`  ${green("Ready!")} ${bold("StackLane")} is running at ${cyan(url)}`);
       console.log(`\n  ${dim("Press")} ${dim(bold("Ctrl+C"))} ${dim("to stop")}\n`);
@@ -56,6 +83,15 @@ program
         open(url);
       }
     });
+  });
+
+program
+  .command("mcp")
+  .description("Start the MCP server so an AI CLI can drive your SSH connections")
+  .option("-p, --port <number>", "Daemon port to use if one needs to be started", "3721")
+  .action(async (opts) => {
+    const { runMcpServer } = await import("./mcp/server.js");
+    await runMcpServer(parseInt(opts.port));
   });
 
 program.parse();

@@ -7,11 +7,37 @@ import { StoreService } from "../store/store.service.js";
 @Injectable()
 export class SshService {
   private activeConnections = new Map<string, Client>();
+  private consumers = new Map<string, Set<string>>();
 
   constructor(@Inject(StoreService) private readonly store: StoreService) {}
 
   getSSHClient(connectionId: string): Client | undefined {
     return this.activeConnections.get(connectionId);
+  }
+
+  /** Registers a consumer (e.g. a terminal shell channel) as using this connection's client. */
+  acquire(connectionId: string, consumerId: string): void {
+    let set = this.consumers.get(connectionId);
+    if (!set) {
+      set = new Set();
+      this.consumers.set(connectionId, set);
+    }
+    set.add(consumerId);
+  }
+
+  /** Releases a consumer's claim; the underlying client only disconnects once no consumers remain. */
+  release(connectionId: string, consumerId: string): void {
+    const set = this.consumers.get(connectionId);
+    if (!set) return;
+    set.delete(consumerId);
+    if (set.size === 0) {
+      this.consumers.delete(connectionId);
+      const client = this.activeConnections.get(connectionId);
+      if (client) {
+        client.end();
+        this.activeConnections.delete(connectionId);
+      }
+    }
   }
 
   private resolveKeychainKey(config: ServerConnection): ServerConnection {
@@ -86,12 +112,14 @@ export class SshService {
     });
   }
 
-  disconnectSSH(connectionId: string) {
+  /** Unconditionally tears down a connection's client, regardless of active consumers. */
+  forceDisconnect(connectionId: string) {
     const client = this.activeConnections.get(connectionId);
     if (client) {
       client.end();
       this.activeConnections.delete(connectionId);
     }
+    this.consumers.delete(connectionId);
   }
 
   disconnectAll() {
@@ -99,5 +127,6 @@ export class SshService {
       client.end();
       this.activeConnections.delete(id);
     }
+    this.consumers.clear();
   }
 }

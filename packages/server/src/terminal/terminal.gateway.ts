@@ -2,20 +2,14 @@ import { Inject } from "@nestjs/common";
 import { WebSocketGateway, OnGatewayConnection } from "@nestjs/websockets";
 import type { WebSocket } from "ws";
 import type { WsMessage } from "@stacklane/shared";
-import type { ClientChannel } from "ssh2";
-import { StoreService } from "../store/store.service.js";
-import { SshService } from "../ssh/ssh.service.js";
+import { TerminalService } from "./terminal.service.js";
 
 @WebSocketGateway({ path: "/ws/terminal" })
 export class TerminalGateway implements OnGatewayConnection {
-  constructor(
-    @Inject(StoreService) private readonly store: StoreService,
-    @Inject(SshService) private readonly ssh: SshService
-  ) {}
+  constructor(@Inject(TerminalService) private readonly terminal: TerminalService) {}
 
   handleConnection(client: WebSocket) {
-    let stream: ClientChannel | null = null;
-    let currentConnectionId: string | null = null;
+    let channelId: string | null = null;
 
     client.on("message", async (raw: Buffer) => {
       try {
@@ -23,66 +17,40 @@ export class TerminalGateway implements OnGatewayConnection {
 
         switch (msg.type) {
           case "terminal:input": {
-            if (stream && msg.data) {
-              stream.write(msg.data);
-            } else if (!stream && msg.connectionId) {
-              currentConnectionId = msg.connectionId;
-              const config = this.store.servers.findById(msg.connectionId);
-              if (!config) {
-                sendMessage(client, {
-                  type: 'terminal:error',
-                  connectionId: msg.connectionId,
-                  error: 'Connection not found',
-                });
-                return;
-              }
-
+            if (channelId && msg.data) {
+              this.terminal.write(channelId, msg.data);
+            } else if (!channelId && msg.connectionId) {
               try {
-                const sshClient = await this.ssh.createSSHConnection(config);
-                sshClient.shell(
-                  {
-                    term: "xterm-256color",
-                    cols: msg.cols || 80,
-                    rows: msg.rows || 24,
-                  },
-                  (err, sh) => {
-                    if (err) {
-                      sendMessage(client, {
-                        type: "terminal:error",
-                        connectionId: msg.connectionId,
-                        error: err.message,
-                      });
-                      return;
-                    }
+                const opened = await this.terminal.openShell(msg.connectionId, {
+                  cols: msg.cols || 80,
+                  rows: msg.rows || 24,
+                });
+                channelId = opened.channelId;
 
-                    stream = sh;
+                sendMessage(client, {
+                  type: "terminal:connected",
+                  connectionId: msg.connectionId,
+                });
 
-                    sendMessage(client, {
-                      type: "terminal:connected",
-                      connectionId: msg.connectionId,
-                    });
+                this.terminal.onData(channelId, (data) => {
+                  sendMessage(client, {
+                    type: "terminal:output",
+                    connectionId: msg.connectionId,
+                    data,
+                  });
+                });
 
-                    sh.on("data", (data: Buffer) => {
-                      sendMessage(client, {
-                        type: "terminal:output",
-                        connectionId: msg.connectionId,
-                        data: data.toString("utf-8"),
-                      });
-                    });
+                this.terminal.onClose(channelId, () => {
+                  sendMessage(client, {
+                    type: "terminal:close",
+                    connectionId: msg.connectionId,
+                  });
+                  channelId = null;
+                });
 
-                    sh.on("close", () => {
-                      sendMessage(client, {
-                        type: "terminal:close",
-                        connectionId: msg.connectionId,
-                      });
-                      stream = null;
-                    });
-
-                    if (msg.data) {
-                      sh.write(msg.data);
-                    }
-                  }
-                );
+                if (msg.data) {
+                  this.terminal.write(channelId, msg.data);
+                }
               } catch (err: unknown) {
                 const error = err instanceof Error ? err.message : "SSH connection failed";
                 sendMessage(client, {
@@ -96,8 +64,8 @@ export class TerminalGateway implements OnGatewayConnection {
           }
 
           case "terminal:resize": {
-            if (stream && msg.cols && msg.rows) {
-              stream.setWindow(msg.rows, msg.cols, 0, 0);
+            if (channelId && msg.cols && msg.rows) {
+              this.terminal.resize(channelId, msg.cols, msg.rows);
             }
             break;
           }
@@ -108,12 +76,9 @@ export class TerminalGateway implements OnGatewayConnection {
     });
 
     client.on("close", () => {
-      if (stream) {
-        stream.close();
-        stream = null;
-      }
-      if (currentConnectionId) {
-        this.ssh.disconnectSSH(currentConnectionId);
+      if (channelId) {
+        this.terminal.close(channelId);
+        channelId = null;
       }
     });
   }
