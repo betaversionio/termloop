@@ -2,7 +2,7 @@
   "name": "termloop-vscode",
   "displayName": "SSH Agent - Termloop",
   "description": "Manage remote SSH servers, terminals, and files without leaving VS Code",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "publisher": "BetaVersion",
   "license": "MIT",
