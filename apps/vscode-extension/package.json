@@ -1,0 +1,93 @@
+{
+  "name": "stacklane-vscode",
+  "displayName": "StackLane",
+  "description": "Manage remote SSH servers, terminals, and files without leaving VS Code",
+  "version": "0.1.0",
+  "private": true,
+  "publisher": "BetaVersion",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/betaversionio/stacklane.git",
+    "directory": "apps/vscode-extension"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "views": {
+      "explorer": [
+        {
+          "id": "stacklaneConnections",
+          "name": "StackLane Connections"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "stacklane.refreshConnections",
+        "title": "StackLane: Refresh Connections",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "stacklane.addConnection",
+        "title": "StackLane: Add Connection",
+        "icon": "$(add)"
+      },
+      {
+        "command": "stacklane.openTerminal",
+        "title": "StackLane: Open Terminal"
+      },
+      {
+        "command": "stacklane.browseFiles",
+        "title": "StackLane: Browse Files"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "stacklane.addConnection",
+          "when": "view == stacklaneConnections",
+          "group": "navigation"
+        },
+        {
+          "command": "stacklane.refreshConnections",
+          "when": "view == stacklaneConnections",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "stacklane.openTerminal",
+          "when": "view == stacklaneConnections && viewItem == stacklaneConnection"
+        },
+        {
+          "command": "stacklane.browseFiles",
+          "when": "view == stacklaneConnections && viewItem == stacklaneConnection"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "dev": "node esbuild.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@stacklane/client": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.28.2",
+    "typescript": "^5.7.0"
+  }
+}

@@ -1,5 +1,15 @@
 import WebSocket from "ws";
-import type { ApiResponse, ServerConnection, ServerStats, ServerSystemInfo, WsMessage } from "@stacklane/shared";
+import type {
+  ApiResponse,
+  RemoteFile,
+  ServerConnection,
+  ServerConnectionInput,
+  ServerStats,
+  ServerSystemInfo,
+  WsMessage,
+} from "@stacklane/shared";
+
+export type { RemoteFile, ServerConnection, ServerConnectionInput, ServerStats, ServerSystemInfo };
 
 export interface TerminalHandle {
   write(data: string): void;
@@ -13,14 +23,19 @@ export interface StackLaneClient {
   connections: {
     list(): Promise<ServerConnection[]>;
     get(id: string): Promise<ServerConnection>;
+    create(input: ServerConnectionInput): Promise<ServerConnection>;
     test(id: string): Promise<{ connected: boolean }>;
   };
   terminal: {
     open(connectionId: string, opts: { cols: number; rows: number }): Promise<TerminalHandle>;
   };
   sftp: {
+    list(connectionId: string, path: string): Promise<RemoteFile[]>;
     readFile(connectionId: string, path: string): Promise<string>;
     writeFile(connectionId: string, path: string, content: string): Promise<void>;
+    mkdir(connectionId: string, path: string): Promise<void>;
+    remove(connectionId: string, path: string, isDir: boolean): Promise<void>;
+    rename(connectionId: string, oldPath: string, newPath: string): Promise<void>;
   };
   stats: {
     get(connectionId: string): Promise<ServerStats>;
@@ -48,6 +63,11 @@ export function createClient(opts: { baseUrl: string }): StackLaneClient {
     connections: {
       list: () => request<ServerConnection[]>("/connections"),
       get: (id) => request<ServerConnection>(`/connections/${id}`),
+      create: (input) =>
+        request<ServerConnection>("/connections", {
+          method: "POST",
+          body: JSON.stringify(input),
+        }),
       test: (id) => request<{ connected: boolean }>(`/connections/${id}/test`, { method: "POST" }),
     },
 
@@ -103,6 +123,8 @@ export function createClient(opts: { baseUrl: string }): StackLaneClient {
     },
 
     sftp: {
+      list: (connectionId, path) =>
+        request<RemoteFile[]>(`/sftp/${connectionId}/list?path=${encodeURIComponent(path)}`),
       readFile: async (connectionId, path) => {
         const data = await request<{ content: string }>(
           `/sftp/${connectionId}/read?path=${encodeURIComponent(path)}`
@@ -113,6 +135,21 @@ export function createClient(opts: { baseUrl: string }): StackLaneClient {
         request<void>(`/sftp/${connectionId}/write`, {
           method: "POST",
           body: JSON.stringify({ path, content }),
+        }),
+      mkdir: (connectionId, path) =>
+        request<void>(`/sftp/${connectionId}/mkdir`, {
+          method: "POST",
+          body: JSON.stringify({ path }),
+        }),
+      remove: (connectionId, path, isDir) =>
+        request<void>(
+          `/sftp/${connectionId}/delete?path=${encodeURIComponent(path)}&isDir=${isDir}`,
+          { method: "DELETE" }
+        ),
+      rename: (connectionId, oldPath, newPath) =>
+        request<void>(`/sftp/${connectionId}/rename`, {
+          method: "POST",
+          body: JSON.stringify({ oldPath, newPath }),
         }),
     },
 

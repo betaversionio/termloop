@@ -249,6 +249,34 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3
 
+  apps/create-stacklane-app:
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.13
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
+  apps/vscode-extension:
+    dependencies:
+      '@stacklane/client':
+        specifier: workspace:*
+        version: link:../../packages/client-sdk
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.13
+      '@types/vscode':
+        specifier: ^1.85.0
+        version: 1.138.0
+      esbuild:
+        specifier: ^0.28.2
+        version: 0.28.2
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
   packages/client-sdk:
     dependencies:
       '@stacklane/shared':
@@ -264,15 +292,6 @@ importers:
       typescript:
         specifier: ^5.7.0
         version: 5.9.3
-
-  packages/create-stacklane-app:
-    devDependencies:
-      '@types/node':
-        specifier: ^22.0.0
-        version: 22.19.13
-      typescript:
-        specifier: ^6.0.3
-        version: 6.0.3
 
   packages/react:
     devDependencies:
@@ -2579,6 +2598,9 @@ packages:
   '@types/uuid@11.0.0':
     resolution: {integrity: sha512-HVyk8nj2m+jcFRNazzqyVKiZezyhDKrGUA3jlEcg/nZ6Ms+qHwocba1Y/AaVaznJTAM9xpdFSh+ptbNrhOGvZA==}
     deprecated: This is a stub types definition. uuid provides its own type definitions, so you do not need this installed.
+
+  '@types/vscode@1.138.0':
+    resolution: {integrity: sha512-DhlvrucJa8n6EHst7qQcXOcjLKs/VRTQy55plLO+RN74jonYsr/t9dd66zBnAyz1tpDig0okQAxuoPHpVNje2g==}
 
   '@types/ws@8.18.1':
     resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
@@ -6181,6 +6203,8 @@ snapshots:
   '@types/uuid@11.0.0':
     dependencies:
       uuid: 14.0.2
+
+  '@types/vscode@1.138.0': {}
 
   '@types/ws@8.18.1':
     dependencies:

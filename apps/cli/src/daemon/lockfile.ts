@@ -1,24 +1,10 @@
 import fs from "fs";
 import os from "os";
 import path from "path";
-
-export interface DaemonInfo {
-  pid: number;
-  port: number;
-  startedAt: number;
-}
+import { type DaemonInfo, readDaemonFile } from "@stacklane/client";
 
 const DATA_DIR = path.join(os.homedir(), ".stacklane");
 const DAEMON_FILE = path.join(DATA_DIR, "daemon.json");
-
-export function readDaemonFile(): DaemonInfo | null {
-  try {
-    const raw = fs.readFileSync(DAEMON_FILE, "utf-8");
-    return JSON.parse(raw) as DaemonInfo;
-  } catch {
-    return null;
-  }
-}
 
 export function writeDaemonFile(info: DaemonInfo): void {
   if (!fs.existsSync(DATA_DIR)) {
