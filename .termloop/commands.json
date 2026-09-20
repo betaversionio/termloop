@@ -9,5 +9,9 @@
       "default": "echo would-restart-default-service",
       "Exostudy": "echo would-restart-exostudy-service"
     }
+  },
+  "dummy": {
+    "description": "Upload and run a dummy test script (localScript demo)",
+    "localScript": ".termloop/dummy.sh"
   }
 }
