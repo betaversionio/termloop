@@ -81,10 +81,8 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
-  "dependencies": {
-    "@termloop/client": "workspace:*"
-  },
   "devDependencies": {
+    "@termloop/client": "workspace:*",
     "@types/node": "^22.0.0",
     "@types/vscode": "^1.85.0",
     "esbuild": "^0.28.2",

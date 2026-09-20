@@ -265,11 +265,10 @@ importers:
         version: 6.0.3
 
   apps/vscode-extension:
-    dependencies:
+    devDependencies:
       '@termloop/client':
         specifier: workspace:*
         version: link:../../packages/client-sdk
-    devDependencies:
       '@types/node':
         specifier: ^22.0.0
         version: 22.19.13

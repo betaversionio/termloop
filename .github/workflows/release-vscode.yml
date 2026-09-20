@@ -1,0 +1,92 @@
+name: Release VS Code Extension
+
+# Tag format: vscode-v1.0.0 — must match apps/vscode-extension/package.json's "version".
+on:
+  push:
+    tags:
+      - 'vscode-v*.*.*'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write # Needed to create the GitHub release
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/vscode-v}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify tag matches package.json version
+        run: |
+          PKG_VERSION=$(node -p "require('./apps/vscode-extension/package.json').version")
+          if [ "$PKG_VERSION" != "${{ steps.get_version.outputs.VERSION }}" ]; then
+            echo "Tag version (${{ steps.get_version.outputs.VERSION }}) does not match apps/vscode-extension/package.json version ($PKG_VERSION)"
+            exit 1
+          fi
+
+      - name: Package extension
+        working-directory: apps/vscode-extension
+        run: npx @vscode/vsce package --no-dependencies -o termloop-vscode-${{ steps.get_version.outputs.VERSION }}.vsix
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.ref }}
+          name: TermLoop for VS Code v${{ steps.get_version.outputs.VERSION }}
+          generate_release_notes: true
+          body: |
+            ## Installation
+
+            ### From VSIX file
+            1. Download `termloop-vscode-${{ steps.get_version.outputs.VERSION }}.vsix` from the assets below
+            2. In VS Code, open the Extensions view (Ctrl+Shift+X / Cmd+Shift+X)
+            3. Click the "..." menu → "Install from VSIX..."
+            4. Select the downloaded file
+
+            ### From the command line
+            ```bash
+            code --install-extension termloop-vscode-${{ steps.get_version.outputs.VERSION }}.vsix
+            ```
+
+            ## Support
+            - 🐛 [Report Issues](https://github.com/betaversionio/termloop/issues)
+            - ⭐ [Star on GitHub](https://github.com/betaversionio/termloop)
+          draft: false
+          prerelease: false
+          files: |
+            apps/vscode-extension/termloop-vscode-${{ steps.get_version.outputs.VERSION }}.vsix
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to VS Code Marketplace
+        working-directory: apps/vscode-extension
+        run: |
+          if [ -n "$VSCE_PAT" ]; then
+            npx @vscode/vsce publish -p "$VSCE_PAT" --no-dependencies
+            echo "✅ Published to VS Code Marketplace"
+          else
+            echo "⚠️ VSCE_PAT secret not set, skipping marketplace publish"
+          fi
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        continue-on-error: true
