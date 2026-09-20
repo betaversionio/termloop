@@ -26,7 +26,8 @@
       "explorer": [
         {
           "id": "termloopConnections",
-          "name": "TermLoop Connections"
+          "name": "TermLoop Connections",
+          "icon": "media/connections.svg"
         }
       ]
     },
