@@ -3,6 +3,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { createClient } from "@stacklane/client";
 import { findRunningDaemon, registerAsDaemon } from "../daemon/discover.js";
+import { dynamicImport } from "../dynamicImport.js";
 
 async function ensureDaemon(port: number): Promise<string> {
   const existing = await findRunningDaemon();
@@ -10,8 +11,9 @@ async function ensureDaemon(port: number): Promise<string> {
     return `http://localhost:${existing.port}`;
   }
 
-  const serverModule = "../server/main.js";
-  const { createApp } = await import(/* webpackIgnore: true */ serverModule);
+  // Relative to the bundled dist/index.js output, not to this source file's
+  // location — mcp/server.ts and index.ts compile into one bundle.
+  const { createApp } = await dynamicImport("./server/main.js");
   const { server, init } = await createApp(port);
   await init();
 

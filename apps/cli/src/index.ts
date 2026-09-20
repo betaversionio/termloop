@@ -6,6 +6,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import express, { type Request, type Response, type NextFunction } from "express";
 import { findRunningDaemon, registerAsDaemon } from "./daemon/discover.js";
+import { dynamicImport } from "./dynamicImport.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -38,8 +39,7 @@ program
     }
 
     // Dynamic import from bundled server directory (inside dist/)
-    const serverModule = "./server/main.js";
-    const { createApp } = await import(/* webpackIgnore: true */ serverModule);
+    const { createApp } = await dynamicImport("./server/main.js");
     const { app, server, init } = await createApp(port);
 
     // Static files must be registered BEFORE NestJS init,
