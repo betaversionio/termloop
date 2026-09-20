@@ -18,6 +18,20 @@
   "categories": [
     "Other"
   ],
+  "keywords": [
+    "ssh",
+    "remote",
+    "terminal",
+    "sftp",
+    "server management",
+    "devops",
+    "remote development",
+    "file explorer",
+    "remote server",
+    "mcp",
+    "claude",
+    "ai agent"
+  ],
   "main": "./dist/extension.js",
   "activationEvents": [
     "onStartupFinished"
