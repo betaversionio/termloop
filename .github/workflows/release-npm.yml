@@ -75,13 +75,29 @@ jobs:
             exit 1
           fi
 
+      - name: Determine npm dist-tag
+        id: npmtag
+        run: |
+          VERSION="${{ steps.resolve.outputs.VERSION }}"
+          if [[ "$VERSION" == *-* ]]; then
+            # Prerelease (e.g. 0.2.0-beta.0) — publish under its prerelease identifier's
+            # dist-tag instead of "latest", so `npm install`/`npx` keeps resolving to the
+            # last stable release for everyone not explicitly opting into the prerelease.
+            TAG="${VERSION#*-}"
+            TAG="${TAG%%.*}"
+          else
+            TAG="latest"
+          fi
+          echo "TAG=$TAG" >> "$GITHUB_OUTPUT"
+          echo "PRERELEASE=$([[ "$VERSION" == *-* ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
       - name: Bundle CLI assets
         if: steps.resolve.outputs.NEEDS_BUNDLE == 'true'
         run: pnpm --filter termloop bundle
 
       - name: Publish to npm
         working-directory: ${{ steps.resolve.outputs.DIR }}
-        run: pnpm publish --no-git-checks --access public
+        run: pnpm publish --no-git-checks --access public --tag ${{ steps.npmtag.outputs.TAG }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -92,6 +108,6 @@ jobs:
           name: ${{ steps.resolve.outputs.FILTER }}@${{ steps.resolve.outputs.VERSION }}
           generate_release_notes: true
           draft: false
-          prerelease: false
+          prerelease: ${{ steps.npmtag.outputs.PRERELEASE }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
