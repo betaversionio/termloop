@@ -46,14 +46,15 @@ export function Taskbar() {
 
   return (
     <div
-      className="fixed bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-[6px] px-2 rounded-2xl border border-white/[0.1]"
+      className="fixed bottom-3 left-1/2 -translate-x-1/2 flex items-end gap-[4px] px-[10px] pb-[10px] rounded-[28px]"
       style={{
         height: TASKBAR_HEIGHT,
         zIndex: 9999,
-        backgroundColor: "rgba(20, 20, 20, 0.55)",
-        backdropFilter: "blur(50px) saturate(1.7)",
-        WebkitBackdropFilter: "blur(50px) saturate(1.7)",
-        boxShadow: "0 8px 30px rgba(0,0,0,0.35), inset 0 0.5px 0 rgba(255,255,255,0.08)",
+        background: "linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.05) 100%)",
+        backdropFilter: "blur(60px) saturate(2.2)",
+        WebkitBackdropFilter: "blur(60px) saturate(2.2)",
+        boxShadow:
+          "0 0 0 0.5px rgba(255,255,255,0.2), 0 20px 45px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(0,0,0,0.15)",
       }}
     >
       {dockApps.map((appType) => (
@@ -66,7 +67,7 @@ export function Taskbar() {
         />
       ))}
 
-      {extraRunning.length > 0 && <div className="self-center w-px h-8 mx-1 bg-white/[0.15]" />}
+      {extraRunning.length > 0 && <div className="self-stretch w-px my-2 bg-white/[0.18]" />}
 
       {extraRunning.map((appType) => (
         <DockIcon

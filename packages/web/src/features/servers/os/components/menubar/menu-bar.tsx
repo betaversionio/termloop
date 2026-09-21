@@ -15,13 +15,14 @@ export function MenuBar() {
 
   return (
     <div
-      className="fixed top-0 left-0 right-0 flex items-center justify-between border-b border-white/[0.08] select-none"
+      className="fixed top-0 left-0 right-0 flex items-center justify-between select-none"
       style={{
         height: MENU_BAR_HEIGHT,
         zIndex: 9999,
-        backgroundColor: "rgba(20, 20, 20, 0.55)",
-        backdropFilter: "blur(50px) saturate(1.7)",
-        WebkitBackdropFilter: "blur(50px) saturate(1.7)",
+        background: "linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%)",
+        backdropFilter: "blur(60px) saturate(2.2)",
+        WebkitBackdropFilter: "blur(60px) saturate(2.2)",
+        boxShadow: "inset 0 -0.5px 0 rgba(255,255,255,0.12), 0 1px 12px rgba(0,0,0,0.2)",
       }}
     >
       <div className="flex items-center gap-2.5 pl-2.5 min-w-0">

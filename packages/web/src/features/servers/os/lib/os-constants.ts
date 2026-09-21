@@ -69,7 +69,7 @@ export const BUILTIN_REGISTRY: Record<BuiltInAppType, AppDefinition> = {
     type: 'app-store',
     title: 'App Store',
     icon: 'store',
-    iconUrl: '/app-icons/app-store.svg',
+    iconUrl: '/app-icons/app-store.webp',
     defaultSize: { width: 800, height: 600 },
     minWidth: 500,
     minHeight: 400,
@@ -99,7 +99,7 @@ export const BUILTIN_DOCK_APPS: BuiltInAppType[] = [
   'app-store',
 ];
 
-export const TASKBAR_HEIGHT = 52;
+export const TASKBAR_HEIGHT = 78;
 export const WINDOW_STAGGER = 30;
 export const TITLE_BAR_HEIGHT = 36;
 export const MENU_BAR_HEIGHT = 28;
