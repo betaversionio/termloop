@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useReducer, useRef, type ReactNode } from "react";
 import type { WindowState, WindowAction } from "../types/window";
-import { appRegistry, getDefaultBounds, TASKBAR_HEIGHT, MENU_BAR_HEIGHT } from "../lib/os-constants";
+import { appRegistry, getDefaultBounds } from "../lib/os-constants";
 
 interface WindowManagerState {
   windows: WindowState[];
@@ -102,11 +102,14 @@ function windowReducer(
                 maximized: true,
                 minimized: false,
                 prevBounds: w.bounds,
+                // True full screen — covers the whole viewport, same as real macOS. The
+                // menu bar and dock hide themselves while a window is maximized and only
+                // reveal on hover near their edge, rather than reserving permanent space.
                 bounds: {
                   x: 0,
-                  y: MENU_BAR_HEIGHT,
+                  y: 0,
                   width: window.innerWidth,
-                  height: window.innerHeight - TASKBAR_HEIGHT - MENU_BAR_HEIGHT,
+                  height: window.innerHeight,
                 },
                 zIndex: state.nextZIndex,
               }

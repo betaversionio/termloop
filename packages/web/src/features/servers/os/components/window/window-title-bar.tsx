@@ -21,8 +21,8 @@ function TrafficLight({ color, onClick, title, children }: TrafficLightProps) {
     <button
       onClick={onClick}
       title={title}
-      className="flex h-[13px] w-[13px] items-center justify-center rounded-full transition-[filter] duration-100 hover:brightness-90"
-      style={{ backgroundColor: color, boxShadow: "inset 0 0 0 0.5px rgba(0,0,0,0.15)" }}
+      className="flex h-[13px] w-[13px] items-center justify-center rounded-full transition-[filter] duration-100 hover:brightness-90 shadow-[inset_0_0_0_0.5px_rgba(0,0,0,0.15)]"
+      style={{ backgroundColor: color }}
     >
       <span className="text-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-100 [&>svg]:h-[8px] [&>svg]:w-[8px]">
         {children}
@@ -63,12 +63,11 @@ export function WindowTitleBar({ window: win, onClose }: WindowTitleBarProps) {
 
   return (
     <div
-      className="relative flex h-9 shrink-0 items-center bg-card border-b border-border select-none"
+      className="relative flex h-9 shrink-0 items-center bg-card border-b border-border select-none touch-none"
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onDoubleClick={onDoubleClick}
-      style={{ touchAction: "none" }}
     >
       <div className="group flex items-center gap-2 pl-3 z-10">
         <TrafficLight color="#ff5f57" onClick={handleClose} title="Close">
