@@ -37,7 +37,7 @@ export function AppRenderer({ appType, connectionId, payload, windowId }: AppRen
     case "monitor":
       return <MonitorApp connectionId={connectionId} />;
     case "notepad":
-      return <NotepadApp connectionId={connectionId} payload={payload} />;
+      return <NotepadApp connectionId={connectionId} payload={payload} windowId={windowId} />;
     case "settings":
       return <SettingsApp />;
     case "browser":

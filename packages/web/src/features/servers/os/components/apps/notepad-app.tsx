@@ -1,14 +1,22 @@
 import { useState, useEffect, useCallback } from "react";
+import { FolderOpen } from "lucide-react";
 import { sftpApi } from "@/features/servers/files/api";
+import { openFilePicker } from "@/hooks/use-file-picker";
+import { useWindowManager } from "../../context/window-manager-context";
+import { useMarketplace } from "@/features/servers/marketplace/components/marketplace-context";
 
 interface NotepadAppProps {
   connectionId: string;
   payload?: Record<string, unknown>;
+  windowId: string;
 }
 
-export function NotepadApp({ connectionId, payload }: NotepadAppProps) {
+export function NotepadApp({ connectionId, payload, windowId }: NotepadAppProps) {
   const filePath = payload?.filePath as string | undefined;
   const fileName = payload?.fileName as string | undefined;
+
+  const { dispatch } = useWindowManager();
+  const { resolveFileHandler } = useMarketplace();
 
   const [content, setContent] = useState("");
   const [savedContent, setSavedContent] = useState("");
@@ -21,7 +29,6 @@ export function NotepadApp({ connectionId, payload }: NotepadAppProps) {
   const loadFile = useCallback(async () => {
     if (!filePath) {
       setLoading(false);
-      setError("No file path provided");
       return;
     }
 
@@ -41,6 +48,33 @@ export function NotepadApp({ connectionId, payload }: NotepadAppProps) {
   useEffect(() => {
     loadFile();
   }, [loadFile]);
+
+  const handleOpenFile = async () => {
+    const result = await openFilePicker({ connectionId, mode: "file" });
+    if (!result || result.length === 0) return;
+    const path = result[0];
+    dispatch({
+      type: "OPEN",
+      appType: resolveFileHandler(path),
+      payload: { filePath: path, fileName: path.split("/").pop() },
+    });
+    dispatch({ type: "CLOSE", id: windowId });
+  };
+
+  if (!filePath) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-3 text-muted-foreground">
+        <FolderOpen className="h-10 w-10 text-muted-foreground/40" />
+        <p className="text-sm">No file open</p>
+        <button
+          className="rounded bg-primary px-3 py-1.5 text-xs text-primary-foreground hover:bg-primary/90"
+          onClick={handleOpenFile}
+        >
+          Open File…
+        </button>
+      </div>
+    );
+  }
 
   const handleSave = async () => {
     if (!filePath || !dirty) return;

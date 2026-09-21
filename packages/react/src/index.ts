@@ -337,6 +337,21 @@ export interface TermLoopSDK {
       description?: string;
       variant?: "default" | "destructive";
     }) => { id: string; dismiss: () => void };
+
+    /**
+     * Opens the host's native-feeling file/folder picker over the connected server's
+     * filesystem. Resolves with the selected path(s), or null if the user cancelled.
+     * @example
+     * const paths = await sdk.ui.pickFile({ connectionId, extensions: [".png", ".jpg"] });
+     */
+    pickFile: (options: {
+      connectionId: string;
+      mode?: "file" | "folder";
+      multiple?: boolean;
+      title?: string;
+      initialPath?: string;
+      extensions?: string[];
+    }) => Promise<string[] | null>;
   };
 
   /** Utility functions */

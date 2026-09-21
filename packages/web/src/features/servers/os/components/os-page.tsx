@@ -4,6 +4,7 @@ import { MarketplaceProvider } from "@/features/servers/marketplace/components/m
 import { Desktop } from "./desktop/desktop";
 import { Taskbar } from "./taskbar/taskbar";
 import { MenuBar } from "./menubar/menu-bar";
+import { FilePickerDialog } from "./file-picker-dialog";
 
 interface OsPageProps {
   connectionId: string;
@@ -19,6 +20,7 @@ export function OsPage({ connectionId }: OsPageProps) {
             <Desktop connectionId={connectionId} />
             <Taskbar />
           </div>
+          <FilePickerDialog />
         </MarketplaceProvider>
       </WindowManagerProvider>
     </DesktopSettingsProvider>

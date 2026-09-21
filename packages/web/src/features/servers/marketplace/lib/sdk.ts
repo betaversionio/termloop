@@ -12,6 +12,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
+import { openFilePicker } from "@/hooks/use-file-picker";
 import { useTheme } from "@/components/theme-provider";
 import { useWindowManager } from "@/features/servers/os/context/window-manager-context";
 import { useDesktopSettings } from "@/features/servers/os/context/desktop-settings-context";
@@ -303,6 +304,7 @@ export function buildSDK(): TermLoopSDK {
       DialogClose,
       Separator,
       toast,
+      pickFile: openFilePicker,
     },
     utils: {
       cn,
