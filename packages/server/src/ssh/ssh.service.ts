@@ -112,6 +112,35 @@ export class SshService {
     });
   }
 
+  /** Runs a one-off command to completion (not a persistent shell) and returns its full output. */
+  async exec(connectionId: string, command: string): Promise<{ stdout: string; stderr: string; code: number }> {
+    const config = this.store.servers.findById(connectionId);
+    if (!config) {
+      throw new Error("Connection not found");
+    }
+    const client = await this.createSSHConnection(config);
+
+    return new Promise((resolve, reject) => {
+      client.exec(command, (err, stream) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        let stdout = "";
+        let stderr = "";
+        stream.on("data", (data: Buffer) => {
+          stdout += data.toString();
+        });
+        stream.stderr.on("data", (data: Buffer) => {
+          stderr += data.toString();
+        });
+        stream.on("close", (code: number | null) => {
+          resolve({ stdout, stderr, code: code ?? 0 });
+        });
+      });
+    });
+  }
+
   /** Unconditionally tears down a connection's client, regardless of active consumers. */
   forceDisconnect(connectionId: string) {
     const client = this.activeConnections.get(connectionId);
