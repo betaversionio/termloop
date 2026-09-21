@@ -53,7 +53,11 @@ program
       if (req.path.startsWith("/api") || req.path === "/mcp") {
         return next();
       }
-      res.sendFile(path.join(webDist, "index.html"));
+      // Pass "index.html" + { root } rather than a joined absolute path — express's
+      // sendFile (via the `send` package) treats every segment of an absolute path as
+      // subject to its dotfile check when no root is given, and npx's cache lives under
+      // "~/.npm/_npx/...", so "index.html" would 404 there for every real `npx termloop` user.
+      res.sendFile("index.html", { root: webDist });
     });
 
     await init();
