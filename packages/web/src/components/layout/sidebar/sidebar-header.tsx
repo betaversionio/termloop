@@ -10,8 +10,8 @@ export function SidebarHeader() {
   return (
     <div
       className={cn(
-        'mt-2 flex h-14 items-center',
-        collapsed ? 'justify-center px-3' : 'mb-1 px-3',
+        'flex h-14 shrink-0 items-center',
+        collapsed ? 'justify-center px-2' : 'px-4',
       )}
     >
       <Link
@@ -21,7 +21,7 @@ export function SidebarHeader() {
         )}
       >
         {collapsed ? (
-          <Logo className="h-10 w-10 text-foreground" />
+          <Logo className="h-8 w-8 text-foreground" />
         ) : (
           <LogoWithText />
         )}

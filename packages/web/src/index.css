@@ -1,7 +1,7 @@
-@import '@fontsource/poppins/latin-400.css';
-@import '@fontsource/poppins/latin-500.css';
-@import '@fontsource/poppins/latin-600.css';
-@import '@fontsource/poppins/latin-700.css';
+@import '@fontsource/geist-mono/latin-400.css';
+@import '@fontsource/geist-mono/latin-500.css';
+@import '@fontsource/geist-mono/latin-600.css';
+@import '@fontsource/geist-mono/latin-700.css';
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import '@xterm/xterm/css/xterm.css';
@@ -30,7 +30,7 @@
     --input: 0 0% 89.8%;
     --ring: 222 100% 59%;
     --radius: 0.625rem;
-    --sidebar: 0 0% 100%;
+    --sidebar: 210 10% 98%;
     --success: var(--color-emerald-500);
     --success-foreground: var(--color-emerald-900);
     --info: var(--color-violet-500);
@@ -42,7 +42,7 @@
   }
 
   .dark {
-    --background: 0 0% 0%;
+    --background: 0 0% 3.5%;
     --foreground: 0 0% 98%;
     --card: 0 0% 7%;
     --card-foreground: 0 0% 98%;
@@ -61,7 +61,7 @@
     --border: 0 0% 10%;
     --input: 0 0% 14.9%;
     --ring: 222 100% 65%;
-    --sidebar: 0 0% 0%;
+    --sidebar: 0 0% 6.3%;
     --success: var(--color-emerald-500);
     --success-foreground: var(--color-emerald-600);
     --info: var(--color-violet-500);
@@ -241,7 +241,7 @@
 }
 
 @theme inline {
-  --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Geist Mono', ui-monospace, monospace;
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
   --color-card: hsl(var(--card));

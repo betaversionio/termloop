@@ -2,8 +2,6 @@
 
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-import { SidebarLeft } from 'iconsax-react';
-import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import {
@@ -16,32 +14,18 @@ interface SidebarShellProps {
 }
 
 export function SidebarShell({ children }: SidebarShellProps) {
-  const { collapsed, toggle, mobileOpen, setMobileOpen } = useSidebar();
+  const { collapsed, mobileOpen, setMobileOpen } = useSidebar();
 
   return (
     <TooltipProvider>
       {/* Desktop sidebar */}
       <aside
         className={cn(
-          'border-border bg-sidebar relative hidden h-dvh flex-col border-r transition-all duration-300 md:flex',
+          'bg-sidebar hidden h-full flex-col pt-4 transition-all duration-300 md:flex',
           collapsed ? 'w-16' : 'w-64',
         )}
       >
         {children}
-
-        {/* Floating collapse toggle */}
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={toggle}
-          className="bg-card dark:bg-card absolute top-14 -right-3 z-50 h-7 w-7 -translate-y-1/2 rounded-full border shadow-sm text-muted-foreground"
-        >
-          <SidebarLeft
-            size={20}
-            color="currentColor"
-            className={cn('transition-transform', collapsed && 'rotate-180')}
-          />
-        </Button>
       </aside>
 
       {/* Mobile drawer */}
@@ -59,7 +43,7 @@ export function SidebarShell({ children }: SidebarShellProps) {
               setMobileOpen,
             }}
           >
-            <aside className="bg-sidebar flex h-full flex-col">
+            <aside className="bg-sidebar flex h-full flex-col pt-3">
               {children}
             </aside>
           </SidebarContext.Provider>
