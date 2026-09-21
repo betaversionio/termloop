@@ -44,4 +44,5 @@ export type WindowAction =
   | { type: "MAXIMIZE"; id: string }
   | { type: "RESTORE"; id: string }
   | { type: "MOVE"; id: string; x: number; y: number }
-  | { type: "RESIZE"; id: string; bounds: Partial<WindowBounds> };
+  | { type: "RESIZE"; id: string; bounds: Partial<WindowBounds> }
+  | { type: "RENAME"; id: string; title: string };

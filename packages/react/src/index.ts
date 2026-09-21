@@ -9,6 +9,8 @@ export interface MarketplaceAppProps {
   connectionId: string;
   /** Optional payload (e.g. filePath/fileName when opened via file association) */
   payload?: Record<string, unknown>;
+  /** This app instance's window id — pass to `sdk.hooks.useWindow(windowId)` */
+  windowId: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -119,14 +121,44 @@ export interface UseFileListResult {
   refetch: () => void;
 }
 
+export interface UseWindowResult {
+  /** This window's current title */
+  title: string;
+  /** Rename this window (e.g. to reflect the loaded file) */
+  setTitle: (title: string) => void;
+  /** True if this window is the topmost, non-minimized window */
+  isFocused: boolean;
+  isMaximized: boolean;
+  isMinimized: boolean;
+  /** Close this window */
+  close: () => void;
+  /** Bring this window to the front */
+  focus: () => void;
+  minimize: () => void;
+  maximize: () => void;
+  restore: () => void;
+  /** Resize this window (ignored while maximized) */
+  resize: (bounds: { width?: number; height?: number }) => void;
+}
+
+export interface UseOSResult {
+  theme: "dark" | "light" | "system";
+  setTheme: (theme: "dark" | "light" | "system") => void;
+  /** Current wallpaper id */
+  wallpaper: string;
+  setWallpaper: (id: string) => void;
+  /** The TermLoop app's own version */
+  version: string;
+}
+
 // ---------------------------------------------------------------------------
 //  UI component types — mirrors the host's shadcn/ui components
 // ---------------------------------------------------------------------------
 
+// Plain ComponentType rather than ForwardRefExoticComponent — marketplace apps render these,
+// they don't need to forward native DOM refs into them, and typing the ref precisely here
+// would have to mirror each host component's actual (and not always consistent) ref element.
 type RC<P = object> = React.ComponentType<P>;
-type FCWithRef<P = object> = React.ForwardRefExoticComponent<
-  P & React.RefAttributes<HTMLElement>
->;
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -242,48 +274,69 @@ export interface TermLoopSDK {
       mutateAsync: (variables: TVariables) => Promise<TData>;
       data: TData | undefined;
       error: TError | null;
-      isLoading: boolean;
       isPending: boolean;
       isError: boolean;
       reset: () => void;
     };
+
+    /**
+     * Control this app's own window — rename, close, focus, minimize/maximize, resize.
+     * @example
+     * const win = sdk.hooks.useWindow(windowId);
+     * win.setTitle(`Editor — ${fileName}`);
+     */
+    useWindow: (windowId: string) => UseWindowResult;
+
+    /**
+     * Desktop-level context: theme, wallpaper, host app version.
+     * @example
+     * const { theme, version } = sdk.hooks.useOS();
+     */
+    useOS: () => UseOSResult;
   };
 
   /** Pre-styled UI components from the host (shadcn/ui) */
   ui: {
-    Button: FCWithRef<ButtonProps>;
-    Input: FCWithRef<InputProps>;
+    Button: RC<ButtonProps>;
+    Input: RC<InputProps>;
 
     Select: RC<{ value?: string; onValueChange?: (v: string) => void; children?: React.ReactNode }>;
-    SelectTrigger: FCWithRef<{ className?: string; children?: React.ReactNode }>;
+    SelectTrigger: RC<{ className?: string; children?: React.ReactNode }>;
     SelectValue: RC<{ placeholder?: string }>;
-    SelectContent: FCWithRef<{ children?: React.ReactNode }>;
-    SelectItem: FCWithRef<{ value: string; children?: React.ReactNode }>;
+    SelectContent: RC<{ children?: React.ReactNode }>;
+    SelectItem: RC<{ value: string; children?: React.ReactNode }>;
 
-    Card: FCWithRef<React.HTMLAttributes<HTMLDivElement>>;
-    CardHeader: FCWithRef<React.HTMLAttributes<HTMLDivElement>>;
-    CardTitle: FCWithRef<React.HTMLAttributes<HTMLHeadingElement>>;
-    CardDescription: FCWithRef<React.HTMLAttributes<HTMLParagraphElement>>;
-    CardContent: FCWithRef<React.HTMLAttributes<HTMLDivElement>>;
-    CardFooter: FCWithRef<React.HTMLAttributes<HTMLDivElement>>;
+    Card: RC<React.HTMLAttributes<HTMLDivElement>>;
+    CardHeader: RC<React.HTMLAttributes<HTMLDivElement>>;
+    CardTitle: RC<React.HTMLAttributes<HTMLHeadingElement>>;
+    CardDescription: RC<React.HTMLAttributes<HTMLParagraphElement>>;
+    CardContent: RC<React.HTMLAttributes<HTMLDivElement>>;
+    CardFooter: RC<React.HTMLAttributes<HTMLDivElement>>;
 
     Tabs: RC<{ value?: string; defaultValue?: string; onValueChange?: (v: string) => void; className?: string; children?: React.ReactNode }>;
-    TabsList: FCWithRef<{ className?: string; children?: React.ReactNode }>;
-    TabsTrigger: FCWithRef<{ value: string; className?: string; children?: React.ReactNode }>;
-    TabsContent: FCWithRef<{ value: string; className?: string; children?: React.ReactNode }>;
+    TabsList: RC<{ className?: string; children?: React.ReactNode }>;
+    TabsTrigger: RC<{ value: string; className?: string; children?: React.ReactNode }>;
+    TabsContent: RC<{ value: string; className?: string; children?: React.ReactNode }>;
 
     Badge: RC<BadgeProps>;
     Spinner: RC<SpinnerProps>;
-    Separator: FCWithRef<SeparatorProps>;
+    Separator: RC<SeparatorProps>;
 
     Dialog: RC<{ open?: boolean; onOpenChange?: (open: boolean) => void; children?: React.ReactNode }>;
-    DialogTrigger: FCWithRef<{ asChild?: boolean; children?: React.ReactNode }>;
-    DialogContent: FCWithRef<{ className?: string; children?: React.ReactNode }>;
+    DialogTrigger: RC<{ asChild?: boolean; children?: React.ReactNode }>;
+    DialogContent: RC<{ className?: string; children?: React.ReactNode }>;
     DialogHeader: RC<React.HTMLAttributes<HTMLDivElement>>;
-    DialogTitle: FCWithRef<{ className?: string; children?: React.ReactNode }>;
-    DialogDescription: FCWithRef<{ className?: string; children?: React.ReactNode }>;
+    DialogTitle: RC<{ className?: string; children?: React.ReactNode }>;
+    DialogDescription: RC<{ className?: string; children?: React.ReactNode }>;
     DialogFooter: RC<React.HTMLAttributes<HTMLDivElement>>;
-    DialogClose: FCWithRef<{ asChild?: boolean; children?: React.ReactNode }>;
+    DialogClose: RC<{ asChild?: boolean; children?: React.ReactNode }>;
+
+    /** Show a transient notification, styled to match the host. */
+    toast: (options: {
+      title?: string;
+      description?: string;
+      variant?: "default" | "destructive";
+    }) => { id: string; dismiss: () => void };
   };
 
   /** Utility functions */

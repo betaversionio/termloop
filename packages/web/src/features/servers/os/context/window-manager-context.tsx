@@ -152,6 +152,14 @@ function windowReducer(
         ),
       };
 
+    case "RENAME":
+      return {
+        ...state,
+        windows: state.windows.map((w) =>
+          w.id === action.id ? { ...w, title: action.title } : w
+        ),
+      };
+
     default:
       return state;
   }

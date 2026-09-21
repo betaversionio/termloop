@@ -475,6 +475,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.103.1
         version: 5.103.1(react@19.3.0)
+      '@termloop/react':
+        specifier: workspace:*
+        version: link:../react
       '@termloop/shared':
         specifier: workspace:*
         version: link:../shared

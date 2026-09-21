@@ -98,11 +98,7 @@ export default defineConfig({
 
 function mainTsx(name: string): string {
   return `import { createApp } from "./App";
-import type { TermLoopSDK } from "@termloop/react";
-
-type AppFactory = (sdk: TermLoopSDK) => {
-  default: React.ComponentType<{ connectionId: string; payload?: Record<string, unknown> }>;
-};
+import type { AppFactory } from "@termloop/react";
 
 declare global {
   interface Window {
@@ -118,18 +114,13 @@ window.__termloop_register?.("${name}", (sdk) => {
 
 function appTsx(name: string): string {
   const componentName = toPascal(name);
-  return `import type { TermLoopSDK } from "@termloop/react";
-
-interface AppProps {
-  connectionId: string;
-  payload?: Record<string, unknown>;
-}
+  return `import type { TermLoopSDK, MarketplaceAppProps } from "@termloop/react";
 
 export function createApp(sdk: TermLoopSDK) {
   const { useConnection } = sdk.hooks;
   const { Button, Card, CardHeader, CardTitle, CardContent } = sdk.ui;
 
-  return function ${componentName}({ connectionId }: AppProps) {
+  return function ${componentName}({ connectionId }: MarketplaceAppProps) {
     const connection = useConnection(connectionId);
 
     if (connection.isLoading) {

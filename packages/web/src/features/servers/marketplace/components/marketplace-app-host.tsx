@@ -9,12 +9,14 @@ interface MarketplaceAppHostProps {
   manifest: MarketplaceAppManifest;
   connectionId: string;
   payload?: Record<string, unknown>;
+  windowId: string;
 }
 
 export function MarketplaceAppHost({
   manifest,
   connectionId,
   payload,
+  windowId,
 }: MarketplaceAppHostProps) {
   const { loadApp } = useMarketplace();
   const [AppComponent, setAppComponent] = useState<React.ComponentType<MarketplaceAppProps> | null>(null);
@@ -61,7 +63,7 @@ export function MarketplaceAppHost({
 
   return (
     <MarketplaceAppErrorBoundary appId={manifest.id}>
-      <AppComponent connectionId={connectionId} payload={payload} />
+      <AppComponent connectionId={connectionId} payload={payload} windowId={windowId} />
     </MarketplaceAppErrorBoundary>
   );
 }

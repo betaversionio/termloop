@@ -135,6 +135,7 @@ export function Desktop({ connectionId }: DesktopProps) {
             appType={win.appType}
             connectionId={connectionId}
             payload={win.payload}
+            windowId={win.id}
           />
         </WindowFrame>
       ))}

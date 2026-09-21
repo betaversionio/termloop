@@ -52,10 +52,29 @@ All hooks take the active `connectionId` and talk to the connected server over T
 | `useStats(connectionId)` | CPU/memory/disk/uptime, auto-refreshing every 5s |
 | `useFileList(connectionId, path)` | Directory listing with caching |
 | `useQuery` / `useMutation` | Raw [React Query](https://tanstack.com/query) primitives for custom data fetching |
+| `useWindow(windowId)` | Control this app's own window — `title`/`setTitle`, `close`, `focus`, `minimize`/`maximize`/`restore`, `resize`, `isFocused`/`isMaximized`/`isMinimized` |
+| `useOS()` | Desktop-level context — `theme`/`setTheme`, `wallpaper`/`setWallpaper`, the host app's `version` |
+
+`windowId` comes from your component's `MarketplaceAppProps` — it identifies *this instance's* window, so a `useWindow()` call always controls the right one even with multiple copies of your app open at once:
+
+```tsx
+function Editor({ connectionId, windowId, payload }: MarketplaceAppProps) {
+  const win = hooks.useWindow(windowId);
+  const filePath = payload?.filePath as string | undefined;
+
+  useEffect(() => {
+    if (filePath) win.setTitle(`Editor — ${filePath.split("/").pop()}`);
+  }, [filePath]);
+
+  // ...
+}
+```
 
 ## UI components
 
 Pre-styled [shadcn/ui](https://ui.shadcn.com/) components matching TermLoop's own look: `Button`, `Input`, `Select` (+ `SelectTrigger`/`SelectValue`/`SelectContent`/`SelectItem`), `Card` (+ `CardHeader`/`CardTitle`/`CardDescription`/`CardContent`/`CardFooter`), `Tabs` (+ `TabsList`/`TabsTrigger`/`TabsContent`), `Dialog` (+ `DialogTrigger`/`DialogContent`/`DialogHeader`/`DialogTitle`/`DialogDescription`/`DialogFooter`/`DialogClose`), `Badge`, `Spinner`, `Separator` — all under `sdk.ui`.
+
+`sdk.ui.toast({ title, description, variant })` shows a transient notification styled to match the host (same component TermLoop itself uses) — e.g. `sdk.ui.toast({ title: "Saved", description: file.name })`.
 
 ## Utilities
 

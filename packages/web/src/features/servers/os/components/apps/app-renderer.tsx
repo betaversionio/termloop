@@ -14,11 +14,19 @@ interface AppRendererProps {
   appType: AppType;
   connectionId: string;
   payload?: Record<string, unknown>;
+  windowId: string;
 }
 
-export function AppRenderer({ appType, connectionId, payload }: AppRendererProps) {
+export function AppRenderer({ appType, connectionId, payload, windowId }: AppRendererProps) {
   if (isMarketplaceApp(appType)) {
-    return <MarketplaceAppRenderer appType={appType} connectionId={connectionId} payload={payload} />;
+    return (
+      <MarketplaceAppRenderer
+        appType={appType}
+        connectionId={connectionId}
+        payload={payload}
+        windowId={windowId}
+      />
+    );
   }
 
   switch (appType) {
@@ -49,10 +57,12 @@ function MarketplaceAppRenderer({
   appType,
   connectionId,
   payload,
+  windowId,
 }: {
   appType: MarketplaceAppType;
   connectionId: string;
   payload?: Record<string, unknown>;
+  windowId: string;
 }) {
   const { installedApps } = useMarketplace();
   const appId = fromMarketAppType(appType);
@@ -71,6 +81,7 @@ function MarketplaceAppRenderer({
       manifest={installed.manifest}
       connectionId={connectionId}
       payload={payload}
+      windowId={windowId}
     />
   );
 }

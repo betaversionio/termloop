@@ -11,16 +11,14 @@ import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "@/hooks/use-toast";
+import { useTheme } from "@/components/theme-provider";
+import { useWindowManager } from "@/features/servers/os/context/window-manager-context";
+import { useDesktopSettings } from "@/features/servers/os/context/desktop-settings-context";
 import type { RemoteFile, ServerConnection, ServerStats, ApiResponse } from "@termloop/shared";
+import type { TermLoopSDK, UseWindowResult, UseOSResult } from "@termloop/react";
 
-// ---------------------------------------------------------------------------
-//  Props
-// ---------------------------------------------------------------------------
-
-export interface MarketplaceAppProps {
-  connectionId: string;
-  payload?: Record<string, unknown>;
-}
+export type { MarketplaceAppProps, TermLoopSDK } from "@termloop/react";
 
 // ---------------------------------------------------------------------------
 //  Domain hooks — real implementations that wrap the TermLoop server API
@@ -206,67 +204,55 @@ function useFileListHook(connectionId: string, path: string) {
   };
 }
 
-// ---------------------------------------------------------------------------
-//  SDK interface
-// ---------------------------------------------------------------------------
+function useWindowHook(windowId: string): UseWindowResult {
+  const { state, dispatch } = useWindowManager();
+  const win = state.windows.find((w) => w.id === windowId);
 
-export interface TermLoopSDK {
-  React: typeof React;
+  const activeId = useMemo(() => {
+    const visible = state.windows.filter((w) => !w.minimized);
+    return visible.sort((a, b) => b.zIndex - a.zIndex)[0]?.id;
+  }, [state.windows]);
 
-  /** TermLoop-specific hooks for server interaction */
-  hooks: {
-    /** Get connection details (host, username, etc.) */
-    useConnection: typeof useConnectionHook;
-    /** SFTP file operations — list, read, write, download, upload, delete, rename, mkdir */
-    useSFTP: typeof useSFTPHook;
-    /** Execute SSH commands on the remote server */
-    useSSH: typeof useSSHHook;
-    /** Server stats (CPU, memory, disk, uptime) with auto-refresh */
-    useStats: typeof useStatsHook;
-    /** List files in a directory (React Query wrapper with caching) */
-    useFileList: typeof useFileListHook;
-    /** Raw React Query hooks for custom queries */
-    useQuery: typeof useQuery;
-    useMutation: typeof useMutation;
-  };
+  const setTitle = useCallback(
+    (title: string) => dispatch({ type: "RENAME", id: windowId, title }),
+    [dispatch, windowId]
+  );
+  const close = useCallback(() => dispatch({ type: "CLOSE", id: windowId }), [dispatch, windowId]);
+  const focus = useCallback(() => dispatch({ type: "FOCUS", id: windowId }), [dispatch, windowId]);
+  const minimize = useCallback(() => dispatch({ type: "MINIMIZE", id: windowId }), [dispatch, windowId]);
+  const maximize = useCallback(() => dispatch({ type: "MAXIMIZE", id: windowId }), [dispatch, windowId]);
+  const restore = useCallback(() => dispatch({ type: "RESTORE", id: windowId }), [dispatch, windowId]);
+  const resize = useCallback(
+    (bounds: { width?: number; height?: number }) => dispatch({ type: "RESIZE", id: windowId, bounds }),
+    [dispatch, windowId]
+  );
 
-  /** Pre-styled UI components from the host (shadcn/ui) */
-  ui: {
-    Button: typeof Button;
-    Input: typeof Input;
-    Select: typeof Select;
-    SelectTrigger: typeof SelectTrigger;
-    SelectValue: typeof SelectValue;
-    SelectContent: typeof SelectContent;
-    SelectItem: typeof SelectItem;
-    Card: typeof Card;
-    CardHeader: typeof CardHeader;
-    CardTitle: typeof CardTitle;
-    CardDescription: typeof CardDescription;
-    CardContent: typeof CardContent;
-    CardFooter: typeof CardFooter;
-    Tabs: typeof Tabs;
-    TabsList: typeof TabsList;
-    TabsTrigger: typeof TabsTrigger;
-    TabsContent: typeof TabsContent;
-    Badge: typeof Badge;
-    Spinner: typeof Spinner;
-    Dialog: typeof Dialog;
-    DialogContent: typeof DialogContent;
-    DialogHeader: typeof DialogHeader;
-    DialogTitle: typeof DialogTitle;
-    DialogDescription: typeof DialogDescription;
-    DialogFooter: typeof DialogFooter;
-    DialogTrigger: typeof DialogTrigger;
-    DialogClose: typeof DialogClose;
-    Separator: typeof Separator;
-  };
+  return useMemo(
+    () => ({
+      title: win?.title ?? "",
+      setTitle,
+      isFocused: activeId === windowId,
+      isMaximized: win?.maximized ?? false,
+      isMinimized: win?.minimized ?? false,
+      close,
+      focus,
+      minimize,
+      maximize,
+      restore,
+      resize,
+    }),
+    [win, activeId, windowId, setTitle, close, focus, minimize, maximize, restore, resize]
+  );
+}
 
-  /** Utility functions */
-  utils: {
-    cn: typeof cn;
-    request: typeof request;
-  };
+function useOSHook(): UseOSResult {
+  const { theme, setTheme } = useTheme();
+  const { wallpaper, setWallpaper } = useDesktopSettings();
+
+  return useMemo(
+    () => ({ theme, setTheme, wallpaper, setWallpaper, version: __APP_VERSION__ }),
+    [theme, setTheme, wallpaper, setWallpaper]
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -284,6 +270,8 @@ export function buildSDK(): TermLoopSDK {
       useFileList: useFileListHook,
       useQuery,
       useMutation,
+      useWindow: useWindowHook,
+      useOS: useOSHook,
     },
     ui: {
       Button,
@@ -314,6 +302,7 @@ export function buildSDK(): TermLoopSDK {
       DialogTrigger,
       DialogClose,
       Separator,
+      toast,
     },
     utils: {
       cn,
