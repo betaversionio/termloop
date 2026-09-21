@@ -1,6 +1,6 @@
 {
   "name": "create-termloop-app",
-  "version": "0.1.0",
+  "version": "0.2.0-beta.0",
   "description": "Scaffold a new TermLoop marketplace app with Vite, React, and TypeScript",
   "author": {
     "name": "Satyam Lohiya",
