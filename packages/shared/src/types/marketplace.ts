@@ -1,3 +1,10 @@
+export interface MarketplaceReview {
+  author: string;
+  rating: number;
+  comment: string;
+  date: string;
+}
+
 export interface MarketplaceApp {
   id: string;
   name: string;
@@ -13,4 +20,10 @@ export interface MarketplaceApp {
   showOnDesktop: boolean;
   showInDock: boolean;
   category: "tools" | "media" | "development" | "utilities" | "other";
+  tags?: string[];
+  screenshots?: string[];
+  rating?: number;
+  ratingCount?: number;
+  installCount?: number;
+  reviews?: MarketplaceReview[];
 }

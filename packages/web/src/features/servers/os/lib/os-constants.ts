@@ -70,9 +70,9 @@ export const BUILTIN_REGISTRY: Record<BuiltInAppType, AppDefinition> = {
     title: 'App Store',
     icon: 'store',
     iconUrl: '/app-icons/app-store.webp',
-    defaultSize: { width: 800, height: 600 },
-    minWidth: 500,
-    minHeight: 400,
+    defaultSize: { width: 960, height: 640 },
+    minWidth: 700,
+    minHeight: 480,
   },
 };
 

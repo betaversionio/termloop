@@ -13,7 +13,32 @@
     "minHeight": 300,
     "showOnDesktop": false,
     "showInDock": false,
-    "category": "media"
+    "category": "media",
+    "tags": ["images", "viewer", "media", "zoom"],
+    "rating": 4.6,
+    "ratingCount": 128,
+    "installCount": 3420,
+    "screenshots": [],
+    "reviews": [
+      {
+        "author": "Priya S.",
+        "rating": 5,
+        "comment": "Opens straight from the file manager — exactly what I needed for checking upload results on a headless server.",
+        "date": "2026-06-02"
+      },
+      {
+        "author": "Marcus L.",
+        "rating": 4,
+        "comment": "Simple and fast. Would like rotate/crop but the zoom controls cover most of what I need.",
+        "date": "2026-05-14"
+      },
+      {
+        "author": "devops_dana",
+        "rating": 5,
+        "comment": "No more scp-ing screenshots just to look at them. Great little utility.",
+        "date": "2026-04-29"
+      }
+    ]
   },
   {
     "id": "docker-manager",
@@ -29,6 +54,31 @@
     "minHeight": 380,
     "showOnDesktop": true,
     "showInDock": true,
-    "category": "development"
+    "category": "development",
+    "tags": ["docker", "containers", "devops", "infrastructure"],
+    "rating": 4.8,
+    "ratingCount": 96,
+    "installCount": 2150,
+    "screenshots": [],
+    "reviews": [
+      {
+        "author": "kubernetes_kyle",
+        "rating": 5,
+        "comment": "Docker Desktop-style UI right inside the SSH session. Install-Docker flow saved me a manual setup on a fresh box.",
+        "date": "2026-07-10"
+      },
+      {
+        "author": "Ana R.",
+        "rating": 5,
+        "comment": "Container start/stop/restart all work reliably even over a laggy connection.",
+        "date": "2026-06-18"
+      },
+      {
+        "author": "hb_ops",
+        "rating": 4,
+        "comment": "Does what it says. Would love image pruning next.",
+        "date": "2026-06-01"
+      }
+    ]
   }
 ]
