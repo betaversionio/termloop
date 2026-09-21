@@ -1,5 +1,8 @@
 # SSH Agent - Termloop
 
+![Version](https://img.shields.io/visual-studio-marketplace/v/BetaVersion.termloop-vscode?label=version)
+![License](https://img.shields.io/badge/license-MIT-green)
+
 Manage your remote SSH servers without leaving VS Code — connections list, an integrated terminal, and remote file browsing that opens as normal editor tabs.
 
 This extension is a thin client for the [TermLoop](https://github.com/betaversionio/termloop) daemon (the same one behind `npx termloop` and the `termloop mcp` server) — it doesn't manage its own SSH connections, so anything you do here shows up in the TermLoop web UI too, and vice versa.

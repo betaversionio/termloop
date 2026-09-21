@@ -1,5 +1,8 @@
 # create-termloop-app
 
+![Version](https://img.shields.io/npm/v/create-termloop-app?label=version)
+![License](https://img.shields.io/badge/license-MIT-green)
+
 Scaffold a new [TermLoop](https://github.com/betaversionio/termloop) marketplace app — a small React component that runs inside TermLoop's desktop UI, with access to the connected server's terminal, files, and stats via the `@termloop/react` SDK.
 
 ## Usage

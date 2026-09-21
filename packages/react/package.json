@@ -2,6 +2,15 @@
   "name": "@termloop/react",
   "version": "0.1.0",
   "description": "SDK for building TermLoop marketplace apps",
+  "homepage": "https://github.com/betaversionio/termloop#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/betaversionio/termloop.git",
+    "directory": "packages/react"
+  },
+  "bugs": {
+    "url": "https://github.com/betaversionio/termloop/issues"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
