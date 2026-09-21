@@ -19,12 +19,14 @@ export function DockIcon({ appType, isRunning, isActive, onClick }: DockIconProp
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="relative flex flex-col items-center outline-none"
-      style={{ width: 60 }}
+      className="relative flex items-center justify-center outline-none"
+      style={{ width: 60, height: 50 }}
     >
-      {/* Tooltip */}
+      {/* Tooltip — cleared generously above the icon's own max hover-magnified extent
+          (scale(1.22) + translateY(-12px) lifts its top ~17.5px above rest), not just
+          its resting position, so it never collides with the enlarged icon. */}
       <div
-        className="absolute -top-[34px] px-[10px] py-[5px] rounded-[7px] text-[12.5px] font-medium text-white whitespace-nowrap pointer-events-none transition-opacity duration-100"
+        className="absolute -top-[58px] px-[10px] py-[5px] rounded-[7px] text-[12.5px] font-medium text-white whitespace-nowrap pointer-events-none transition-opacity duration-100"
         style={{
           opacity: hovered ? 1 : 0,
           backgroundColor: "rgba(30, 30, 30, 0.82)",
@@ -52,21 +54,20 @@ export function DockIcon({ appType, isRunning, isActive, onClick }: DockIconProp
         draggable={false}
       />
 
-      {/* Running dot — reserves a small slot below the icon so layout doesn't shift */}
-      <div className="flex items-center justify-center" style={{ height: 8 }}>
-        {isRunning && (
-          <div
-            className="rounded-full"
-            style={{
-              width: 5,
-              height: 5,
-              backgroundColor: isActive
-                ? "rgba(255, 255, 255, 0.95)"
-                : "rgba(255, 255, 255, 0.5)",
-            }}
-          />
-        )}
-      </div>
+      {/* Running dot — overlaid just below the icon, doesn't add its own layout height */}
+      {isRunning && (
+        <div
+          className="absolute rounded-full"
+          style={{
+            bottom: -7,
+            width: 5,
+            height: 5,
+            backgroundColor: isActive
+              ? "rgba(255, 255, 255, 0.95)"
+              : "rgba(255, 255, 255, 0.5)",
+          }}
+        />
+      )}
     </button>
   );
 }
