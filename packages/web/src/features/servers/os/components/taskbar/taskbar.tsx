@@ -50,8 +50,8 @@ export function Taskbar() {
         zIndex: 9999,
         overflow: "visible",
         background: "linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.05) 100%)",
-        backdropFilter: "blur(60px) saturate(2.2)",
-        WebkitBackdropFilter: "blur(60px) saturate(2.2)",
+        backdropFilter: "blur(36px) saturate(2.2)",
+        WebkitBackdropFilter: "blur(36px) saturate(2.2)",
         boxShadow:
           "0 0 0 0.5px rgba(255,255,255,0.2), 0 20px 45px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(0,0,0,0.15)",
       }}

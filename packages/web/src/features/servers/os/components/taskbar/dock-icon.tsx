@@ -29,11 +29,11 @@ export function DockIcon({ appType, isRunning, isActive, onClick }: DockIconProp
         className="absolute -top-[58px] px-[10px] py-[5px] rounded-[7px] text-[12.5px] font-medium text-white whitespace-nowrap pointer-events-none transition-opacity duration-100"
         style={{
           opacity: hovered ? 1 : 0,
-          backgroundColor: "rgba(30, 30, 30, 0.82)",
-          backdropFilter: "blur(24px)",
-          WebkitBackdropFilter: "blur(24px)",
-          border: "0.5px solid rgba(255,255,255,0.15)",
-          boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
+          background: "linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.05) 100%), rgba(30, 30, 30, 0.6)",
+          backdropFilter: "blur(40px) saturate(2.2)",
+          WebkitBackdropFilter: "blur(40px) saturate(2.2)",
+          boxShadow:
+            "0 0 0 0.5px rgba(255,255,255,0.2), 0 8px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.15)",
         }}
       >
         {app.title}
