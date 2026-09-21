@@ -1,6 +1,7 @@
 import { useCallback, useRef } from "react";
 import type { WindowState } from "../types/window";
 import { useWindowManager } from "../context/window-manager-context";
+import { MENU_BAR_HEIGHT } from "../lib/os-constants";
 
 type ResizeEdge =
   | "n" | "s" | "e" | "w"
@@ -48,8 +49,16 @@ export function useWindowResize(window: WindowState) {
       }
       if (edge.includes("n")) {
         const h = Math.max(window.minHeight, b.height - dy);
-        newBounds.y = b.y + (b.height - h);
-        newBounds.height = h;
+        const newY = b.y + (b.height - h);
+        // Don't let the top edge go up under the menu bar — clamp there and keep the
+        // bottom edge fixed instead, same as hitting minHeight.
+        if (newY < MENU_BAR_HEIGHT) {
+          newBounds.y = MENU_BAR_HEIGHT;
+          newBounds.height = b.y + b.height - MENU_BAR_HEIGHT;
+        } else {
+          newBounds.y = newY;
+          newBounds.height = h;
+        }
       }
 
       dispatch({ type: "RESIZE", id: window.id, bounds: newBounds });

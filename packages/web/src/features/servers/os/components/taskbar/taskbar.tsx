@@ -1,6 +1,5 @@
 import { useWindowManager } from "../../context/window-manager-context";
 import { useMarketplace } from "@/features/servers/marketplace/components/marketplace-context";
-import { TASKBAR_HEIGHT } from "../../lib/os-constants";
 import type { AppType } from "../../types/window";
 import { DockIcon } from "./dock-icon";
 
@@ -46,10 +45,10 @@ export function Taskbar() {
 
   return (
     <div
-      className="fixed bottom-3 left-1/2 -translate-x-1/2 flex items-end gap-[4px] px-[10px] pb-[10px] rounded-[28px]"
+      className="fixed bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-[4px] px-[10px] py-[9px] rounded-[24px]"
       style={{
-        height: TASKBAR_HEIGHT,
         zIndex: 9999,
+        overflow: "visible",
         background: "linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.05) 100%)",
         backdropFilter: "blur(60px) saturate(2.2)",
         WebkitBackdropFilter: "blur(60px) saturate(2.2)",

@@ -1,6 +1,7 @@
 import { useCallback, useRef } from "react";
 import type { WindowState } from "../types/window";
 import { useWindowManager } from "../context/window-manager-context";
+import { MENU_BAR_HEIGHT } from "../lib/os-constants";
 
 export function useWindowDrag(window: WindowState) {
   const { dispatch } = useWindowManager();
@@ -26,9 +27,11 @@ export function useWindowDrag(window: WindowState) {
       if (!dragging.current) return;
       const x = e.clientX - offset.current.x;
       const y = e.clientY - offset.current.y;
-      // Clamp so at least 100px of the title bar is visible
+      // Clamp so at least 100px of the title bar is visible, and never let it go up
+      // under the menu bar (which renders above every window and would hide the
+      // window's own close/minimize/maximize controls).
       const clampedX = Math.max(-window.bounds.width + 100, Math.min(x, globalThis.innerWidth - 100));
-      const clampedY = Math.max(0, Math.min(y, globalThis.innerHeight - 100));
+      const clampedY = Math.max(MENU_BAR_HEIGHT, Math.min(y, globalThis.innerHeight - 100));
       dispatch({ type: "MOVE", id: window.id, x: clampedX, y: clampedY });
     },
     [window.id, window.bounds.width, dispatch]

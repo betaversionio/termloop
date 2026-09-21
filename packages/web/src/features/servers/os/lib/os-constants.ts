@@ -99,7 +99,10 @@ export const BUILTIN_DOCK_APPS: BuiltInAppType[] = [
   'app-store',
 ];
 
-export const TASKBAR_HEIGHT = 78;
+// Reserved space at the bottom of the screen for the dock (maximize bounds, desktop
+// icon grid) — the dock itself sizes to its content via padding, not this value; this
+// just needs to comfortably cover its natural height (~76px) plus its bottom margin.
+export const TASKBAR_HEIGHT = 100;
 export const WINDOW_STAGGER = 30;
 export const TITLE_BAR_HEIGHT = 36;
 export const MENU_BAR_HEIGHT = 28;
@@ -126,7 +129,10 @@ export function getDefaultBounds(
   const def = appRegistry.get(appType);
   return {
     x: 100,
-    y: 0,
+    // Below the menu bar (which sits at zIndex 9999, above every window) — otherwise a
+    // window's own title bar (with its close/minimize/maximize controls) opens hidden
+    // underneath it and is unreachable.
+    y: MENU_BAR_HEIGHT + 12,
     width: def?.defaultSize.width ?? DEFAULT_APP_SIZE.width,
     height: def?.defaultSize.height ?? DEFAULT_APP_SIZE.height,
   };

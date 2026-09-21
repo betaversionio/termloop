@@ -19,12 +19,12 @@ export function DockIcon({ appType, isRunning, isActive, onClick }: DockIconProp
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="relative flex flex-col items-center justify-end outline-none"
-      style={{ width: 64, height: 66 }}
+      className="relative flex flex-col items-center outline-none"
+      style={{ width: 60 }}
     >
       {/* Tooltip */}
       <div
-        className="absolute -top-[42px] px-[10px] py-[5px] rounded-[7px] text-[12.5px] font-medium text-white whitespace-nowrap pointer-events-none transition-opacity duration-100"
+        className="absolute -top-[34px] px-[10px] py-[5px] rounded-[7px] text-[12.5px] font-medium text-white whitespace-nowrap pointer-events-none transition-opacity duration-100"
         style={{
           opacity: hovered ? 1 : 0,
           backgroundColor: "rgba(30, 30, 30, 0.82)",
@@ -37,7 +37,8 @@ export function DockIcon({ appType, isRunning, isActive, onClick }: DockIconProp
         {app.title}
       </div>
 
-      {/* Icon with mac-style magnification */}
+      {/* Icon with mac-style magnification — overflows above the dock on hover, not
+          reserved for inside a taller box, matching real macOS Dock behavior. */}
       <img
         src={app.iconUrl}
         alt={app.title}
@@ -51,19 +52,21 @@ export function DockIcon({ appType, isRunning, isActive, onClick }: DockIconProp
         draggable={false}
       />
 
-      {/* Running dot */}
-      {isRunning && (
-        <div
-          className="absolute bottom-[2px] rounded-full"
-          style={{
-            width: 5,
-            height: 5,
-            backgroundColor: isActive
-              ? "rgba(255, 255, 255, 0.95)"
-              : "rgba(255, 255, 255, 0.5)",
-          }}
-        />
-      )}
+      {/* Running dot — reserves a small slot below the icon so layout doesn't shift */}
+      <div className="flex items-center justify-center" style={{ height: 8 }}>
+        {isRunning && (
+          <div
+            className="rounded-full"
+            style={{
+              width: 5,
+              height: 5,
+              backgroundColor: isActive
+                ? "rgba(255, 255, 255, 0.95)"
+                : "rgba(255, 255, 255, 0.5)",
+            }}
+          />
+        )}
+      </div>
     </button>
   );
 }
