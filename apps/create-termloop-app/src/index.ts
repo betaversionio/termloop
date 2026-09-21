@@ -114,7 +114,11 @@ window.__termloop_register?.("${name}", (sdk) => {
 
 function appTsx(name: string): string {
   const componentName = toPascal(name);
-  return `import type { TermLoopSDK, MarketplaceAppProps } from "@termloop/react";
+  return `// Needed for JSX to type-check under the classic transform (see vite.config.ts) —
+// at runtime this import is externalized to the host's own React instance instead of
+// bundling a second copy, so you never call anything on it directly.
+import React from "react";
+import type { TermLoopSDK, MarketplaceAppProps } from "@termloop/react";
 
 export function createApp(sdk: TermLoopSDK) {
   const { useConnection } = sdk.hooks;

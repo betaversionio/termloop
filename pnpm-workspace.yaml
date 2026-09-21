@@ -1,6 +1,7 @@
 packages:
   - "packages/*"
   - "apps/*"
+  - "marketplace-apps/*"
 allowBuilds:
   '@nestjs/core': true
   '@swc/core': true

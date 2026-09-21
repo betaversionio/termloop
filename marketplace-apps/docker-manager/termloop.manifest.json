@@ -1,0 +1,19 @@
+{
+  "id": "docker-manager",
+  "name": "Docker",
+  "description": "Manage Docker containers and images on the connected server",
+  "author": "TermLoop",
+  "version": "0.1.0",
+  "iconUrl": "/marketplace-icons/docker.webp",
+  "bundleUrl": "/marketplace-apps/docker-manager.js",
+  "fileAssociations": [],
+  "defaultSize": {
+    "width": 820,
+    "height": 560
+  },
+  "minWidth": 560,
+  "minHeight": 380,
+  "showOnDesktop": true,
+  "showInDock": true,
+  "category": "development"
+}
