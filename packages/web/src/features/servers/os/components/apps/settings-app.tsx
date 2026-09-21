@@ -322,8 +322,10 @@ export function SettingsApp() {
             onClick={() => setCategory(c.key)}
             className={cn(
               'flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-sm transition-colors text-left',
+              // Sidebar selection uses the system blue accent, not the generic --primary
+              // token (which resolves to plain white in this app's dark theme).
               category === c.key
-                ? 'bg-primary text-primary-foreground'
+                ? 'bg-[#0A84FF] text-white'
                 : 'text-foreground hover:bg-muted',
             )}
           >
