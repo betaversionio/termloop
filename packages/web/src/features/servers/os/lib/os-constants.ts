@@ -52,9 +52,9 @@ export const BUILTIN_REGISTRY: Record<BuiltInAppType, AppDefinition> = {
     title: 'Settings',
     icon: 'settings',
     iconUrl: '/app-icons/settings.png',
-    defaultSize: { width: 650, height: 550 },
-    minWidth: 450,
-    minHeight: 400,
+    defaultSize: { width: 820, height: 620 },
+    minWidth: 560,
+    minHeight: 420,
   },
   browser: {
     type: 'browser',
