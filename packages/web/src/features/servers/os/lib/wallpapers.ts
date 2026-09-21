@@ -7,203 +7,15 @@ export interface WallpaperOption {
 
 export const DEFAULT_WALLPAPER_ID = 'image-betaversion';
 
-// Helper to build an SVG data-URI pattern wallpaper
-function svgPattern(svg: string, bg: string): string {
-  const encoded = encodeURIComponent(svg.replace(/\s+/g, ' ').trim());
-  return `url("data:image/svg+xml,${encoded}"), linear-gradient(${bg}, ${bg})`;
-}
-
-// --- SVG pattern definitions ---
-const PATTERN_GRID = svgPattern(
-  `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40">
-    <path d="M0 0h40v40H0z" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
-  </svg>`,
-  '#09090b',
-);
-
-const PATTERN_DOTS = svgPattern(
-  `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20">
-    <circle cx="10" cy="10" r="1.5" fill="rgba(255,255,255,0.12)"/>
-  </svg>`,
-  '#0c0c0f',
-);
-
-const PATTERN_DIAGONAL = svgPattern(
-  `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-    <path d="M-4,4 l8,-8 M0,16 l16,-16 M12,20 l8,-8" stroke="rgba(255,255,255,0.06)" stroke-width="1.5"/>
-  </svg>`,
-  '#0f1117',
-);
-
-const PATTERN_HONEYCOMB = svgPattern(
-  `<svg xmlns="http://www.w3.org/2000/svg" width="56" height="100">
-    <path d="M28 66L0 50V16l28-16 28 16v34L28 66zm0 0l28 16v34l-28 16L0 116V82l28-16z"
-      fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-  </svg>`,
-  '#0a0a12',
-);
-
-const PATTERN_CIRCUIT = svgPattern(
-  `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60">
-    <path d="M0 30h15m0 0a3 3 0 1 0 0-1m0 1h12a3 3 0 0 1 3 3v12m0 0a3 3 0 1 0 1 0m-1 0v-12a3 3 0 0 1 3-3h12"
-      fill="none" stroke="rgba(56,189,248,0.12)" stroke-width="1"/>
-    <path d="M30 0v15m0 0a3 3 0 1 0 1 0m-1 0v12a3 3 0 0 1-3 3H15"
-      fill="none" stroke="rgba(56,189,248,0.12)" stroke-width="1"/>
-  </svg>`,
-  '#060a10',
-);
-
-const PATTERN_CROSSES = svgPattern(
-  `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
-    <path d="M10 6h4v4h4v4h-4v4h-4v-4H6v-4h4z" fill="rgba(255,255,255,0.04)" />
-  </svg>`,
-  '#0e0e14',
-);
-
-const PATTERN_ISOMETRIC = svgPattern(
-  `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="70">
-    <path d="M0 35 L20 0 L40 35 L20 70Z" fill="none" stroke="rgba(168,85,247,0.1)" stroke-width="0.8"/>
-  </svg>`,
-  '#0b0816',
-);
-
-const PATTERN_WAVES = svgPattern(
-  `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="16">
-    <path d="M0 8 Q10 0 20 8 Q30 16 40 8 Q50 0 60 8 Q70 16 80 8" fill="none" stroke="rgba(34,211,238,0.1)" stroke-width="1"/>
-  </svg>`,
-  '#070b10',
-);
-
 export const WALLPAPERS: WallpaperOption[] = [
-  // ── Gradients ──
-  {
-    id: 'gradient-sunset',
-    label: 'Sunset',
-    type: 'gradient',
-    value:
-      'bg-gradient-to-br from-orange-400 via-rose-400 to-purple-500 dark:from-orange-900 dark:via-rose-900 dark:to-purple-950',
-  },
-  {
-    id: 'gradient-ocean',
-    label: 'Ocean',
-    type: 'gradient',
-    value:
-      'bg-gradient-to-br from-blue-400 via-cyan-400 to-teal-500 dark:from-blue-900 dark:via-cyan-900 dark:to-teal-950',
-  },
-  {
-    id: 'gradient-forest',
-    label: 'Forest',
-    type: 'gradient',
-    value:
-      'bg-gradient-to-br from-emerald-400 via-green-400 to-lime-500 dark:from-emerald-900 dark:via-green-900 dark:to-lime-950',
-  },
-  {
-    id: 'gradient-lavender',
-    label: 'Lavender',
-    type: 'gradient',
-    value:
-      'bg-gradient-to-br from-purple-400 via-violet-400 to-indigo-500 dark:from-purple-900 dark:via-violet-900 dark:to-indigo-950',
-  },
-  {
-    id: 'gradient-midnight',
-    label: 'Midnight',
-    type: 'gradient',
-    value:
-      'bg-gradient-to-br from-slate-700 via-gray-800 to-zinc-900 dark:from-slate-900 dark:via-gray-950 dark:to-zinc-950',
-  },
-  {
-    id: 'gradient-aurora',
-    label: 'Aurora',
-    type: 'gradient',
-    value:
-      'bg-gradient-to-br from-green-400 via-cyan-400 to-purple-500 dark:from-green-900 dark:via-cyan-900 dark:to-purple-950',
-  },
-  {
-    id: 'gradient-flamingo',
-    label: 'Flamingo',
-    type: 'gradient',
-    value:
-      'bg-gradient-to-br from-pink-400 via-fuchsia-400 to-rose-500 dark:from-pink-900 dark:via-fuchsia-900 dark:to-rose-950',
-  },
-  {
-    id: 'gradient-ember',
-    label: 'Ember',
-    type: 'gradient',
-    value:
-      'bg-gradient-to-br from-red-500 via-orange-500 to-amber-400 dark:from-red-950 dark:via-orange-900 dark:to-amber-900',
-  },
-  {
-    id: 'gradient-arctic',
-    label: 'Arctic',
-    type: 'gradient',
-    value:
-      'bg-gradient-to-br from-sky-200 via-blue-300 to-indigo-400 dark:from-sky-900 dark:via-blue-950 dark:to-indigo-950',
-  },
-  {
-    id: 'gradient-moss',
-    label: 'Moss',
-    type: 'gradient',
-    value:
-      'bg-gradient-to-br from-lime-400 via-emerald-500 to-teal-600 dark:from-lime-950 dark:via-emerald-950 dark:to-teal-950',
-  },
-
-  // ── Patterns (SVG-based, self-contained) ──
   {
     id: 'image-betaversion',
     label: 'BetaVersion',
     type: 'image',
     value: 'https://media.betaversion.io/brand/betaversion-default.png',
   },
-  {
-    id: 'image-grid',
-    label: 'Grid',
-    type: 'image',
-    value: PATTERN_GRID,
-  },
-  {
-    id: 'image-dots',
-    label: 'Dots',
-    type: 'image',
-    value: PATTERN_DOTS,
-  },
-  {
-    id: 'image-diagonal',
-    label: 'Diagonal',
-    type: 'image',
-    value: PATTERN_DIAGONAL,
-  },
-  {
-    id: 'image-honeycomb',
-    label: 'Honeycomb',
-    type: 'image',
-    value: PATTERN_HONEYCOMB,
-  },
-  {
-    id: 'image-circuit',
-    label: 'Circuit',
-    type: 'image',
-    value: PATTERN_CIRCUIT,
-  },
-  {
-    id: 'image-crosses',
-    label: 'Crosses',
-    type: 'image',
-    value: PATTERN_CROSSES,
-  },
-  {
-    id: 'image-isometric',
-    label: 'Isometric',
-    type: 'image',
-    value: PATTERN_ISOMETRIC,
-  },
-  {
-    id: 'image-waves',
-    label: 'Waves',
-    type: 'image',
-    value: PATTERN_WAVES,
-  },
 
-  // ── Photos (Unsplash) ──
+  // ── Photos ──
   {
     id: 'photo-northern-lights',
     label: 'Northern Lights',
@@ -343,5 +155,43 @@ export const WALLPAPERS: WallpaperOption[] = [
     type: 'image',
     value:
       'https://images.unsplash.com/photo-1534088568595-a066f410bcda?w=1920&q=80&fit=crop',
+  },
+
+  // ── Photos (local) ──
+  {
+    id: 'photo-red-canyon',
+    label: 'Red Canyon',
+    type: 'image',
+    value: '/wallpapers/wil-stewart-pHANr-CpbYM-unsplash.jpg',
+  },
+  {
+    id: 'photo-coastal-village',
+    label: 'Coastal Village',
+    type: 'image',
+    value: '/wallpapers/anders-jilden-cYrMQA7a3Wc-unsplash.jpg',
+  },
+  {
+    id: 'photo-forest-coastline',
+    label: 'Forest Coastline',
+    type: 'image',
+    value: '/wallpapers/andreas-gucklhorn-mawU2PoJWfU-unsplash.jpg',
+  },
+  {
+    id: 'photo-lightning-storm',
+    label: 'Lightning Storm',
+    type: 'image',
+    value: '/wallpapers/breno-machado-in9-n0JwgZ0-unsplash.jpg',
+  },
+  {
+    id: 'photo-misty-peaks',
+    label: 'Misty Peaks',
+    type: 'image',
+    value: '/wallpapers/urban-vintage-78A265wPiO4-unsplash.jpg',
+  },
+  {
+    id: 'photo-harbor-sunset',
+    label: 'Harbor Sunset',
+    type: 'image',
+    value: '/wallpapers/wade-meng-LgCj9qcrfhI-unsplash.jpg',
   },
 ];

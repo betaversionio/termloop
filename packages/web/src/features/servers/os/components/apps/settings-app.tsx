@@ -170,39 +170,9 @@ function AppearanceSection() {
       </section>
 
       <section>
-        <h2 className="text-lg font-semibold mb-1">Desktop Background</h2>
-
-        <h3 className="text-xs text-muted-foreground mt-4 mb-2">Gradients</h3>
+        <h2 className="text-lg font-semibold mb-3">Desktop Background</h2>
         <div className="flex flex-wrap gap-3">
-          {WALLPAPERS.filter((w) => w.type === 'gradient').map((wp) => (
-            <WallpaperThumbnail
-              key={wp.id}
-              wp={wp}
-              active={wallpaper === wp.id}
-              onClick={() => setWallpaper(wp.id)}
-            />
-          ))}
-        </div>
-
-        <h3 className="text-xs text-muted-foreground mt-4 mb-2">Patterns</h3>
-        <div className="flex flex-wrap gap-3">
-          {WALLPAPERS.filter(
-            (w) => w.type === 'image' && w.id.startsWith('image-'),
-          ).map((wp) => (
-            <WallpaperThumbnail
-              key={wp.id}
-              wp={wp}
-              active={wallpaper === wp.id}
-              onClick={() => setWallpaper(wp.id)}
-            />
-          ))}
-        </div>
-
-        <h3 className="text-xs text-muted-foreground mt-4 mb-2">Photos</h3>
-        <div className="flex flex-wrap gap-3">
-          {WALLPAPERS.filter(
-            (w) => w.type === 'image' && w.id.startsWith('photo-'),
-          ).map((wp) => (
+          {WALLPAPERS.map((wp) => (
             <WallpaperThumbnail
               key={wp.id}
               wp={wp}
