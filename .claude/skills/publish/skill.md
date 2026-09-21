@@ -35,14 +35,7 @@ Read the `"version"` field from that package's `package.json` (path from the tab
 
 ### 3. Bump the version
 
-Update the `"version"` field in that package's `package.json` to the new version.
-
-If releasing the **CLI** (`apps/cli`), also update the version badge (`version-X.Y.Z-blue`) in these files, which mirror the CLI's version for display — the other three packages have no equivalent hardcoded display:
-- `README.md` (repo root)
-- `apps/cli/README.md`
-- the hardcoded version string in `packages/web/src/pages/settings/settings-page.tsx`
-
-Use the Edit tool with `replace_all: true` for each file.
+Update the `"version"` field in that package's `package.json` to the new version. Nothing else needs to change — the CLI's version badge in `README.md`/`apps/cli/README.md` is a dynamic `img.shields.io/npm/v/termloop` badge that reads the live published version automatically, and `packages/web`'s Settings page reads it from `apps/cli/package.json` at build time (`vite.config.ts`'s `__APP_VERSION__` define) rather than a hardcoded copy.
 
 ### 4. Commit
 

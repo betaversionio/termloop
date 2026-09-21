@@ -2,9 +2,18 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
+import { createRequire } from "module";
+
+const require = createRequire(import.meta.url);
+// The CLI's package.json version is the one source of truth for the app's displayed
+// version — read it at build time instead of hardcoding a copy here to keep in sync.
+const cliVersion = require("../../apps/cli/package.json").version as string;
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  define: {
+    __APP_VERSION__: JSON.stringify(cliVersion),
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
