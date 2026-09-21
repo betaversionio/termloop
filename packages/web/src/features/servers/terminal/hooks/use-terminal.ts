@@ -1,10 +1,5 @@
-import { useEffect, useRef, useCallback } from 'react';
-import { Terminal } from '@xterm/xterm';
-import { FitAddon } from '@xterm/addon-fit';
-import { WebLinksAddon } from '@xterm/addon-web-links';
-import type { ITheme } from '@xterm/xterm';
-import type { WsMessage } from '@termloop/shared';
-import { terminalThemesMap } from '../lib/terminal-themes';
+import { useEffect, useRef } from 'react';
+import { getOrCreateSession, attachSession, applySettings } from '../lib/terminal-session-manager';
 
 interface TerminalSettings {
   fontFamily: string;
@@ -12,155 +7,52 @@ interface TerminalSettings {
   themeName: string;
 }
 
-function resolveTheme(name: string): ITheme {
-  return (
-    terminalThemesMap.get(name)?.theme ??
-    terminalThemesMap.get('default-dark')!.theme
-  );
-}
-
 export function useTerminal(connectionId: string, settings: TerminalSettings) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const termRef = useRef<Terminal | null>(null);
-  const wsRef = useRef<WebSocket | null>(null);
-  const fitAddonRef = useRef<FitAddon | null>(null);
-  const initializedRef = useRef(false);
+  const session = getOrCreateSession(connectionId, settings);
 
-  const connect = useCallback(() => {
-    if (!containerRef.current || initializedRef.current) return;
-    initializedRef.current = true;
+  // Kept as stable ref objects (mutated in place) rather than fresh literals so consumers'
+  // own useCallback/useMemo dependency arrays don't churn every render.
+  const termRef = useRef(session.term);
+  const wsRef = useRef(session.ws);
+  termRef.current = session.term;
+  wsRef.current = session.ws;
 
-    const term = new Terminal({
-      cursorBlink: true,
-      fontSize: settings.fontSize,
-      fontFamily: settings.fontFamily,
-      theme: resolveTheme(settings.themeName),
-    });
+  useEffect(() => {
+    if (!containerRef.current) return;
 
-    const fitAddon = new FitAddon();
-    const webLinksAddon = new WebLinksAddon();
-    term.loadAddon(fitAddon);
-    term.loadAddon(webLinksAddon);
-    term.open(containerRef.current);
+    // Moves the session's terminal into this container — a no-op if it's already there,
+    // and how a session picks back up after the UI showing it was unmounted/re-mounted.
+    attachSession(session, containerRef.current);
+    setTimeout(() => session.fitAddon.fit(), 50);
 
-    setTimeout(() => fitAddon.fit(), 50);
-
-    termRef.current = term;
-    fitAddonRef.current = fitAddon;
-
-    // WebSocket connection
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws/terminal`;
-    const ws = new WebSocket(wsUrl);
-    wsRef.current = ws;
-
-    // Attach to an already-open session for this connection if one exists (e.g. one opened
-    // via the open_terminal MCP tool) rather than always starting a new shell.
-    let attachFailed = false;
-
-    ws.onopen = () => {
-      const msg: WsMessage = { type: 'terminal:attach', connectionId };
-      ws.send(JSON.stringify(msg));
-    };
-
-    ws.onmessage = (event) => {
-      const msg: WsMessage = JSON.parse(event.data);
-      switch (msg.type) {
-        case 'terminal:output':
-          if (msg.data) term.write(msg.data);
-          break;
-        case 'terminal:connected':
-          term.focus();
-          break;
-        case 'terminal:error':
-          if (!attachFailed) {
-            attachFailed = true;
-            const dims = { cols: term.cols, rows: term.rows };
-            const openMsg: WsMessage = { type: 'terminal:input', connectionId, ...dims };
-            ws.send(JSON.stringify(openMsg));
-          } else {
-            term.writeln(`\r\n\x1b[31mError: ${msg.error}\x1b[0m`);
-          }
-          break;
-        case 'terminal:close':
-          term.writeln('\r\n\x1b[33mConnection closed.\x1b[0m');
-          break;
-      }
-    };
-
-    ws.onclose = () => {
-      term.writeln('\r\n\x1b[33mDisconnected.\x1b[0m');
-    };
-
-    // Terminal input -> WebSocket
-    term.onData((data) => {
-      if (ws.readyState === WebSocket.OPEN) {
-        const msg: WsMessage = {
-          type: 'terminal:input',
-          connectionId,
-          data,
-        };
-        ws.send(JSON.stringify(msg));
-      }
-    });
-
-    // Resize handling
-    term.onResize(({ cols, rows }) => {
-      if (ws.readyState === WebSocket.OPEN) {
-        const msg: WsMessage = {
-          type: 'terminal:resize',
-          connectionId,
-          cols,
-          rows,
-        };
-        ws.send(JSON.stringify(msg));
-      }
-    });
-
-    // Debounced fit to avoid resize loops; skip when container is hidden (minimized)
     let rafId = 0;
     const debouncedFit = () => {
       cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(() => {
         const el = containerRef.current;
         if (!el || el.clientWidth < 10 || el.clientHeight < 10) return;
-        fitAddon.fit();
+        session.fitAddon.fit();
       });
     };
 
     window.addEventListener('resize', debouncedFit);
-
     const resizeObserver = new ResizeObserver(debouncedFit);
     resizeObserver.observe(containerRef.current);
 
+    // Intentionally does not close the WebSocket or dispose the terminal on unmount — the
+    // session lives on in terminal-session-manager until its tab is explicitly closed, so
+    // navigating away (even outside the server workspace entirely) doesn't drop the connection.
     return () => {
       cancelAnimationFrame(rafId);
       window.removeEventListener('resize', debouncedFit);
       resizeObserver.disconnect();
     };
-  }, [connectionId]);
+  }, [connectionId, session]);
 
   useEffect(() => {
-    const cleanup = connect();
-    return () => {
-      cleanup?.();
-      wsRef.current?.close();
-      termRef.current?.dispose();
-      initializedRef.current = false;
-    };
-  }, [connect]);
-
-  // React to settings changes after initial mount
-  useEffect(() => {
-    const term = termRef.current;
-    const fitAddon = fitAddonRef.current;
-    if (!term || !fitAddon) return;
-
-    term.options.fontSize = settings.fontSize;
-    term.options.fontFamily = settings.fontFamily;
-    term.options.theme = resolveTheme(settings.themeName);
-    fitAddon.fit();
-  }, [settings.fontSize, settings.fontFamily, settings.themeName]);
+    applySettings(connectionId, settings);
+  }, [connectionId, settings.fontSize, settings.fontFamily, settings.themeName]);
 
   return { containerRef, termRef, wsRef };
 }

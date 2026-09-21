@@ -1,19 +1,66 @@
-import { Monitor } from "iconsax-react";
+import { useState } from "react";
+import { Monitor, Grid2, RowVertical } from "iconsax-react";
 import { PageHeader } from "@/components/shared/page-header";
+import { Button } from "@/components/ui/button";
 import type { ServerConnection } from "@termloop/shared";
-import { useConnections, useDeleteConnection, AddServerDropdown } from "@/features/servers";
-import { ServerCard } from "@/features/servers";
+import {
+  useConnections,
+  useDeleteConnection,
+  AddServerDropdown,
+  ServerCard,
+  ServerListRow,
+} from "@/features/servers";
+
+const VIEW_MODE_KEY = "termloop-servers-view-mode";
+
+type ViewMode = "grid" | "list";
+
+function loadViewMode(): ViewMode {
+  try {
+    const stored = localStorage.getItem(VIEW_MODE_KEY);
+    if (stored === "grid" || stored === "list") return stored;
+  } catch {}
+  return "grid";
+}
 
 export function ServersPage() {
   const { data, isLoading } = useConnections();
   const deleteMutation = useDeleteConnection();
+  const [viewMode, setViewMode] = useState<ViewMode>(loadViewMode);
 
   const connections = (data?.data as ServerConnection[] | undefined) ?? [];
+
+  const setMode = (mode: ViewMode) => {
+    setViewMode(mode);
+    try {
+      localStorage.setItem(VIEW_MODE_KEY, mode);
+    } catch {}
+  };
 
   return (
     <div className="space-y-6">
       <PageHeader title="Servers" description="Manage your remote servers">
-        <AddServerDropdown />
+        <div className="flex items-center gap-2">
+          <div className="flex items-center rounded-lg border border-border p-0.5">
+            <Button
+              variant={viewMode === "grid" ? "secondary" : "ghost"}
+              size="icon-sm"
+              onClick={() => setMode("grid")}
+              aria-label="Grid view"
+            >
+              <Grid2 size={16} color="currentColor" />
+            </Button>
+            <Button
+              variant={viewMode === "list" ? "secondary" : "ghost"}
+              size="icon-sm"
+              onClick={() => setMode("list")}
+              aria-label="List view"
+            >
+              <RowVertical size={16} color="currentColor" />
+            </Button>
+          </div>
+          <AddServerDropdown />
+        </div>
       </PageHeader>
 
       {isLoading ? (
@@ -34,10 +81,20 @@ export function ServersPage() {
           </p>
           <AddServerDropdown />
         </div>
-      ) : (
+      ) : viewMode === "grid" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {connections.map((conn) => (
             <ServerCard
+              key={conn.id}
+              connection={conn}
+              onDelete={(id) => deleteMutation.mutate(id)}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {connections.map((conn) => (
+            <ServerListRow
               key={conn.id}
               connection={conn}
               onDelete={(id) => deleteMutation.mutate(id)}

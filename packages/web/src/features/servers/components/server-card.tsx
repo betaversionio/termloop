@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 import {
   Monitor,
   Trash,
@@ -9,23 +9,18 @@ import {
   More,
   Key,
   Lock,
-} from "iconsax-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
+} from 'iconsax-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { useConnectionDialog } from "@/features/servers";
-import type { ServerConnection } from "@termloop/shared";
+} from '@/components/ui/dropdown-menu';
+import { useConnectionDialog } from '@/features/servers';
+import type { ServerConnection } from '@termloop/shared';
 
 interface ServerCardProps {
   connection: ServerConnection;
@@ -33,9 +28,9 @@ interface ServerCardProps {
 }
 
 const quickActions = [
-  { tab: "terminal", icon: CommandSquare, label: "Terminal" },
-  { tab: "files", icon: FolderOpen, label: "Files" },
-  { tab: "monitor", icon: Activity, label: "Monitor" },
+  { tab: 'terminal', icon: CommandSquare, label: 'Terminal' },
+  { tab: 'files', icon: FolderOpen, label: 'Files' },
+  { tab: 'monitor', icon: Activity, label: 'Monitor' },
 ] as const;
 
 export function ServerCard({ connection: conn, onDelete }: ServerCardProps) {
@@ -58,13 +53,15 @@ export function ServerCard({ connection: conn, onDelete }: ServerCardProps) {
         <div className="flex items-center gap-3 min-w-0">
           <div
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10"
-            style={conn.color ? { backgroundColor: `${conn.color}15` } : undefined}
+            style={
+              conn.color ? { backgroundColor: `${conn.color}15` } : undefined
+            }
           >
             <Monitor
               size={20}
-              color={conn.color || "currentColor"}
+              color={conn.color || 'currentColor'}
               variant="Bulk"
-              className={!conn.color ? "text-primary" : undefined}
+              className={!conn.color ? 'text-primary' : undefined}
             />
           </div>
           <div className="min-w-0">
@@ -84,7 +81,11 @@ export function ServerCard({ connection: conn, onDelete }: ServerCardProps) {
               className="shrink-0 opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 transition-opacity"
               onClick={(e) => e.stopPropagation()}
             >
-              <More size={16} color="currentColor" className="text-muted-foreground" />
+              <More
+                size={16}
+                color="currentColor"
+                className="text-muted-foreground"
+              />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
@@ -106,12 +107,12 @@ export function ServerCard({ connection: conn, onDelete }: ServerCardProps) {
       <CardContent className="px-4 pl-5 py-3">
         <div className="flex items-center gap-1.5 flex-wrap">
           <Badge variant="secondary" className="text-[12px] gap-1">
-            {conn.authMethod === "key" ? (
+            {conn.authMethod === 'key' ? (
               <Key size={10} color="currentColor" />
             ) : (
               <Lock size={10} color="currentColor" />
             )}
-            {conn.authMethod === "key" ? "SSH Key" : "Password"}
+            {conn.authMethod === 'key' ? 'SSH Key' : 'Password'}
           </Badge>
           {conn.tags?.map((tag) => (
             <Badge key={tag} variant="outline" className="text-[12px]">
@@ -120,28 +121,6 @@ export function ServerCard({ connection: conn, onDelete }: ServerCardProps) {
           ))}
         </div>
       </CardContent>
-
-      <CardFooter className="gap-1 px-4 pt-3 pb-3 border-t border-border">
-        {quickActions.map(({ tab, icon: Icon, label }) => (
-          <Tooltip key={tab}>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="flex-1 text-xs text-muted-foreground hover:text-foreground"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/server/${conn.id}/${tab}`);
-                }}
-              >
-                <Icon size={14} color="currentColor" />
-                {label}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">Open {label}</TooltipContent>
-          </Tooltip>
-        ))}
-      </CardFooter>
     </Card>
   );
 }
