@@ -45,6 +45,15 @@ export function createLocalClient(services: {
       async create(input) {
         return connections.create(input);
       },
+      async update(id, updates) {
+        const updated = connections.update(id, updates);
+        if (!updated) throw new Error("Connection not found");
+        return updated;
+      },
+      async delete(id) {
+        const deleted = connections.delete(id);
+        if (!deleted) throw new Error("Connection not found");
+      },
       async test(id) {
         const result = await connections.test(id);
         if ("error" in result) throw new Error(result.error);
