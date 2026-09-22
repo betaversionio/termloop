@@ -42,7 +42,7 @@ export const BUILTIN_REGISTRY: Record<BuiltInAppType, AppDefinition> = {
     type: 'notepad',
     title: 'TextEdit',
     icon: 'document',
-    iconUrl: '/app-icons/textedit.svg',
+    iconUrl: '/app-icons/textedit.png',
     defaultSize: { width: 700, height: 500 },
     minWidth: 400,
     minHeight: 300,
