@@ -1,4 +1,4 @@
-import type { MarketplaceApp } from "@termloop/shared";
+import type { MarketplaceApp, MarketplaceWidget } from "@termloop/shared";
 import type { MarketplaceAppType } from "../os/types/window";
 
 /** @deprecated Use `MarketplaceApp` from `@termloop/shared` directly */
@@ -6,6 +6,11 @@ export type MarketplaceAppManifest = MarketplaceApp;
 
 export interface InstalledApp {
   manifest: MarketplaceAppManifest;
+  installedAt: number;
+}
+
+export interface InstalledWidget {
+  manifest: MarketplaceWidget;
   installedAt: number;
 }
 

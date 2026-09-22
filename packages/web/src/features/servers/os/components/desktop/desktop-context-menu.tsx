@@ -26,6 +26,7 @@ interface DesktopContextMenuProps {
   onOpenApp: (appType: AppType) => void;
   onChangeWallpaper: (id: string) => void;
   currentWallpaper: string;
+  onEditWidgets: () => void;
 }
 
 /* ------------------------------------------------------------------ */
@@ -51,6 +52,7 @@ export function DesktopContextMenu({
   onOpenApp,
   onChangeWallpaper,
   currentWallpaper,
+  onEditWidgets,
 }: DesktopContextMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
@@ -95,6 +97,7 @@ export function DesktopContextMenu({
     { kind: "action", label: "Activity Monitor", onClick: () => onOpenApp("monitor") },
     { kind: "action", label: "TextEdit", onClick: () => onOpenApp("notepad") },
     { kind: "separator" },
+    { kind: "action", label: "Edit Widgets…", onClick: onEditWidgets },
     { kind: "submenu", label: "Change Wallpaper", items: wallpaperItems },
     { kind: "action", label: "Settings", onClick: () => onOpenApp("settings") },
   ];

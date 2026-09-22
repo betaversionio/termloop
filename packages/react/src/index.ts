@@ -14,6 +14,17 @@ export interface MarketplaceAppProps {
 }
 
 // ---------------------------------------------------------------------------
+//  Widget props — passed to every desktop widget component
+// ---------------------------------------------------------------------------
+
+export interface WidgetProps {
+  /** The active SSH connection ID */
+  connectionId: string;
+  /** The size this instance is currently displayed at — pick your layout accordingly */
+  size: "small" | "medium" | "large";
+}
+
+// ---------------------------------------------------------------------------
 //  Server domain types
 // ---------------------------------------------------------------------------
 
@@ -371,13 +382,19 @@ export type AppFactory = (sdk: TermLoopSDK) => {
   default: React.ComponentType<MarketplaceAppProps>;
 };
 
+export type WidgetFactory = (sdk: TermLoopSDK) => {
+  default: React.ComponentType<WidgetProps>;
+};
+
 // ---------------------------------------------------------------------------
-//  defineApp — the main entry point for marketplace apps
+//  defineApp / defineWidget — the main entry points for marketplace content
 // ---------------------------------------------------------------------------
 
 declare global {
   interface Window {
-    __termloop_register?: (id: string, factory: AppFactory) => void;
+    // Widgets register through the exact same global as apps — a widget factory
+    // just returns a component typed against WidgetProps instead of MarketplaceAppProps.
+    __termloop_register?: (id: string, factory: AppFactory | WidgetFactory) => void;
   }
 }
 
@@ -414,6 +431,40 @@ declare global {
  * ```
  */
 export function defineApp(id: string, factory: AppFactory): void {
+  registerWithHost(id, factory);
+}
+
+/**
+ * Register a TermLoop desktop widget — a small, always-visible panel placed
+ * directly on the desktop rather than opened in a window. Uses the exact same
+ * registration mechanism as `defineApp`; only the props shape differs.
+ *
+ * @example
+ * ```tsx
+ * import { defineWidget, type TermLoopSDK, type WidgetProps } from '@termloop/react';
+ *
+ * defineWidget('clock', (sdk) => {
+ *   const { React } = sdk;
+ *   const { useState, useEffect } = React;
+ *
+ *   function Clock({ size }: WidgetProps) {
+ *     const [now, setNow] = useState(new Date());
+ *     useEffect(() => {
+ *       const t = setInterval(() => setNow(new Date()), 1000);
+ *       return () => clearInterval(t);
+ *     }, []);
+ *     return <div style={{ fontSize: size === 'small' ? 20 : 32 }}>{now.toLocaleTimeString()}</div>;
+ *   }
+ *
+ *   return { default: Clock };
+ * });
+ * ```
+ */
+export function defineWidget(id: string, factory: WidgetFactory): void {
+  registerWithHost(id, factory);
+}
+
+function registerWithHost(id: string, factory: AppFactory | WidgetFactory): void {
   if (typeof window !== "undefined" && window.__termloop_register) {
     window.__termloop_register(id, factory);
   } else {
@@ -428,7 +479,7 @@ export function defineApp(id: string, factory: AppFactory): void {
 }
 
 // ---------------------------------------------------------------------------
-//  Manifest type — for tooling / validation
+//  Manifest types — for tooling / validation
 // ---------------------------------------------------------------------------
 
 export interface AppManifest {
@@ -445,5 +496,18 @@ export interface AppManifest {
   minHeight: number;
   showOnDesktop: boolean;
   showInDock: boolean;
+  category: "tools" | "media" | "development" | "utilities" | "other";
+}
+
+export interface WidgetManifest {
+  id: string;
+  name: string;
+  description: string;
+  author: string;
+  version: string;
+  iconUrl: string;
+  bundleUrl: string;
+  sizes: Partial<Record<"small" | "medium" | "large", { width: number; height: number }>>;
+  requiresApp?: string;
   category: "tools" | "media" | "development" | "utilities" | "other";
 }

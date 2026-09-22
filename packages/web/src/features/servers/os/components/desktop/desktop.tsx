@@ -2,20 +2,23 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useWindowManager } from "../../context/window-manager-context";
 import { useDesktopSettings } from "../../context/desktop-settings-context";
 import { useMarketplace } from "@/features/servers/marketplace/components/marketplace-context";
+import { useWidgets } from "@/features/servers/marketplace/components/widgets-context";
 import { fromMarketAppType } from "@/features/servers/marketplace/types";
 import { useDockApps } from "../../hooks/use-dock-apps";
-import { TASKBAR_HEIGHT, MENU_BAR_HEIGHT } from "../../lib/os-constants";
+import { TASKBAR_HEIGHT, MENU_BAR_HEIGHT, GRID_CELL, WIDGET_GAP } from "../../lib/os-constants";
 import { WALLPAPERS } from "../../lib/wallpapers";
 import { DesktopIcon } from "./desktop-icon";
 import { DesktopContextMenu } from "./desktop-context-menu";
 import { DesktopIconContextMenu } from "./desktop-icon-context-menu";
+import { WidgetFrame } from "../widgets/widget-frame";
+import { WidgetGallery } from "../widgets/widget-gallery";
+import { WidgetContextMenu } from "../widgets/widget-context-menu";
 import { WindowFrame } from "../window/window-frame";
 import { AppRenderer } from "../apps/app-renderer";
 import { cn } from "@/lib/utils";
 import { isMarketplaceApp, type AppType } from "../../types/window";
-import type { IconPosition } from "../../context/desktop-settings-context";
-
-const GRID_CELL = 90;
+import type { IconPosition, PlacedWidget, WidgetSize } from "../../context/desktop-settings-context";
+import type { MarketplaceWidget } from "@termloop/shared";
 
 /** Compute default grid positions (top→bottom, left→right) for icons without saved positions */
 function getDefaultPositions(
@@ -47,20 +50,59 @@ function getDefaultPositions(
   return result;
 }
 
+// Largest footprint any current widget size can have (matches "large" — 4x4 grid
+// cells) — the cascade steps by this much so newly-placed widgets never overlap
+// regardless of size, with a WIDGET_GAP margin baked into each step.
+const MAX_WIDGET_CELLS = 4;
+
+/** Simple cascading placement for newly-added widgets — no bin-packing, the user
+ * drags to reposition afterward just like windows and icons already work. */
+function getNextWidgetPosition(existing: PlacedWidget[], containerRect: DOMRect | null): IconPosition {
+  const step = GRID_CELL * MAX_WIDGET_CELLS + WIDGET_GAP;
+  const startX = WIDGET_GAP;
+  const startY = MENU_BAR_HEIGHT + WIDGET_GAP;
+  const maxWidth = containerRect?.width ?? 1200;
+  const perRow = Math.max(1, Math.floor((maxWidth - startX) / step));
+  const index = existing.length;
+  const col = index % perRow;
+  const row = Math.floor(index / perRow);
+  return { x: startX + col * step, y: startY + row * step };
+}
+
+function randomId(): string {
+  return typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `w-${Date.now()}-${Math.random()}`;
+}
+
 interface DesktopProps {
   connectionId: string;
 }
 
 export function Desktop({ connectionId }: DesktopProps) {
   const { state, dispatch } = useWindowManager();
-  const { wallpaper, setWallpaper, iconPositions, hiddenDesktopApps, setHiddenDesktopApps, setDockOrder } =
-    useDesktopSettings();
+  const {
+    wallpaper,
+    setWallpaper,
+    iconPositions,
+    hiddenDesktopApps,
+    setHiddenDesktopApps,
+    setDockOrder,
+    placedWidgets,
+    setPlacedWidgets,
+  } = useDesktopSettings();
   const { desktopApps: allDesktopApps, uninstallApp } = useMarketplace();
+  const { catalog: widgetsCatalog, installWidget } = useWidgets();
   const dockApps = useDockApps();
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [iconContextMenu, setIconContextMenu] = useState<{ x: number; y: number; appType: AppType } | null>(null);
+  const [widgetGalleryOpen, setWidgetGalleryOpen] = useState(false);
+  const [widgetContextMenu, setWidgetContextMenu] = useState<{ x: number; y: number; instanceId: string } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerRect, setContainerRect] = useState<DOMRect | null>(null);
+
+  const widgetById = useMemo(
+    () => new Map(widgetsCatalog.map((w) => [w.id, w])),
+    [widgetsCatalog]
+  );
 
   const desktopApps = useMemo(
     () => allDesktopApps.filter((t) => !hiddenDesktopApps.includes(t)),
@@ -145,6 +187,32 @@ export function Desktop({ connectionId }: DesktopProps) {
     [uninstallApp]
   );
 
+  const handlePlaceWidget = useCallback(
+    (manifest: MarketplaceWidget) => {
+      installWidget(manifest);
+      const size = (Object.keys(manifest.sizes)[0] ?? "small") as WidgetSize;
+      const position = getNextWidgetPosition(placedWidgets, containerRect);
+      const next: PlacedWidget = { instanceId: randomId(), widgetId: manifest.id, size, position };
+      setPlacedWidgets([...placedWidgets, next]);
+      setWidgetGalleryOpen(false);
+    },
+    [installWidget, placedWidgets, setPlacedWidgets, containerRect]
+  );
+
+  const handleResizeWidget = useCallback(
+    (instanceId: string, size: WidgetSize) => {
+      setPlacedWidgets(placedWidgets.map((w) => (w.instanceId === instanceId ? { ...w, size } : w)));
+    },
+    [placedWidgets, setPlacedWidgets]
+  );
+
+  const handleRemoveWidget = useCallback(
+    (instanceId: string) => {
+      setPlacedWidgets(placedWidgets.filter((w) => w.instanceId !== instanceId));
+    },
+    [placedWidgets, setPlacedWidgets]
+  );
+
   return (
     <div
       ref={containerRef}
@@ -168,6 +236,22 @@ export function Desktop({ connectionId }: DesktopProps) {
       }
       onContextMenu={handleContextMenu}
     >
+      {/* Widgets — sit between the wallpaper and the desktop icons */}
+      {placedWidgets.map((placed) => {
+        const manifest = widgetById.get(placed.widgetId);
+        if (!manifest) return null;
+        return (
+          <WidgetFrame
+            key={placed.instanceId}
+            placed={placed}
+            manifest={manifest}
+            connectionId={connectionId}
+            containerRect={containerRect}
+            onContextMenu={(e) => setWidgetContextMenu({ x: e.clientX, y: e.clientY, instanceId: placed.instanceId })}
+          />
+        );
+      })}
+
       {/* Desktop icons — free-positioned, snap to grid */}
       {desktopApps.map((appType) => (
         <DesktopIcon
@@ -200,6 +284,7 @@ export function Desktop({ connectionId }: DesktopProps) {
           onOpenApp={handleOpenApp}
           onChangeWallpaper={setWallpaper}
           currentWallpaper={wallpaper}
+          onEditWidgets={() => setWidgetGalleryOpen(true)}
         />
       )}
 
@@ -221,6 +306,31 @@ export function Desktop({ connectionId }: DesktopProps) {
           onUninstall={() => handleUninstall(iconContextMenu.appType)}
         />
       )}
+
+      {/* Widget right-click context menu */}
+      {widgetContextMenu &&
+        (() => {
+          const placed = placedWidgets.find((w) => w.instanceId === widgetContextMenu.instanceId);
+          const manifest = placed && widgetById.get(placed.widgetId);
+          if (!placed || !manifest) return null;
+          return (
+            <WidgetContextMenu
+              x={widgetContextMenu.x}
+              y={widgetContextMenu.y}
+              manifest={manifest}
+              currentSize={placed.size}
+              onClose={() => setWidgetContextMenu(null)}
+              onResize={(size) => handleResizeWidget(placed.instanceId, size)}
+              onRemove={() => handleRemoveWidget(placed.instanceId)}
+            />
+          );
+        })()}
+
+      <WidgetGallery
+        open={widgetGalleryOpen}
+        onClose={() => setWidgetGalleryOpen(false)}
+        onPlaceWidget={handlePlaceWidget}
+      />
     </div>
   );
 }

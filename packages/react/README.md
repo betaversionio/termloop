@@ -40,6 +40,34 @@ defineApp("my-image-viewer", (sdk: TermLoopSDK) => {
 });
 ```
 
+## Widgets
+
+Widgets are small, always-visible panels placed directly on the desktop (not opened in a window) — scaffold one with `npm create termloop-app my-widget -- --widget`. Register with `defineWidget` instead of `defineApp`; your component receives `WidgetProps` (`connectionId`, and `size: "small" | "medium" | "large"`) instead of `MarketplaceAppProps`:
+
+```tsx
+import { defineWidget, type TermLoopSDK, type WidgetProps } from "@termloop/react";
+
+defineWidget("clock", (sdk: TermLoopSDK) => {
+  const { React } = sdk;
+  const { useState, useEffect } = React;
+
+  function Clock({ size }: WidgetProps) {
+    const [now, setNow] = useState(new Date());
+    useEffect(() => {
+      const t = setInterval(() => setNow(new Date()), 1000);
+      return () => clearInterval(t);
+    }, []);
+    return <div style={{ fontSize: size === "small" ? 20 : 32 }}>{now.toLocaleTimeString()}</div>;
+  }
+
+  return { default: Clock };
+});
+```
+
+Widgets get the exact same `TermLoopSDK` as apps — including `useSSH`/`useSFTP` — but run unattended for as long as they're placed on the desktop, not just while a window is open, so avoid anything that shouldn't run continuously in the background (e.g. prefer `useStats`'s built-in polling over your own tight interval loop).
+
+A widget manifest (`termloop.widget-manifest.json`) declares `sizes` (at least one of `small`/`medium`/`large`, each with a pixel `width`/`height`) instead of a window's `defaultSize`/`minWidth`/`minHeight`, and may set `requiresApp` to a marketplace app id if the widget only makes sense alongside that app (e.g. a "Docker Containers" widget requiring the Docker app) — omit it for a fully standalone widget.
+
 ## Hooks
 
 All hooks take the active `connectionId` and talk to the connected server over TermLoop's existing SSH/SFTP session — no separate auth or connection setup needed.
@@ -81,9 +109,9 @@ Pre-styled [shadcn/ui](https://ui.shadcn.com/) components matching TermLoop's ow
 - `sdk.utils.cn(...)` — Tailwind class merger (clsx + tailwind-merge)
 - `sdk.utils.request(path, options)` — HTTP helper for calling TermLoop's API directly (paths relative to the API base, e.g. `/sftp/...`, `/stats/...`)
 
-## Publishing your app
+## Publishing your app or widget
 
-`npm run build` (via `create-termloop-app`'s scaffold) produces a single bundle at `dist/<app-id>.js`. Host it wherever your `termloop.manifest.json`'s `bundleUrl` points, then submit the manifest to TermLoop's app catalog.
+`npm run build` (via `create-termloop-app`'s scaffold) produces a single bundle at `dist/<id>.js`. Host it wherever your manifest's `bundleUrl` points, then open a PR adding the entry to `catalog.json` (apps) or `widgets-catalog.json` (widgets) — see [CONTRIBUTING.md](https://github.com/betaversionio/termloop/blob/main/CONTRIBUTING.md).
 
 ## License
 

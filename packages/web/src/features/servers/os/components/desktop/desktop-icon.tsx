@@ -1,10 +1,9 @@
 import { useRef, useCallback } from "react";
 import type { AppType } from "../../types/window";
-import { appRegistry, MENU_BAR_HEIGHT } from "../../lib/os-constants";
+import { appRegistry, MENU_BAR_HEIGHT, GRID_CELL } from "../../lib/os-constants";
 import { useWindowManager } from "../../context/window-manager-context";
 import { useDesktopSettings, type IconPosition } from "../../context/desktop-settings-context";
 
-const GRID_CELL = 90; // snap grid size in px
 const DRAG_THRESHOLD = 5; // px movement before we treat it as a drag
 
 interface DesktopIconProps {

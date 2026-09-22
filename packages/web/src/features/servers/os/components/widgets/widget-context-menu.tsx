@@ -1,41 +1,38 @@
 import { useEffect, useRef } from "react";
-import { appRegistry } from "../../lib/os-constants";
 import { panelClass, itemBase } from "../shared/context-menu-styles";
-import type { AppType, WindowState } from "../../types/window";
+import type { MarketplaceWidget } from "@termloop/shared";
+import type { WidgetSize } from "../../context/desktop-settings-context";
 
 type MenuItem =
-  | { kind: "action"; label: string; onClick: () => void; destructive?: boolean }
+  | { kind: "action"; label: string; onClick: () => void; destructive?: boolean; disabled?: boolean }
   | { kind: "separator" };
 
-interface DockContextMenuProps {
+const SIZE_LABELS: Record<WidgetSize, string> = {
+  small: "Small",
+  medium: "Medium",
+  large: "Large",
+};
+
+interface WidgetContextMenuProps {
   x: number;
   y: number;
-  appType: AppType;
-  windows: WindowState[];
-  isPinned: boolean;
+  manifest: MarketplaceWidget;
+  currentSize: WidgetSize;
   onClose: () => void;
-  onOpen: () => void;
-  onFocusWindow: (id: string) => void;
-  onQuit: () => void;
-  onPin: () => void;
-  onUnpin: () => void;
+  onResize: (size: WidgetSize) => void;
+  onRemove: () => void;
 }
 
-export function DockContextMenu({
+export function WidgetContextMenu({
   x,
   y,
-  appType,
-  windows,
-  isPinned,
+  manifest,
+  currentSize,
   onClose,
-  onOpen,
-  onFocusWindow,
-  onQuit,
-  onPin,
-  onUnpin,
-}: DockContextMenuProps) {
+  onResize,
+  onRemove,
+}: WidgetContextMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const app = appRegistry.get(appType);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -53,32 +50,28 @@ export function DockContextMenu({
     return () => document.removeEventListener("keydown", handler);
   }, [onClose]);
 
-  if (!app) return null;
+  const sizes = Object.keys(manifest.sizes) as WidgetSize[];
 
   const items: MenuItem[] = [
-    ...windows.map((w): MenuItem => ({
+    ...sizes.map((size): MenuItem => ({
       kind: "action",
-      label: `${w.minimized ? "◻ " : "● "}${w.title}`,
-      onClick: () => onFocusWindow(w.id),
+      label: size === currentSize ? `✓ ${SIZE_LABELS[size]}` : SIZE_LABELS[size],
+      onClick: () => onResize(size),
+      disabled: size === currentSize,
     })),
-    ...(windows.length > 0 ? [{ kind: "separator" } as MenuItem] : []),
-    { kind: "action", label: windows.length > 0 ? "New Window" : "Open", onClick: onOpen },
-    ...(windows.length > 0 ? [{ kind: "action", label: "Quit", onClick: onQuit, destructive: true } as MenuItem] : []),
     { kind: "separator" },
-    isPinned
-      ? { kind: "action", label: "Remove from Dock", onClick: onUnpin }
-      : { kind: "action", label: "Keep in Dock", onClick: onPin },
+    { kind: "action", label: "Remove Widget", onClick: onRemove, destructive: true },
   ];
 
   const menuH = items.reduce((h, it) => h + (it.kind === "separator" ? 9 : 28), 44);
-  const ax = Math.min(x, globalThis.innerWidth - 220);
+  const ax = Math.min(x, globalThis.innerWidth - 200);
   const ay = Math.min(y, globalThis.innerHeight - menuH - 20);
 
   return (
-    <div ref={ref} className={`fixed z-[10000] min-w-[200px] ${panelClass}`} style={{ left: ax, top: ay }}>
+    <div ref={ref} className={`fixed z-[10000] min-w-[180px] ${panelClass}`} style={{ left: ax, top: ay }}>
       <div className="flex items-center gap-2 mx-[4px] px-[10px] h-[30px] text-[13px] font-medium text-white/90">
-        <img src={app.iconUrl} alt="" className="h-4 w-4 rounded-[4px]" draggable={false} />
-        {app.title}
+        <img src={manifest.iconUrl} alt="" className="h-4 w-4 rounded-[4px]" draggable={false} />
+        {manifest.name}
       </div>
       <div className="my-[4px] mx-[10px] h-px bg-white/[0.1]" />
 
@@ -90,11 +83,14 @@ export function DockContextMenu({
           <div
             key={it.label + i}
             className={`${itemBase} ${
-              it.destructive
-                ? "text-[#FF6961] hover:bg-[#FF453A] hover:text-white"
-                : "text-[rgba(255,255,255,0.88)] hover:bg-[#3478F6] hover:text-white"
+              it.disabled
+                ? "text-white/40 pointer-events-none"
+                : it.destructive
+                  ? "text-[#FF6961] hover:bg-[#FF453A] hover:text-white"
+                  : "text-[rgba(255,255,255,0.88)] hover:bg-[#3478F6] hover:text-white"
             }`}
             onClick={() => {
+              if (it.disabled) return;
               it.onClick();
               onClose();
             }}

@@ -1,81 +1,101 @@
 import type { MarketplaceAppManifest } from "../types";
-import type { TermLoopSDK, MarketplaceAppProps } from "./sdk";
+import type { TermLoopSDK, MarketplaceAppProps, WidgetProps } from "./sdk";
+import type { MarketplaceWidget } from "@termloop/shared";
 
-type AppFactory = (sdk: TermLoopSDK) => {
-  default: React.ComponentType<MarketplaceAppProps>;
-};
+// The global __termloop_register/React declarations live in @termloop/react
+// (imported transitively via ./sdk) — this file just uses them.
 
-interface LoadedApp {
-  Component: React.ComponentType<MarketplaceAppProps>;
+interface LoadedBundle<TProps> {
+  Component: React.ComponentType<TProps>;
 }
 
-declare global {
-  interface Window {
-    __termloop_register?: (id: string, factory: AppFactory) => void;
-    React?: typeof import("react");
+/** A loadable manifest — apps and widgets only differ in props shape (checked at
+ * the call site via TProps), so this generic loader is shared by both. */
+interface Loadable {
+  id: string;
+  bundleUrl: string;
+}
+
+/** Injects `manifest.bundleUrl` as a `<script>` into document.head (main-world
+ * execution — no iframe/sandbox), which calls the global `__termloop_register(id,
+ * factory)`. Each call site (apps vs. widgets) gets its own independent cache so an
+ * app id and a widget id can never collide. */
+function createBundleLoader<TProps>() {
+  const loaded = new Map<string, LoadedBundle<TProps>>();
+  const pending = new Map<string, Promise<LoadedBundle<TProps>>>();
+
+  async function load(manifest: Loadable, sdk: TermLoopSDK): Promise<LoadedBundle<TProps>> {
+    const cached = loaded.get(manifest.id);
+    if (cached) return cached;
+
+    const inFlight = pending.get(manifest.id);
+    if (inFlight) return inFlight;
+
+    // Expose React globally so bundles built with
+    // `external: ['react']` + `globals: { react: 'React' }` can resolve it
+    window.React = sdk.React;
+
+    const promise = new Promise<LoadedBundle<TProps>>((resolve, reject) => {
+      window.__termloop_register = (id, factory) => {
+        if (id !== manifest.id) return;
+
+        try {
+          const result = factory(sdk) as { default: React.ComponentType<TProps> };
+          const result_: LoadedBundle<TProps> = { Component: result.default };
+          loaded.set(manifest.id, result_);
+          pending.delete(manifest.id);
+          resolve(result_);
+        } catch (err) {
+          pending.delete(manifest.id);
+          reject(err);
+        }
+      };
+
+      const script = document.createElement("script");
+      script.src = manifest.bundleUrl;
+      script.async = true;
+      script.onerror = () => {
+        pending.delete(manifest.id);
+        reject(new Error(`Failed to load bundle: ${manifest.bundleUrl}`));
+      };
+      document.head.appendChild(script);
+    });
+
+    pending.set(manifest.id, promise);
+    return promise;
   }
+
+  function unload(id: string) {
+    loaded.delete(id);
+    pending.delete(id);
+  }
+
+  function isLoaded(id: string): boolean {
+    return loaded.has(id);
+  }
+
+  return { load, unload, isLoaded };
 }
 
-const loadedApps = new Map<string, LoadedApp>();
-const pendingLoads = new Map<string, Promise<LoadedApp>>();
+const appLoader = createBundleLoader<MarketplaceAppProps>();
+const widgetLoader = createBundleLoader<WidgetProps>();
 
-export function setupGlobalRegister() {
-  // The register function is set per-load call, not globally
+export function loadMarketplaceApp(manifest: MarketplaceAppManifest, sdk: TermLoopSDK) {
+  return appLoader.load(manifest, sdk);
 }
-
-export async function loadMarketplaceApp(
-  manifest: MarketplaceAppManifest,
-  sdk: TermLoopSDK
-): Promise<LoadedApp> {
-  // Return from cache
-  const cached = loadedApps.get(manifest.id);
-  if (cached) return cached;
-
-  // Dedup concurrent loads
-  const pending = pendingLoads.get(manifest.id);
-  if (pending) return pending;
-
-  // Expose React globally so marketplace apps built with
-  // `external: ['react']` + `globals: { react: 'React' }` can resolve it
-  window.React = sdk.React;
-
-  const promise = new Promise<LoadedApp>((resolve, reject) => {
-    // Set up the global register callback
-    window.__termloop_register = (id: string, factory: AppFactory) => {
-      if (id !== manifest.id) return;
-
-      try {
-        const result = factory(sdk);
-        const loaded: LoadedApp = { Component: result.default };
-        loadedApps.set(manifest.id, loaded);
-        pendingLoads.delete(manifest.id);
-        resolve(loaded);
-      } catch (err) {
-        pendingLoads.delete(manifest.id);
-        reject(err);
-      }
-    };
-
-    // Inject script tag
-    const script = document.createElement("script");
-    script.src = manifest.bundleUrl;
-    script.async = true;
-    script.onerror = () => {
-      pendingLoads.delete(manifest.id);
-      reject(new Error(`Failed to load app bundle: ${manifest.bundleUrl}`));
-    };
-    document.head.appendChild(script);
-  });
-
-  pendingLoads.set(manifest.id, promise);
-  return promise;
-}
-
 export function unloadMarketplaceApp(id: string) {
-  loadedApps.delete(id);
-  pendingLoads.delete(id);
+  appLoader.unload(id);
+}
+export function isAppLoaded(id: string): boolean {
+  return appLoader.isLoaded(id);
 }
 
-export function isAppLoaded(id: string): boolean {
-  return loadedApps.has(id);
+export function loadMarketplaceWidget(manifest: MarketplaceWidget, sdk: TermLoopSDK) {
+  return widgetLoader.load(manifest, sdk);
+}
+export function unloadMarketplaceWidget(id: string) {
+  widgetLoader.unload(id);
+}
+export function isWidgetLoaded(id: string): boolean {
+  return widgetLoader.isLoaded(id);
 }

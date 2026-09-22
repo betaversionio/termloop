@@ -99,6 +99,11 @@ export const BUILTIN_DOCK_APPS: BuiltInAppType[] = [
 // Reserved space at the bottom of the screen for the dock (maximize bounds, desktop
 // icon grid) — the dock itself sizes to its content via padding, not this value; this
 // just needs to comfortably cover its natural height (~76px) plus its bottom margin.
+export const GRID_CELL = 90; // desktop icon/widget snap grid size in px
+// Visible gap between a widget's card and its neighbors/the screen edges — the
+// widget's *footprint* (used for drag/snap math) can still touch a neighbor's,
+// this is purely a visual inset on the rendered card within that footprint.
+export const WIDGET_GAP = 14;
 export const TASKBAR_HEIGHT = 100;
 export const WINDOW_STAGGER = 30;
 export const TITLE_BAR_HEIGHT = 36;

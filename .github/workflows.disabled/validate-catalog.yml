@@ -1,0 +1,24 @@
+name: Validate Marketplace Catalogs
+
+on:
+  pull_request:
+    paths:
+      - 'packages/web/public/registry/catalog.json'
+      - 'packages/web/public/registry/widgets-catalog.json'
+      - 'scripts/validate-catalog.mjs'
+  push:
+    branches: [main]
+    paths:
+      - 'packages/web/public/registry/catalog.json'
+      - 'packages/web/public/registry/widgets-catalog.json'
+      - 'scripts/validate-catalog.mjs'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Validate catalog.json and widgets-catalog.json
+        run: node scripts/validate-catalog.mjs

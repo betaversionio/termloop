@@ -19,7 +19,7 @@ import { useDesktopSettings } from "@/features/servers/os/context/desktop-settin
 import type { RemoteFile, ServerConnection, ServerStats, ApiResponse } from "@termloop/shared";
 import type { TermLoopSDK, UseWindowResult, UseOSResult } from "@termloop/react";
 
-export type { MarketplaceAppProps, TermLoopSDK } from "@termloop/react";
+export type { MarketplaceAppProps, WidgetProps, TermLoopSDK } from "@termloop/react";
 
 // ---------------------------------------------------------------------------
 //  Domain hooks — real implementations that wrap the TermLoop server API

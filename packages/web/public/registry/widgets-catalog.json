@@ -1,0 +1,51 @@
+[
+  {
+    "id": "clock",
+    "name": "Clock",
+    "description": "Shows the current time and date.",
+    "author": "TermLoop",
+    "version": "1.0.0",
+    "iconUrl": "/widget-icons/clock.svg",
+    "bundleUrl": "/widget-bundles/clock.js",
+    "sizes": {
+      "small": { "width": 180, "height": 180 },
+      "medium": { "width": 360, "height": 180 }
+    },
+    "category": "utilities",
+    "tags": ["clock", "time", "date"]
+  },
+  {
+    "id": "server-stats",
+    "name": "Server Stats",
+    "description": "Live CPU, memory, and disk usage for the connected server.",
+    "author": "TermLoop",
+    "version": "1.0.0",
+    "iconUrl": "/widget-icons/server-stats.svg",
+    "bundleUrl": "/widget-bundles/server-stats.js",
+    "sizes": {
+      "small": { "width": 180, "height": 180 },
+      "medium": { "width": 360, "height": 180 },
+      "large": { "width": 360, "height": 360 }
+    },
+    "category": "utilities",
+    "tags": ["stats", "cpu", "memory", "disk", "monitor"]
+  },
+  {
+    "id": "docker-containers",
+    "name": "Docker Containers",
+    "description": "Shows running containers on the connected server. Requires the Docker app.",
+    "author": "TermLoop",
+    "version": "1.0.0",
+    "iconUrl": "/marketplace-icons/docker.webp",
+    "bundleUrl": "/widget-bundles/docker-containers.js",
+    "sizes": {
+      "small": { "width": 180, "height": 180 },
+      "medium": { "width": 180, "height": 360 },
+      "large": { "width": 360, "height": 360 }
+    },
+    "requiresApp": "docker-manager",
+    "category": "development",
+    "tags": ["docker", "containers", "devops"],
+    "incompatiblePlatforms": ["OS400"]
+  }
+]

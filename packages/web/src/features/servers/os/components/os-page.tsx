@@ -1,6 +1,7 @@
 import { WindowManagerProvider } from "../context/window-manager-context";
 import { DesktopSettingsProvider } from "../context/desktop-settings-context";
 import { MarketplaceProvider } from "@/features/servers/marketplace/components/marketplace-context";
+import { WidgetsProvider } from "@/features/servers/marketplace/components/widgets-context";
 import { Desktop } from "./desktop/desktop";
 import { Taskbar } from "./taskbar/taskbar";
 import { MenuBar } from "./menubar/menu-bar";
@@ -17,12 +18,14 @@ export function OsPage({ connectionId }: OsPageProps) {
     <DesktopSettingsProvider key={connectionId} connectionId={connectionId}>
       <WindowManagerProvider connectionId={connectionId}>
         <MarketplaceProvider connectionId={connectionId}>
-          <div className="os-desktop fixed inset-0 z-50 flex flex-col">
-            <MenuBar />
-            <Desktop connectionId={connectionId} />
-            <Taskbar />
-          </div>
-          <FilePickerDialog />
+          <WidgetsProvider connectionId={connectionId}>
+            <div className="os-desktop fixed inset-0 z-50 flex flex-col">
+              <MenuBar />
+              <Desktop connectionId={connectionId} />
+              <Taskbar />
+            </div>
+            <FilePickerDialog />
+          </WidgetsProvider>
         </MarketplaceProvider>
       </WindowManagerProvider>
     </DesktopSettingsProvider>

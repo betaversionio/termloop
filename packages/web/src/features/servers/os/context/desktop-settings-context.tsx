@@ -5,6 +5,17 @@ export interface IconPosition {
   y: number;
 }
 
+export type WidgetSize = "small" | "medium" | "large";
+
+export interface PlacedWidget {
+  /** Unique per placed instance — distinct from `widgetId`, since the same widget
+   * can be placed on the desktop more than once (e.g. two Clocks for two timezones). */
+  instanceId: string;
+  widgetId: string;
+  size: WidgetSize;
+  position: IconPosition;
+}
+
 interface DesktopSettingsContext {
   wallpaper: string;
   setWallpaper: (id: string) => void;
@@ -14,6 +25,8 @@ interface DesktopSettingsContext {
   setDockOrder: (order: string[]) => void;
   hiddenDesktopApps: string[];
   setHiddenDesktopApps: (ids: string[]) => void;
+  placedWidgets: PlacedWidget[];
+  setPlacedWidgets: (widgets: PlacedWidget[]) => void;
 }
 
 const DesktopSettingsContext = createContext<DesktopSettingsContext>({
@@ -25,6 +38,8 @@ const DesktopSettingsContext = createContext<DesktopSettingsContext>({
   setDockOrder: () => {},
   hiddenDesktopApps: [],
   setHiddenDesktopApps: () => {},
+  placedWidgets: [],
+  setPlacedWidgets: () => {},
 });
 
 const STORAGE_PREFIX = "termloop-desktop-settings";
@@ -34,6 +49,7 @@ interface StoredSettings {
   iconPositions?: Record<string, IconPosition>;
   dockOrder?: string[];
   hiddenDesktopApps?: string[];
+  placedWidgets?: PlacedWidget[];
 }
 
 function storageKey(connectionId: string) {
@@ -74,6 +90,10 @@ export function DesktopSettingsProvider({ connectionId, children }: DesktopSetti
     () => loadSettings(connectionId).hiddenDesktopApps || []
   );
 
+  const [placedWidgets, setPlacedWidgetsState] = useState<PlacedWidget[]>(
+    () => loadSettings(connectionId).placedWidgets || []
+  );
+
   const persist = useCallback(
     (overrides: Partial<StoredSettings>) => {
       saveSettings(connectionId, {
@@ -81,10 +101,11 @@ export function DesktopSettingsProvider({ connectionId, children }: DesktopSetti
         iconPositions,
         dockOrder: dockOrder ?? undefined,
         hiddenDesktopApps,
+        placedWidgets,
         ...overrides,
       });
     },
-    [connectionId, wallpaper, iconPositions, dockOrder, hiddenDesktopApps]
+    [connectionId, wallpaper, iconPositions, dockOrder, hiddenDesktopApps, placedWidgets]
   );
 
   const setWallpaper = useCallback((id: string) => {
@@ -110,6 +131,11 @@ export function DesktopSettingsProvider({ connectionId, children }: DesktopSetti
     persist({ hiddenDesktopApps: ids });
   }, [persist]);
 
+  const setPlacedWidgets = useCallback((widgets: PlacedWidget[]) => {
+    setPlacedWidgetsState(widgets);
+    persist({ placedWidgets: widgets });
+  }, [persist]);
+
   return (
     <DesktopSettingsContext
       value={{
@@ -121,6 +147,8 @@ export function DesktopSettingsProvider({ connectionId, children }: DesktopSetti
         setDockOrder,
         hiddenDesktopApps,
         setHiddenDesktopApps,
+        placedWidgets,
+        setPlacedWidgets,
       }}
     >
       {children}

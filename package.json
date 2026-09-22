@@ -27,7 +27,8 @@
     "publish:dry": "cd apps/cli && pnpm publish --dry-run --no-git-checks",
     "publish:npm": "cd apps/cli && pnpm publish --no-git-checks",
     "lint": "turbo lint",
-    "clean": "turbo clean"
+    "clean": "turbo clean",
+    "validate-catalog": "node scripts/validate-catalog.mjs"
   },
   "devDependencies": {
     "turbo": "^2.11.2",

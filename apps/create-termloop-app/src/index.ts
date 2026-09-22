@@ -173,21 +173,102 @@ function manifest(name: string): string {
 }
 
 // ---------------------------------------------------------------------------
+//  Widget template files
+// ---------------------------------------------------------------------------
+
+function widgetMainTsx(name: string): string {
+  return `import { createWidget } from "./Widget";
+import type { WidgetFactory } from "@termloop/react";
+
+declare global {
+  interface Window {
+    __termloop_register?: (id: string, factory: WidgetFactory) => void;
+  }
+}
+
+window.__termloop_register?.("${name}", (sdk) => {
+  return { default: createWidget(sdk) };
+});
+`;
+}
+
+function widgetTsx(name: string): string {
+  const componentName = toPascal(name);
+  return `// Needed for JSX to type-check under the classic transform (see vite.config.ts) —
+// at runtime this import is externalized to the host's own React instance instead of
+// bundling a second copy, so you never call anything on it directly.
+import React from "react";
+import type { TermLoopSDK, WidgetProps } from "@termloop/react";
+
+export function createWidget(sdk: TermLoopSDK) {
+  const { useConnection } = sdk.hooks;
+
+  return function ${componentName}({ connectionId, size }: WidgetProps) {
+    const connection = useConnection(connectionId);
+    const fontSize = size === "small" ? 14 : size === "medium" ? 18 : 24;
+
+    return (
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "white",
+          fontSize,
+          textAlign: "center",
+          padding: 12,
+        }}
+      >
+        {connection.data?.name ?? connectionId}
+      </div>
+    );
+  };
+}
+`;
+}
+
+function widgetManifest(name: string): string {
+  return JSON.stringify(
+    {
+      id: name,
+      name: toPascal(name),
+      description: `A TermLoop desktop widget`,
+      author: "",
+      version: "0.1.0",
+      iconUrl: "",
+      bundleUrl: `https://registry.termloop.dev/widgets/${name}/${name}.js`,
+      sizes: {
+        small: { width: 180, height: 180 },
+        medium: { width: 360, height: 180 },
+      },
+      category: "utilities",
+    },
+    null,
+    2
+  );
+}
+
+// ---------------------------------------------------------------------------
 //  Main
 // ---------------------------------------------------------------------------
 
 function main() {
   const args = process.argv.slice(2);
-  const rawName = args[0];
+  const isWidget = args.includes("--widget");
+  const rawName = args.find((a) => !a.startsWith("-"));
 
-  if (!rawName || rawName === "--help" || rawName === "-h") {
+  if (!rawName || args.includes("--help") || args.includes("-h")) {
     console.log(`
-Usage: create-termloop-app <app-name>
+Usage: create-termloop-app <name> [--widget]
 
-Scaffolds a new TermLoop marketplace app project.
+Scaffolds a new TermLoop marketplace app project. Pass --widget to scaffold a
+desktop widget instead (a small, always-visible panel, not a windowed app).
 
-Example:
+Examples:
   npx create-termloop-app my-app
+  npx create-termloop-app my-widget --widget
   cd my-app
   npm install
   npm run build
@@ -198,26 +279,38 @@ Example:
   const name = toKebab(basename(rawName));
   const dir = resolve(process.cwd(), rawName);
 
-  console.log(`\nCreating TermLoop app in ${dir}\n`);
+  console.log(`\nCreating TermLoop ${isWidget ? "widget" : "app"} in ${dir}\n`);
 
   // Create directories
   mkdirSync(join(dir, "src"), { recursive: true });
 
   // Write files
-  const files: [string, string][] = [
-    ["package.json", packageJson(name)],
-    ["tsconfig.json", tsconfig()],
-    ["vite.config.ts", viteConfig(name)],
-    ["src/main.tsx", mainTsx(name)],
-    ["src/App.tsx", appTsx(name)],
-    ["termloop.manifest.json", manifest(name)],
-  ];
+  const files: [string, string][] = isWidget
+    ? [
+        ["package.json", packageJson(name)],
+        ["tsconfig.json", tsconfig()],
+        ["vite.config.ts", viteConfig(name)],
+        ["src/main.tsx", widgetMainTsx(name)],
+        ["src/Widget.tsx", widgetTsx(name)],
+        ["termloop.widget-manifest.json", widgetManifest(name)],
+      ]
+    : [
+        ["package.json", packageJson(name)],
+        ["tsconfig.json", tsconfig()],
+        ["vite.config.ts", viteConfig(name)],
+        ["src/main.tsx", mainTsx(name)],
+        ["src/App.tsx", appTsx(name)],
+        ["termloop.manifest.json", manifest(name)],
+      ];
 
   for (const [path, content] of files) {
     const fullPath = join(dir, path);
     writeFileSync(fullPath, content, "utf-8");
     console.log(`  created ${path}`);
   }
+
+  const manifestFile = isWidget ? "termloop.widget-manifest.json" : "termloop.manifest.json";
+  const catalogFile = isWidget ? "widgets-catalog.json" : "catalog.json";
 
   console.log(`
 Done! Next steps:
@@ -227,7 +320,8 @@ Done! Next steps:
   npm run build
 
 The built bundle will be at dist/${name}.js
-Upload it to your registry and add the manifest to catalog.json.
+Upload it to your registry, then submit a PR adding your ${manifestFile}
+entry to ${catalogFile} — see CONTRIBUTING.md.
 `);
 }
 
