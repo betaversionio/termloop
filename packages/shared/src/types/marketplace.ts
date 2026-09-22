@@ -21,6 +21,12 @@ export interface MarketplaceApp {
   showInDock: boolean;
   category: "tools" | "media" | "development" | "utilities" | "other";
   tags?: string[];
+  /**
+   * `uname -s` platform values (e.g. "Linux", "Darwin", "OS400") this app cannot
+   * run against — used to hide it from the App Store and desktop/dock on servers
+   * where it wouldn't work (e.g. a Docker app on IBM i PASE, which has no daemon).
+   */
+  incompatiblePlatforms?: string[];
   screenshots?: string[];
   rating?: number;
   ratingCount?: number;

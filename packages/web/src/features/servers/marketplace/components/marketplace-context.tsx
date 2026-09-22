@@ -21,20 +21,26 @@ import {
 import { buildSDK, type TermLoopSDK } from "../lib/sdk";
 import { loadMarketplaceApp, unloadMarketplaceApp } from "../lib/app-loader";
 import type { MarketplaceAppProps } from "../lib/sdk";
+import { isPlatformCompatible } from "../lib/platform-compat";
+import { useServerConnection } from "../../hooks/use-server-connection";
 
-const STORAGE_KEY = "termloop-marketplace-installed";
+const STORAGE_PREFIX = "termloop-marketplace-installed";
 
-function loadInstalledApps(): InstalledApp[] {
+function storageKey(connectionId: string) {
+  return `${STORAGE_PREFIX}:${connectionId}`;
+}
+
+function loadInstalledApps(connectionId: string): InstalledApp[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey(connectionId));
     if (raw) return JSON.parse(raw) as InstalledApp[];
   } catch {}
   return [];
 }
 
-function saveInstalledApps(apps: InstalledApp[]) {
+function saveInstalledApps(connectionId: string, apps: InstalledApp[]) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(apps));
+    localStorage.setItem(storageKey(connectionId), JSON.stringify(apps));
   } catch {}
 }
 
@@ -61,9 +67,19 @@ interface MarketplaceProviderProps {
 }
 
 export function MarketplaceProvider({ connectionId, children }: MarketplaceProviderProps) {
-  const [installedApps, setInstalledApps] = useState<InstalledApp[]>(loadInstalledApps);
+  const [installedApps, setInstalledApps] = useState<InstalledApp[]>(() =>
+    loadInstalledApps(connectionId)
+  );
 
-  const { data: catalog = [], isLoading: catalogLoading, error: catalogError } = useMarketplaceCatalog();
+  const { data: rawCatalog = [], isLoading: catalogLoading, error: catalogError } = useMarketplaceCatalog();
+  const connection = useServerConnection(connectionId);
+  const platform = connection?.systemInfo?.platform;
+
+  // Hide apps the connected server's platform can't run (e.g. a Docker app on IBM i PASE)
+  const catalog = useMemo(
+    () => rawCatalog.filter((app) => isPlatformCompatible(app, platform)),
+    [rawCatalog, platform]
+  );
 
   const sdk = useMemo<TermLoopSDK>(() => buildSDK(), []);
 
@@ -92,10 +108,10 @@ export function MarketplaceProvider({ connectionId, children }: MarketplaceProvi
     }
   }, [installedApps]);
 
-  // Persist to localStorage
+  // Persist to localStorage, scoped per server
   useEffect(() => {
-    saveInstalledApps(installedApps);
-  }, [installedApps]);
+    saveInstalledApps(connectionId, installedApps);
+  }, [connectionId, installedApps]);
 
   const installApp = useCallback((manifest: MarketplaceAppManifest) => {
     setInstalledApps((prev) => {
@@ -147,20 +163,21 @@ export function MarketplaceProvider({ connectionId, children }: MarketplaceProvi
     [sdk]
   );
 
-  // Build dynamic desktop/dock app lists
+  // Build dynamic desktop/dock app lists — installed apps incompatible with the
+  // connected server's platform are excluded even if they were installed elsewhere
   const desktopApps = useMemo<AppType[]>(() => {
     const marketDesktop = installedApps
-      .filter((a) => a.manifest.showOnDesktop)
+      .filter((a) => a.manifest.showOnDesktop && isPlatformCompatible(a.manifest, platform))
       .map((a) => toMarketAppType(a.manifest.id) as AppType);
     return [...BUILTIN_DESKTOP_APPS, ...marketDesktop];
-  }, [installedApps]);
+  }, [installedApps, platform]);
 
   const dockApps = useMemo<AppType[]>(() => {
     const marketDock = installedApps
-      .filter((a) => a.manifest.showInDock)
+      .filter((a) => a.manifest.showInDock && isPlatformCompatible(a.manifest, platform))
       .map((a) => toMarketAppType(a.manifest.id) as AppType);
     return [...BUILTIN_DOCK_APPS, ...marketDock];
-  }, [installedApps]);
+  }, [installedApps, platform]);
 
   const value = useMemo<MarketplaceContextValue>(
     () => ({

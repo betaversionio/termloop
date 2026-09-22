@@ -14,11 +14,15 @@ const emptyState: WindowManagerState = {
   windowCounter: 0,
 };
 
-const STORAGE_KEY = "termloop-window-state";
+const STORAGE_PREFIX = "termloop-window-state";
 
-function loadState(): WindowManagerState {
+function storageKey(connectionId: string) {
+  return `${STORAGE_PREFIX}:${connectionId}`;
+}
+
+function loadState(connectionId: string): WindowManagerState {
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey(connectionId));
     if (raw) {
       const parsed = JSON.parse(raw) as WindowManagerState;
       if (Array.isArray(parsed.windows)) return parsed;
@@ -27,9 +31,9 @@ function loadState(): WindowManagerState {
   return emptyState;
 }
 
-function saveState(state: WindowManagerState) {
+function saveState(connectionId: string, state: WindowManagerState) {
   try {
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    localStorage.setItem(storageKey(connectionId), JSON.stringify(state));
   } catch {}
 }
 
@@ -177,15 +181,21 @@ const WindowManagerContext = createContext<WindowManagerContextValue | null>(
   null
 );
 
-export function WindowManagerProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(windowReducer, undefined, loadState);
+interface WindowManagerProviderProps {
+  connectionId: string;
+  children: ReactNode;
+}
 
-  // Persist state changes to sessionStorage (debounced)
+export function WindowManagerProvider({ connectionId, children }: WindowManagerProviderProps) {
+  const [state, dispatch] = useReducer(windowReducer, connectionId, loadState);
+
+  // Persist state changes to localStorage (debounced), scoped per server so open
+  // windows survive a reload/relaunch and don't leak between different servers.
   const rafRef = useRef(0);
   useEffect(() => {
     cancelAnimationFrame(rafRef.current);
-    rafRef.current = requestAnimationFrame(() => saveState(state));
-  }, [state]);
+    rafRef.current = requestAnimationFrame(() => saveState(connectionId, state));
+  }, [connectionId, state]);
 
   return (
     <WindowManagerContext.Provider value={{ state, dispatch }}>

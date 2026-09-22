@@ -13,5 +13,12 @@
   "dummy": {
     "description": "Upload and run a dummy test script (localScript demo)",
     "localScript": ".termloop/dummy.sh"
+  },
+  "tn5250": {
+    "description": "Open a 5250 terminal session to the local IBM i system",
+    "command": {
+      "default": "echo tn5250 not available on this connection",
+      "Eradani Skytap": "/QOpenSys/pkgs/bin/tn5250 localhost"
+    }
   }
 }

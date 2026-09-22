@@ -12,8 +12,10 @@ interface OsPageProps {
 
 export function OsPage({ connectionId }: OsPageProps) {
   return (
-    <DesktopSettingsProvider>
-      <WindowManagerProvider>
+    // Keyed by connectionId so switching servers remounts the whole desktop tree
+    // instead of reusing state initialized for a different server.
+    <DesktopSettingsProvider key={connectionId} connectionId={connectionId}>
+      <WindowManagerProvider connectionId={connectionId}>
         <MarketplaceProvider connectionId={connectionId}>
           <div className="os-desktop fixed inset-0 z-50 flex flex-col">
             <MenuBar />
