@@ -2,14 +2,17 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useWindowManager } from "../../context/window-manager-context";
 import { useDesktopSettings } from "../../context/desktop-settings-context";
 import { useMarketplace } from "@/features/servers/marketplace/components/marketplace-context";
+import { fromMarketAppType } from "@/features/servers/marketplace/types";
+import { useDockApps } from "../../hooks/use-dock-apps";
 import { TASKBAR_HEIGHT, MENU_BAR_HEIGHT } from "../../lib/os-constants";
 import { WALLPAPERS } from "../../lib/wallpapers";
 import { DesktopIcon } from "./desktop-icon";
 import { DesktopContextMenu } from "./desktop-context-menu";
+import { DesktopIconContextMenu } from "./desktop-icon-context-menu";
 import { WindowFrame } from "../window/window-frame";
 import { AppRenderer } from "../apps/app-renderer";
 import { cn } from "@/lib/utils";
-import type { AppType } from "../../types/window";
+import { isMarketplaceApp, type AppType } from "../../types/window";
 import type { IconPosition } from "../../context/desktop-settings-context";
 
 const GRID_CELL = 90;
@@ -50,11 +53,19 @@ interface DesktopProps {
 
 export function Desktop({ connectionId }: DesktopProps) {
   const { state, dispatch } = useWindowManager();
-  const { wallpaper, setWallpaper, iconPositions } = useDesktopSettings();
-  const { desktopApps } = useMarketplace();
+  const { wallpaper, setWallpaper, iconPositions, hiddenDesktopApps, setHiddenDesktopApps, setDockOrder } =
+    useDesktopSettings();
+  const { desktopApps: allDesktopApps, uninstallApp } = useMarketplace();
+  const dockApps = useDockApps();
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [iconContextMenu, setIconContextMenu] = useState<{ x: number; y: number; appType: AppType } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerRect, setContainerRect] = useState<DOMRect | null>(null);
+
+  const desktopApps = useMemo(
+    () => allDesktopApps.filter((t) => !hiddenDesktopApps.includes(t)),
+    [allDesktopApps, hiddenDesktopApps]
+  );
 
   useEffect(() => {
     const el = containerRef.current;
@@ -95,6 +106,45 @@ export function Desktop({ connectionId }: DesktopProps) {
     [dispatch]
   );
 
+  const handleFocusWindow = useCallback(
+    (id: string) => {
+      const win = state.windows.find((w) => w.id === id);
+      if (!win) return;
+      dispatch({ type: win.minimized ? "RESTORE" : "FOCUS", id });
+    },
+    [state.windows, dispatch]
+  );
+
+  const handleQuit = useCallback(
+    (appType: AppType) => {
+      for (const w of state.windows.filter((w) => w.appType === appType)) {
+        dispatch({ type: "CLOSE", id: w.id });
+      }
+    },
+    [state.windows, dispatch]
+  );
+
+  const handlePinToDock = useCallback(
+    (appType: AppType) => {
+      if (!dockApps.includes(appType)) setDockOrder([...dockApps, appType]);
+    },
+    [dockApps, setDockOrder]
+  );
+
+  const handleRemoveFromDesktop = useCallback(
+    (appType: AppType) => {
+      setHiddenDesktopApps([...hiddenDesktopApps, appType]);
+    },
+    [hiddenDesktopApps, setHiddenDesktopApps]
+  );
+
+  const handleUninstall = useCallback(
+    (appType: AppType) => {
+      if (isMarketplaceApp(appType)) uninstallApp(fromMarketAppType(appType));
+    },
+    [uninstallApp]
+  );
+
   return (
     <div
       ref={containerRef}
@@ -125,6 +175,7 @@ export function Desktop({ connectionId }: DesktopProps) {
           appType={appType}
           position={positions[appType] ?? { x: 0, y: 0 }}
           containerRect={containerRect}
+          onContextMenu={(e) => setIconContextMenu({ x: e.clientX, y: e.clientY, appType })}
         />
       ))}
 
@@ -149,6 +200,25 @@ export function Desktop({ connectionId }: DesktopProps) {
           onOpenApp={handleOpenApp}
           onChangeWallpaper={setWallpaper}
           currentWallpaper={wallpaper}
+        />
+      )}
+
+      {/* Desktop icon right-click context menu */}
+      {iconContextMenu && (
+        <DesktopIconContextMenu
+          x={iconContextMenu.x}
+          y={iconContextMenu.y}
+          appType={iconContextMenu.appType}
+          windows={state.windows.filter((w) => w.appType === iconContextMenu.appType)}
+          isPinnedToDock={dockApps.includes(iconContextMenu.appType)}
+          canUninstall={isMarketplaceApp(iconContextMenu.appType)}
+          onClose={() => setIconContextMenu(null)}
+          onOpen={() => handleOpenApp(iconContextMenu.appType)}
+          onFocusWindow={handleFocusWindow}
+          onQuit={() => handleQuit(iconContextMenu.appType)}
+          onPinToDock={() => handlePinToDock(iconContextMenu.appType)}
+          onRemoveFromDesktop={() => handleRemoveFromDesktop(iconContextMenu.appType)}
+          onUninstall={() => handleUninstall(iconContextMenu.appType)}
         />
       )}
     </div>

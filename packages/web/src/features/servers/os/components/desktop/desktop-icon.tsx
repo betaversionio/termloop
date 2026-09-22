@@ -1,6 +1,6 @@
 import { useRef, useCallback } from "react";
 import type { AppType } from "../../types/window";
-import { appRegistry } from "../../lib/os-constants";
+import { appRegistry, MENU_BAR_HEIGHT } from "../../lib/os-constants";
 import { useWindowManager } from "../../context/window-manager-context";
 import { useDesktopSettings, type IconPosition } from "../../context/desktop-settings-context";
 
@@ -11,9 +11,10 @@ interface DesktopIconProps {
   appType: AppType;
   position: IconPosition;
   containerRect: DOMRect | null;
+  onContextMenu?: (e: React.MouseEvent) => void;
 }
 
-export function DesktopIcon({ appType, position, containerRect }: DesktopIconProps) {
+export function DesktopIcon({ appType, position, containerRect, onContextMenu }: DesktopIconProps) {
   const { dispatch } = useWindowManager();
   const { setIconPosition } = useDesktopSettings();
   const app = appRegistry.get(appType);
@@ -35,7 +36,9 @@ export function DesktopIcon({ appType, position, containerRect }: DesktopIconPro
       const maxY = containerRect.height - GRID_CELL;
       return {
         x: Math.max(0, Math.min(snappedX, maxX)),
-        y: Math.max(0, Math.min(snappedY, maxY)),
+        // Never snap above the menu bar — it sits on top of the desktop and would
+        // otherwise hide (or fight for clicks with) an icon dragged under it.
+        y: Math.max(MENU_BAR_HEIGHT, Math.min(snappedY, maxY)),
       };
     },
     [containerRect],
@@ -99,6 +102,11 @@ export function DesktopIcon({ appType, position, containerRect }: DesktopIconPro
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onContextMenu?.(e);
+      }}
       onDoubleClick={() => {
         if (!didDrag.current) dispatch({ type: "OPEN", appType });
       }}

@@ -12,6 +12,8 @@ interface DesktopSettingsContext {
   setIconPosition: (appType: string, pos: IconPosition) => void;
   dockOrder: string[] | null;
   setDockOrder: (order: string[]) => void;
+  hiddenDesktopApps: string[];
+  setHiddenDesktopApps: (ids: string[]) => void;
 }
 
 const DesktopSettingsContext = createContext<DesktopSettingsContext>({
@@ -21,6 +23,8 @@ const DesktopSettingsContext = createContext<DesktopSettingsContext>({
   setIconPosition: () => {},
   dockOrder: null,
   setDockOrder: () => {},
+  hiddenDesktopApps: [],
+  setHiddenDesktopApps: () => {},
 });
 
 const STORAGE_PREFIX = "termloop-desktop-settings";
@@ -29,6 +33,7 @@ interface StoredSettings {
   wallpaper?: string;
   iconPositions?: Record<string, IconPosition>;
   dockOrder?: string[];
+  hiddenDesktopApps?: string[];
 }
 
 function storageKey(connectionId: string) {
@@ -65,16 +70,21 @@ export function DesktopSettingsProvider({ connectionId, children }: DesktopSetti
     () => loadSettings(connectionId).dockOrder || null
   );
 
+  const [hiddenDesktopApps, setHiddenDesktopAppsState] = useState<string[]>(
+    () => loadSettings(connectionId).hiddenDesktopApps || []
+  );
+
   const persist = useCallback(
     (overrides: Partial<StoredSettings>) => {
       saveSettings(connectionId, {
         wallpaper,
         iconPositions,
         dockOrder: dockOrder ?? undefined,
+        hiddenDesktopApps,
         ...overrides,
       });
     },
-    [connectionId, wallpaper, iconPositions, dockOrder]
+    [connectionId, wallpaper, iconPositions, dockOrder, hiddenDesktopApps]
   );
 
   const setWallpaper = useCallback((id: string) => {
@@ -95,9 +105,23 @@ export function DesktopSettingsProvider({ connectionId, children }: DesktopSetti
     persist({ dockOrder: order });
   }, [persist]);
 
+  const setHiddenDesktopApps = useCallback((ids: string[]) => {
+    setHiddenDesktopAppsState(ids);
+    persist({ hiddenDesktopApps: ids });
+  }, [persist]);
+
   return (
     <DesktopSettingsContext
-      value={{ wallpaper, setWallpaper, iconPositions, setIconPosition, dockOrder, setDockOrder }}
+      value={{
+        wallpaper,
+        setWallpaper,
+        iconPositions,
+        setIconPosition,
+        dockOrder,
+        setDockOrder,
+        hiddenDesktopApps,
+        setHiddenDesktopApps,
+      }}
     >
       {children}
     </DesktopSettingsContext>

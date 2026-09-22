@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useWindowManager } from '../../context/window-manager-context';
-import { useMarketplace } from '@/features/servers/marketplace/components/marketplace-context';
 import { useDesktopSettings } from '../../context/desktop-settings-context';
+import { useDockApps } from '../../hooks/use-dock-apps';
 import type { AppType } from '../../types/window';
 import { DockIcon } from './dock-icon';
 import { DockContextMenu } from './dock-context-menu';
@@ -12,22 +12,12 @@ import { cn } from '@/lib/utils';
 
 export function Taskbar() {
   const { state, dispatch } = useWindowManager();
-  const { dockApps: defaultDockApps } = useMarketplace();
-  const { dockOrder, setDockOrder } = useDesktopSettings();
+  const { setDockOrder } = useDesktopSettings();
+  const dockApps = useDockApps();
   const [launchpadOpen, setLaunchpadOpen] = useState(false);
   const [draggedType, setDraggedType] = useState<AppType | null>(null);
   const [dragOverType, setDragOverType] = useState<AppType | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; appType: AppType } | null>(null);
-
-  // Apply the user's saved reorder on top of the default (install-order) list — apps
-  // no longer pinned drop out, newly pinned ones are appended at the end.
-  const dockApps = useMemo<AppType[]>(() => {
-    if (!dockOrder) return defaultDockApps;
-    const known = new Set(defaultDockApps);
-    const ordered = dockOrder.filter((t): t is AppType => known.has(t as AppType));
-    const missing = defaultDockApps.filter((t) => !ordered.includes(t));
-    return [...ordered, ...missing];
-  }, [defaultDockApps, dockOrder]);
 
   const topWindow = state.windows
     .filter((w) => !w.minimized)
