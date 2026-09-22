@@ -62,10 +62,25 @@
         {
           "id": "termloopSessions",
           "name": "Active Sessions",
-          "icon": "media/connections.svg"
+          "icon": "media/sessions.svg"
+        },
+        {
+          "id": "termloopMcp",
+          "name": "MCP",
+          "icon": "media/mcp.svg"
         }
       ]
     },
+    "viewsWelcome": [
+      {
+        "view": "termloopConnections",
+        "contents": "No servers yet.\n[Add a Server](command:termloop.addConnection)"
+      },
+      {
+        "view": "termloopSessions",
+        "contents": "No active sessions.\nOpen a terminal from a server in Connections to start one."
+      }
+    ],
     "commands": [
       {
         "command": "termloop.refreshConnections",
@@ -80,6 +95,16 @@
       {
         "command": "termloop.openTerminal",
         "title": "TermLoop: Open Terminal"
+      },
+      {
+        "command": "termloop.editConnection",
+        "title": "TermLoop: Edit Connection",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "termloop.deleteConnection",
+        "title": "TermLoop: Delete Connection",
+        "icon": "$(trash)"
       },
       {
         "command": "termloop.browseFiles",
@@ -97,8 +122,8 @@
         "icon": "$(window)"
       },
       {
-        "command": "termloop.copyMcpConnectCommand",
-        "title": "TermLoop: Copy Claude MCP Connect Command",
+        "command": "termloop.copyMcpTarget",
+        "title": "TermLoop: Copy MCP Connect String",
         "icon": "$(copy)"
       },
       {
@@ -138,11 +163,6 @@
           "group": "navigation"
         },
         {
-          "command": "termloop.copyMcpConnectCommand",
-          "when": "view == termloopConnections",
-          "group": "navigation"
-        },
-        {
           "command": "termloop.refreshSessions",
           "when": "view == termloopSessions",
           "group": "navigation"
@@ -159,6 +179,11 @@
           "group": "inline"
         },
         {
+          "command": "termloop.copyMcpTarget",
+          "when": "view == termloopMcp && viewItem == termloopMcpTarget",
+          "group": "inline"
+        },
+        {
           "command": "termloop.openConnectionInBrowser",
           "when": "view == termloopConnections && viewItem == termloopConnection",
           "group": "inline"
@@ -166,6 +191,16 @@
         {
           "command": "termloop.openOsDesktop",
           "when": "view == termloopConnections && viewItem == termloopConnection"
+        },
+        {
+          "command": "termloop.editConnection",
+          "when": "view == termloopConnections && viewItem == termloopConnection",
+          "group": "7_modification"
+        },
+        {
+          "command": "termloop.deleteConnection",
+          "when": "view == termloopConnections && viewItem == termloopConnection",
+          "group": "9_delete"
         },
         {
           "command": "termloop.attachSessionTerminal",

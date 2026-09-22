@@ -29,23 +29,18 @@ async function waitForDaemon(): Promise<string | null> {
   return null;
 }
 
-/** Finds a running TermLoop daemon, prompting the user to start one if none is found. */
+/** Finds a running TermLoop daemon, starting one automatically (no prompt) if none is found. */
 export async function ensureDaemon(): Promise<string> {
   const existing = await findRunningDaemon();
   if (existing) {
     return `http://localhost:${existing.port}`;
   }
 
-  const choice = await vscode.window.showInformationMessage(
-    "TermLoop isn't running.",
-    "Start"
-  );
-  if (choice !== "Start") {
-    throw new Error("TermLoop daemon is not running");
-  }
-
   spawnDaemon();
-  const url = await waitForDaemon();
+  const url = await vscode.window.withProgress(
+    { location: vscode.ProgressLocation.Notification, title: "Starting TermLoop…" },
+    () => waitForDaemon()
+  );
   if (!url) {
     throw new Error("Timed out waiting for the TermLoop daemon to start");
   }

@@ -3,23 +3,29 @@ import { createClient, type ServerConnection, type ServerConnectionInput, type T
 import { ensureDaemon } from "./daemonManager.js";
 import { ConnectionsTreeProvider } from "./connectionsTreeProvider.js";
 import { SessionsTreeProvider, type SessionItem } from "./sessionsTreeProvider.js";
+import { McpTreeProvider, type McpTargetItem } from "./mcpTreeProvider.js";
 import { openTerminal } from "./terminal.js";
 import { TermLoopFsProvider } from "./fileSystemProvider.js";
 import { loadManifest, watchManifest, resolveAlias, type CommandManifest } from "./commandAliases.js";
 import { openOsDesktop } from "./osWebview.js";
 import { uploadLocalScript } from "./localScriptRunner.js";
 
-async function promptForConnection(): Promise<ServerConnectionInput | undefined> {
-  const name = await vscode.window.showInputBox({ prompt: "Connection name" });
+/** Prompts through the connection fields, pre-filled from `existing` when editing. For the
+ * secret (password/private key), leaving it blank on an edit keeps the current value. */
+async function promptForConnection(existing?: ServerConnection): Promise<ServerConnectionInput | undefined> {
+  const name = await vscode.window.showInputBox({ prompt: "Connection name", value: existing?.name });
   if (!name) return undefined;
 
-  const host = await vscode.window.showInputBox({ prompt: "Host" });
+  const host = await vscode.window.showInputBox({ prompt: "Host", value: existing?.host });
   if (!host) return undefined;
 
-  const portInput = await vscode.window.showInputBox({ prompt: "Port", value: "22" });
+  const portInput = await vscode.window.showInputBox({
+    prompt: "Port",
+    value: String(existing?.port ?? 22),
+  });
   if (!portInput) return undefined;
 
-  const username = await vscode.window.showInputBox({ prompt: "Username" });
+  const username = await vscode.window.showInputBox({ prompt: "Username", value: existing?.username });
   if (!username) return undefined;
 
   const authMethod = await vscode.window.showQuickPick(["password", "key"], {
@@ -27,23 +33,39 @@ async function promptForConnection(): Promise<ServerConnectionInput | undefined>
   });
   if (!authMethod) return undefined;
 
+  const tagsInput = await vscode.window.showInputBox({
+    prompt: "Tags (comma-separated, optional)",
+    value: existing?.tags?.join(", ") ?? "",
+  });
+  const tags = tagsInput
+    ?.split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
+
   const base = {
     name,
     host,
     port: parseInt(portInput, 10),
     username,
     authMethod: authMethod as "password" | "key",
+    ...(tags && tags.length > 0 ? { tags } : {}),
   };
 
   if (authMethod === "password") {
-    const password = await vscode.window.showInputBox({ prompt: "Password", password: true });
-    if (!password) return undefined;
-    return { ...base, password };
+    const password = await vscode.window.showInputBox({
+      prompt: existing ? "Password (leave blank to keep the current one)" : "Password",
+      password: true,
+    });
+    if (!password && !existing) return undefined;
+    return password ? { ...base, password } : (base as ServerConnectionInput);
   }
 
-  const privateKey = await vscode.window.showInputBox({ prompt: "Private key (paste contents)", password: true });
-  if (!privateKey) return undefined;
-  return { ...base, privateKey };
+  const privateKey = await vscode.window.showInputBox({
+    prompt: existing ? "Private key (leave blank to keep the current one)" : "Private key (paste contents)",
+    password: true,
+  });
+  if (!privateKey && !existing) return undefined;
+  return privateKey ? { ...base, privateKey } : (base as ServerConnectionInput);
 }
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
@@ -64,6 +86,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const sessionsProvider = new SessionsTreeProvider(client);
   context.subscriptions.push(vscode.window.registerTreeDataProvider("termloopSessions", sessionsProvider));
 
+  const mcpProvider = new McpTreeProvider(baseUrl);
+  context.subscriptions.push(vscode.window.registerTreeDataProvider("termloopMcp", mcpProvider));
+
   const fsProvider = new TermLoopFsProvider(client);
   context.subscriptions.push(
     vscode.workspace.registerFileSystemProvider("termloop", fsProvider, { isCaseSensitive: true })
@@ -80,7 +105,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   const terminalConnections = new Map<vscode.Terminal, ServerConnection>();
   context.subscriptions.push(
-    vscode.window.onDidCloseTerminal((terminal) => terminalConnections.delete(terminal))
+    vscode.window.onDidCloseTerminal((terminal) => {
+      if (!terminalConnections.delete(terminal)) return;
+      treeProvider.refresh();
+      sessionsProvider.refresh();
+    })
   );
 
   context.subscriptions.push(
@@ -93,9 +122,29 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       treeProvider.refresh();
     }),
 
+    vscode.commands.registerCommand("termloop.editConnection", async (connection: ServerConnection) => {
+      const input = await promptForConnection(connection);
+      if (!input) return;
+      await client.connections.update(connection.id, input);
+      treeProvider.refresh();
+    }),
+
+    vscode.commands.registerCommand("termloop.deleteConnection", async (connection: ServerConnection) => {
+      const confirmed = await vscode.window.showWarningMessage(
+        `Delete connection "${connection.name}"? This cannot be undone.`,
+        { modal: true },
+        "Delete"
+      );
+      if (confirmed !== "Delete") return;
+      await client.connections.delete(connection.id);
+      treeProvider.refresh();
+    }),
+
     vscode.commands.registerCommand("termloop.openTerminal", (connection: ServerConnection) => {
       const terminal = openTerminal(client, connection, () => ({ manifest: commandManifest, folder: manifestFolder }));
       terminalConnections.set(terminal, connection);
+      treeProvider.refresh();
+      sessionsProvider.refresh();
     }),
 
     vscode.commands.registerCommand("termloop.browseFiles", (connection: ServerConnection) => {
@@ -113,10 +162,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       openOsDesktop(baseUrl, connection);
     }),
 
-    vscode.commands.registerCommand("termloop.copyMcpConnectCommand", async () => {
-      const command = `claude mcp add --transport http termloop ${baseUrl}/mcp`;
-      await vscode.env.clipboard.writeText(command);
-      vscode.window.showInformationMessage(`Copied to clipboard: ${command}`);
+    vscode.commands.registerCommand("termloop.copyMcpTarget", async (target: McpTargetItem) => {
+      await vscode.env.clipboard.writeText(target.value);
+      vscode.window.showInformationMessage(`Copied to clipboard: ${target.value}`);
     }),
 
     vscode.commands.registerCommand("termloop.refreshSessions", () => sessionsProvider.refresh()),

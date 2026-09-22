@@ -25,6 +25,8 @@ export interface TermLoopClient {
     list(): Promise<ServerConnection[]>;
     get(id: string): Promise<ServerConnection>;
     create(input: ServerConnectionInput): Promise<ServerConnection>;
+    update(id: string, updates: Partial<ServerConnection>): Promise<ServerConnection>;
+    delete(id: string): Promise<void>;
     test(id: string): Promise<{ connected: boolean }>;
   };
   terminal: {
@@ -139,6 +141,12 @@ export function createClient(opts: { baseUrl: string }): TermLoopClient {
           method: "POST",
           body: JSON.stringify(input),
         }),
+      update: (id, updates) =>
+        request<ServerConnection>(`/connections/${id}`, {
+          method: "PUT",
+          body: JSON.stringify(updates),
+        }),
+      delete: (id) => request<void>(`/connections/${id}`, { method: "DELETE" }),
       test: (id) => request<{ connected: boolean }>(`/connections/${id}/test`, { method: "POST" }),
     },
 

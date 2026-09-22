@@ -1,5 +1,6 @@
 import { useTheme } from '@/components/theme-provider';
 import { Button } from '@/components/ui/button';
+import { CopyField } from '@/components/ui/copy-field';
 import { Moon, Sun, Monitor } from 'iconsax-react';
 import { cn } from '@/lib/utils';
 
@@ -10,6 +11,13 @@ export function SettingsPage() {
     { value: 'light' as const, label: 'Light', icon: Sun },
     { value: 'dark' as const, label: 'Dark', icon: Moon },
     { value: 'system' as const, label: 'System', icon: Monitor },
+  ];
+
+  const mcpUrl = `${window.location.origin}/mcp`;
+  const mcpTargets = [
+    { label: 'Claude Code', value: `claude mcp add --transport http termloop ${mcpUrl}` },
+    { label: 'Codex', value: mcpUrl },
+    { label: 'Manual / Other Clients', value: mcpUrl },
   ];
 
   return (
@@ -40,6 +48,24 @@ export function SettingsPage() {
               <span className="text-sm">{label}</span>
             </Button>
           ))}
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold">MCP</h2>
+        <div className="rounded-lg border border-border p-4 space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Connect an AI coding client to this TermLoop daemon so it can drive your SSH
+            connections. No auth token needed.
+          </p>
+          <div className="space-y-3">
+            {mcpTargets.map((target) => (
+              <div key={target.label} className="space-y-1.5">
+                <p className="text-sm font-medium">{target.label}</p>
+                <CopyField value={target.value} />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

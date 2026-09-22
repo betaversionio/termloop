@@ -15,7 +15,7 @@ This extension is a thin client for the [TermLoop](https://github.com/betaversio
 - **Integrated terminal** — click a connection to open a real SSH shell in a VS Code terminal tab.
 - **Remote file browsing** — `TermLoop: Browse Files` opens a server's filesystem as a workspace folder: browse, open, edit, and save files like any local project.
 - **Add Connection** — save a new server (host, port, username, password or key) without switching to the browser.
-- **Copy Claude MCP Connect Command** — copies a ready-to-run `claude mcp add --transport http termloop http://localhost:<port>/mcp` so Claude Code can drive your SSH connections too. No auth token needed.
+- **MCP view** — a dedicated sidebar section for connecting AI clients to your TermLoop daemon: click "Claude Code" for a ready-to-run `claude mcp add --transport http termloop ...` command, or "Codex" / "Manual / Other Clients" for the raw MCP endpoint URL to paste into any other client's config. No auth token needed.
 - **Command aliases** — bind short aliases to long commands per-repo (see below).
 - **OS Desktop** — `TermLoop: Open OS Desktop` opens the web app's full desktop shell (window manager, terminal/files/monitor/browser apps) in a VS Code panel, embedding the same live page the browser uses.
 
@@ -63,7 +63,7 @@ A TermLoop daemon needs to be running. If one isn't already up when the extensio
 | `TermLoop: Open Terminal` | Open an integrated terminal for a connection |
 | `TermLoop: Browse Files` | Open a connection's filesystem as a workspace folder |
 | `TermLoop: Refresh Connections` | Reload the connections list |
-| `TermLoop: Copy Claude MCP Connect Command` | Copy the `claude mcp add` command for this daemon |
+| `TermLoop: Copy MCP Connect String` | Copy the connect command/URL for the selected MCP view entry |
 | `TermLoop: Insert Command Alias` | Pick a command alias to run in the active terminal |
 | `TermLoop: Open OS Desktop` | Open the web app's desktop shell in a VS Code panel |
 
