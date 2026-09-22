@@ -43,7 +43,7 @@ function SettingsRoute() {
 
 export const serversListRoute: RouteObject[] = [
   {
-    path: 'servers',
+    index: true,
     element: <ServersPage />,
   },
 ];

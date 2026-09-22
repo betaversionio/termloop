@@ -26,7 +26,7 @@ export function ErrorPage() {
           Try Again
         </Button>
         <Button onClick={() => navigate("/")}>
-          Back to Dashboard
+          Back to Servers
         </Button>
       </div>
     </div>

@@ -179,9 +179,9 @@ export function ProjectPage() {
         <Button
           variant="outline"
           className="mt-4"
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/projects')}
         >
-          Back to Dashboard
+          Back to Projects
         </Button>
       </div>
     );

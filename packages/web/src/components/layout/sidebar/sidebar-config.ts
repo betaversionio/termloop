@@ -1,6 +1,6 @@
 import {
-  Home2,
   Monitor as MonitorIcon,
+  FolderOpen,
   Key,
   CloudConnection,
   Setting2,
@@ -22,13 +22,13 @@ export type NavGroup = {
 export const navGroups: NavGroup[] = [
   {
     items: [
-      { icon: Home2, label: "Dashboard", href: "/" },
+      { icon: MonitorIcon, label: "Servers", href: "/" },
     ],
   },
   {
     title: "Management",
     items: [
-      { icon: MonitorIcon, label: "Servers", href: "/servers" },
+      { icon: FolderOpen, label: "Projects", href: "/projects" },
       { icon: Key, label: "Keychain", href: "/keychain" },
       { icon: CloudConnection, label: "Storage", href: "/storage" },
       { icon: Setting2, label: "Settings", href: "/settings" },

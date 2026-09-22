@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import type { Project } from "@termloop/shared";
 import { ProjectCard, ProjectDialog, useProjects, useDeleteProject } from "@/features/projects";
 
-export function DashboardPage() {
+export function ProjectsPage() {
   const { data, isLoading } = useProjects();
   const deleteMutation = useDeleteProject();
 
@@ -31,7 +31,7 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Dashboard" description="Manage your projects">
+      <PageHeader title="Projects" description="Group servers and buckets together">
         <Button onClick={openAdd}>
           <Add size={18} color="currentColor" />
           New Project

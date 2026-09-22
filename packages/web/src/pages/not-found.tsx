@@ -13,7 +13,7 @@ export function NotFoundPage() {
         The page you're looking for doesn't exist or has been moved.
       </p>
       <Button className="mt-6" onClick={() => navigate("/")}>
-        Back to Dashboard
+        Back to Servers
       </Button>
     </div>
   );
