@@ -194,6 +194,13 @@
   background-color: var(--hover-bg) !important;
 }
 
+/* OS desktop — San Francisco, macOS's actual default system font, on real Apple devices;
+   reasonable system-font fallbacks elsewhere since SF Pro itself can't be bundled/licensed
+   for the web. Scoped to the OS view only, not the rest of the app (which uses Geist Mono). */
+.os-desktop {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+}
+
 /* Terminal scrollbar - colored from the active terminal theme, not the app-wide default */
 .termloop-terminal .xterm-viewport {
   scrollbar-width: auto !important;

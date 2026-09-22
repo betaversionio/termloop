@@ -15,7 +15,7 @@ export function OsPage({ connectionId }: OsPageProps) {
     <DesktopSettingsProvider>
       <WindowManagerProvider>
         <MarketplaceProvider connectionId={connectionId}>
-          <div className="fixed inset-0 z-50 flex flex-col">
+          <div className="os-desktop fixed inset-0 z-50 flex flex-col">
             <MenuBar />
             <Desktop connectionId={connectionId} />
             <Taskbar />
