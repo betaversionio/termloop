@@ -10,7 +10,6 @@ import type { InstallableApp } from '../lib/app-catalog.types';
 import { resolveInstallScript } from '../lib/resolve-install-script';
 import type { WsMessage } from '@termloop/shared';
 import { terminalThemesMap } from '../lib/terminal-themes';
-import { cn } from '@/lib/utils';
 
 interface TerminalPageProps {
   connectionId: string;
@@ -43,7 +42,7 @@ export function TerminalPage({ connectionId }: TerminalPageProps) {
 
   const activeTheme = terminalThemesMap.get(settings.themeName);
   const bgColor = activeTheme?.theme.background ?? '#09090b';
-  const fgColor = activeTheme?.theme.foreground ?? '#fff';
+  const fgColor = activeTheme?.theme.foreground ?? '#ffffff';
 
   return (
     <div
@@ -53,10 +52,7 @@ export function TerminalPage({ connectionId }: TerminalPageProps) {
     >
       {/* Toolbar */}
       <header
-        className={cn(
-          `flex items-center justify-between px-3 py-1.5 shrink-0 `,
-          isFullscreen ? '' : 'rounded-t-lg',
-        )}
+        className="flex items-center justify-between px-3 py-1.5 shrink-0"
         style={{ background: bgColor }}
       >
         <div />
@@ -76,8 +72,14 @@ export function TerminalPage({ connectionId }: TerminalPageProps) {
       {/* Terminal */}
       <div
         ref={containerRef}
-        className="flex-1 overflow-hidden p-2"
-        style={{ background: bgColor }}
+        className="termloop-terminal flex-1 overflow-hidden px-6 py-3"
+        style={
+          {
+            background: bgColor,
+            '--term-scrollbar-thumb': `${fgColor}66`,
+            '--term-scrollbar-thumb-hover': `${fgColor}99`,
+          } as React.CSSProperties
+        }
       />
 
       {/* Appearance Sheet */}

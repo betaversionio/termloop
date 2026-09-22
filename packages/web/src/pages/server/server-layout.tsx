@@ -1,37 +1,16 @@
 import { useEffect } from 'react';
-import { Link, Outlet, useParams } from 'react-router-dom';
-import { Home2 } from 'iconsax-react';
+import { Outlet, useLocation, useParams } from 'react-router-dom';
 import { SidebarProvider } from '@/components/layout/sidebar/sidebar-context';
 import { ConnectionDialogProvider } from '@/features/servers';
 import { PageHeader } from '@/components/ui/page-header';
-import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ServerSidebar } from '@/features/servers/components/server-sidebar';
 import { openTab } from '@/features/servers/components/server-tabs-context';
-import { ServerTabBar } from '@/features/servers/components/server-tab-bar';
-
-function ServerHeader() {
-  return (
-    <PageHeader>
-      <div className="flex min-w-0 items-center gap-1.5">
-        <Tooltip delayDuration={0}>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon-sm" asChild>
-              <Link to="/" aria-label="Home">
-                <Home2 size={16} color="currentColor" />
-              </Link>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Home</TooltipContent>
-        </Tooltip>
-        <ServerTabBar />
-      </div>
-    </PageHeader>
-  );
-}
+import { cn } from '@/lib/utils';
 
 function ServerLayoutContent() {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
+  const isTerminalActive = location.pathname.endsWith('/terminal');
 
   // Track every server the user navigates to this session as an open tab.
   useEffect(() => {
@@ -40,8 +19,8 @@ function ServerLayoutContent() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background md:mt-3 md:rounded-tl-2xl md:border-l md:border-t md:border-border">
-      <ServerHeader />
-      <main className="flex-1 overflow-y-auto p-6">
+      <PageHeader />
+      <main className={cn('flex-1 overflow-y-auto', !isTerminalActive && 'p-6')}>
         <Outlet />
       </main>
     </div>

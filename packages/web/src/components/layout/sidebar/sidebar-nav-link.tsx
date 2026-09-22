@@ -32,7 +32,7 @@ export function SidebarNavLink({
       className={cn(
         "flex w-full items-center rounded-md text-sm font-normal transition-colors",
         isActive
-          ? "bg-accent dark:bg-accent/80 shadow-glass"
+          ? "bg-[hsl(210,10%,89%)] dark:bg-accent/80 shadow-glass"
           : "text-muted-foreground hover:bg-muted hover:text-foreground",
         collapsed ? "justify-center px-2" : "gap-3 px-3",
         size === "sm" ? "gap-2.5 py-1.5" : "py-2",
