@@ -1,5 +1,7 @@
 # Contributing to TermLoop
 
+By participating in this project, you're expected to uphold our [Code of Conduct](CODE_OF_CONDUCT.md).
+
 ## Marketplace apps and desktop widgets
 
 TermLoop's desktop has two extension points third parties can build and contribute:
@@ -56,7 +58,7 @@ That's it — a PR touching only your new bundle, icon, and one catalog entry. N
 
 ### A note on trust
 
-Marketplace app and widget code runs directly in the main page (a `<script>` tag, not a sandboxed iframe) with full SDK access — including arbitrary SSH command execution and SFTP read/write/delete on the connected server. Widgets additionally run continuously for as long as they're placed on the desktop, not just while a window is open. Review submissions with that in mind; don't add dependencies or network calls beyond what your app/widget's stated purpose needs.
+Marketplace app and widget code runs directly in the main page (a `<script>` tag, not a sandboxed iframe) with full SDK access — including arbitrary SSH command execution and SFTP read/write/delete on the connected server. Widgets additionally run continuously for as long as they're placed on the desktop, not just while a window is open. Review submissions with that in mind; don't add dependencies or network calls beyond what your app/widget's stated purpose needs. See [SECURITY.md](SECURITY.md) for the full threat model and how to report a vulnerability.
 
 ## Everything else
 
