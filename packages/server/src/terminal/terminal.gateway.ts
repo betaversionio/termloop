@@ -10,9 +10,9 @@ export class TerminalGateway implements OnGatewayConnection {
 
   handleConnection(client: WebSocket) {
     let channelId: string | null = null;
-    // True only when this socket created the channel via openShell — only the owner tears
-    // it down on disconnect. A socket that attached to someone else's session must not.
-    let owns = false;
+    // Whether this socket has already registered itself as attached to channelId — guards
+    // against double-counting if wireChannel is somehow reached twice for the same socket.
+    let attached = false;
 
     const wireChannel = (connectionId: string, id: string) => {
       channelId = id;
@@ -43,7 +43,9 @@ export class TerminalGateway implements OnGatewayConnection {
                   cols: msg.cols || 80,
                   rows: msg.rows || 24,
                 });
-                owns = true;
+                // openShell already counts its creating socket as attached — don't
+                // double-count by also calling markAttached here.
+                attached = true;
                 wireChannel(msg.connectionId, opened.channelId);
 
                 if (msg.data) {
@@ -77,7 +79,8 @@ export class TerminalGateway implements OnGatewayConnection {
                 break;
               }
 
-              owns = false;
+              this.terminal.markAttached(existing);
+              attached = true;
               wireChannel(msg.connectionId, existing);
             }
             break;
@@ -96,8 +99,8 @@ export class TerminalGateway implements OnGatewayConnection {
     });
 
     client.on("close", () => {
-      if (channelId && owns) {
-        this.terminal.close(channelId);
+      if (channelId && attached) {
+        this.terminal.markDetached(channelId);
       }
       channelId = null;
     });

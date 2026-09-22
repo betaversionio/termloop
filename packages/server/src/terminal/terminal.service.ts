@@ -9,11 +9,20 @@ interface Channel {
   connectionId: string;
   stream: ClientChannel;
   emitter: EventEmitter;
+  /** How many WebSocket clients are currently attached (viewing/driving this shell). */
+  attachedCount: number;
+  /** Set when attachedCount drops to 0 — actually tears down the shell once this fires. */
+  closeTimer: NodeJS.Timeout | null;
 }
 
 @Injectable()
 export class TerminalService {
   private channels = new Map<string, Channel>();
+
+  /** How long a shell stays alive with no attached client before it's actually torn down —
+   * gives a client whose socket died (network blip, laptop sleep, backend restart) a window
+   * to reconnect via terminal:attach and resume the exact same shell, not just a fresh one. */
+  private static readonly RECONNECT_GRACE_MS = 60_000;
 
   constructor(
     @Inject(StoreService) private readonly store: StoreService,
@@ -44,7 +53,13 @@ export class TerminalService {
           }
 
           const emitter = new EventEmitter();
-          this.channels.set(channelId, { connectionId, stream, emitter });
+          this.channels.set(channelId, {
+            connectionId,
+            stream,
+            emitter,
+            attachedCount: 1, // the socket that opened this shell counts as attached
+            closeTimer: null,
+          });
 
           stream.on("data", (data: Buffer) => {
             emitter.emit("data", data.toString("utf-8"));
@@ -52,6 +67,8 @@ export class TerminalService {
 
           stream.on("close", () => {
             emitter.emit("close");
+            const channel = this.channels.get(channelId);
+            if (channel?.closeTimer) clearTimeout(channel.closeTimer);
             this.channels.delete(channelId);
             this.ssh.release(connectionId, channelId);
           });
@@ -90,9 +107,36 @@ export class TerminalService {
   close(channelId: string): void {
     const channel = this.channels.get(channelId);
     if (!channel) return;
+    if (channel.closeTimer) clearTimeout(channel.closeTimer);
     channel.stream.close();
     this.channels.delete(channelId);
     this.ssh.release(channel.connectionId, channelId);
+  }
+
+  /** A socket successfully attached (via openShell or terminal:attach) — cancels any
+   * pending grace-period teardown, since someone's here now. */
+  markAttached(channelId: string): void {
+    const channel = this.channels.get(channelId);
+    if (!channel) return;
+    channel.attachedCount++;
+    if (channel.closeTimer) {
+      clearTimeout(channel.closeTimer);
+      channel.closeTimer = null;
+    }
+  }
+
+  /** A socket disconnected. Once nothing is attached, starts the grace-period countdown
+   * to actually tear the shell down — rather than killing it immediately — so a client
+   * whose socket died can reconnect and resume this exact shell instead of a fresh one. */
+  markDetached(channelId: string): void {
+    const channel = this.channels.get(channelId);
+    if (!channel) return;
+    channel.attachedCount = Math.max(0, channel.attachedCount - 1);
+    if (channel.attachedCount > 0) return;
+
+    channel.closeTimer = setTimeout(() => {
+      this.close(channelId);
+    }, TerminalService.RECONNECT_GRACE_MS);
   }
 
   onData(channelId: string, cb: (data: string) => void): () => void {

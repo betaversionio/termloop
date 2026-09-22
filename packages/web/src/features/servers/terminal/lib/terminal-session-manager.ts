@@ -13,6 +13,9 @@ interface TerminalSettings {
 
 export interface TerminalSession {
   term: Terminal;
+  /** Mutable — reconnection swaps this out for a fresh socket. Always read this, never
+   * close over the WebSocket instance from when a session/connection was created, or a
+   * reconnect would leave term.onData/onResize still talking to the dead socket. */
   ws: WebSocket;
   fitAddon: FitAddon;
   /**
@@ -26,6 +29,10 @@ export interface TerminalSession {
   container: HTMLDivElement;
   /** Whether term.open(container) has run yet — deferred until the first real attach. */
   opened: boolean;
+  /** Set right before an explicit closeSession() — tells the socket's onclose not to reconnect. */
+  intentionallyClosed: boolean;
+  reconnectAttempts: number;
+  reconnectTimer: ReturnType<typeof setTimeout> | null;
 }
 
 function resolveTheme(name: string): ITheme {
@@ -40,9 +47,68 @@ function resolveTheme(name: string): ITheme {
  * session survives regardless of which page/route is currently mounted, including
  * navigating clear away from the server workspace. A UI component "attaches" to a session
  * via attachSession(); detaching (unmounting) never disposes the session — only
- * closeSession() (an explicit tab close) does.
+ * closeSession() (an explicit tab close) does. The underlying WebSocket can still die on
+ * its own (network blip, laptop sleep, backend restart) — connectSocket()'s onclose handler
+ * auto-reconnects with backoff unless the session was explicitly closed.
  */
 const sessions = new Map<string, TerminalSession>();
+
+function connectSocket(session: TerminalSession, connectionId: string, isReconnect: boolean) {
+  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+  const ws = new WebSocket(`${protocol}//${window.location.host}/ws/terminal`);
+  session.ws = ws;
+
+  let attachFailed = false;
+
+  ws.onopen = () => {
+    session.reconnectAttempts = 0;
+    const msg: WsMessage = { type: "terminal:attach", connectionId };
+    ws.send(JSON.stringify(msg));
+    if (isReconnect) session.term.writeln("\r\n\x1b[32mReconnected.\x1b[0m");
+  };
+
+  ws.onmessage = (event) => {
+    const msg: WsMessage = JSON.parse(event.data);
+    switch (msg.type) {
+      case "terminal:output":
+        if (msg.data) session.term.write(msg.data);
+        break;
+      case "terminal:connected":
+        session.term.focus();
+        break;
+      case "terminal:error":
+        if (!attachFailed) {
+          attachFailed = true;
+          const dims = { cols: session.term.cols, rows: session.term.rows };
+          const openMsg: WsMessage = { type: "terminal:input", connectionId, ...dims };
+          ws.send(JSON.stringify(openMsg));
+        } else {
+          session.term.writeln(`\r\n\x1b[31mError: ${msg.error}\x1b[0m`);
+        }
+        break;
+      case "terminal:close":
+        session.term.writeln("\r\n\x1b[33mConnection closed.\x1b[0m");
+        break;
+    }
+  };
+
+  ws.onclose = () => {
+    if (session.intentionallyClosed) return;
+    session.term.writeln("\r\n\x1b[33mDisconnected — reconnecting…\x1b[0m");
+    scheduleReconnect(session, connectionId);
+  };
+}
+
+function scheduleReconnect(session: TerminalSession, connectionId: string) {
+  if (session.reconnectTimer) return;
+  session.reconnectAttempts += 1;
+  // Exponential backoff, capped at 10s, so a genuinely offline server doesn't spam retries.
+  const delay = Math.min(1000 * 2 ** (session.reconnectAttempts - 1), 10000);
+  session.reconnectTimer = setTimeout(() => {
+    session.reconnectTimer = null;
+    connectSocket(session, connectionId, true);
+  }, delay);
+}
 
 export function getOrCreateSession(connectionId: string, settings: TerminalSettings): TerminalSession {
   const existing = sessions.get(connectionId);
@@ -65,60 +131,33 @@ export function getOrCreateSession(connectionId: string, settings: TerminalSetti
   container.style.width = "100%";
   container.style.height = "100%";
 
-  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-  const ws = new WebSocket(`${protocol}//${window.location.host}/ws/terminal`);
-
-  let attachFailed = false;
-
-  ws.onopen = () => {
-    const msg: WsMessage = { type: "terminal:attach", connectionId };
-    ws.send(JSON.stringify(msg));
-  };
-
-  ws.onmessage = (event) => {
-    const msg: WsMessage = JSON.parse(event.data);
-    switch (msg.type) {
-      case "terminal:output":
-        if (msg.data) term.write(msg.data);
-        break;
-      case "terminal:connected":
-        term.focus();
-        break;
-      case "terminal:error":
-        if (!attachFailed) {
-          attachFailed = true;
-          const dims = { cols: term.cols, rows: term.rows };
-          const openMsg: WsMessage = { type: "terminal:input", connectionId, ...dims };
-          ws.send(JSON.stringify(openMsg));
-        } else {
-          term.writeln(`\r\n\x1b[31mError: ${msg.error}\x1b[0m`);
-        }
-        break;
-      case "terminal:close":
-        term.writeln("\r\n\x1b[33mConnection closed.\x1b[0m");
-        break;
-    }
-  };
-
-  ws.onclose = () => {
-    term.writeln("\r\n\x1b[33mDisconnected.\x1b[0m");
+  const session: TerminalSession = {
+    term,
+    ws: null as unknown as WebSocket, // set synchronously by connectSocket() below
+    fitAddon,
+    container,
+    opened: false,
+    intentionallyClosed: false,
+    reconnectAttempts: 0,
+    reconnectTimer: null,
   };
 
   term.onData((data) => {
-    if (ws.readyState === WebSocket.OPEN) {
+    if (session.ws.readyState === WebSocket.OPEN) {
       const msg: WsMessage = { type: "terminal:input", connectionId, data };
-      ws.send(JSON.stringify(msg));
+      session.ws.send(JSON.stringify(msg));
     }
   });
 
   term.onResize(({ cols, rows }) => {
-    if (ws.readyState === WebSocket.OPEN) {
+    if (session.ws.readyState === WebSocket.OPEN) {
       const msg: WsMessage = { type: "terminal:resize", connectionId, cols, rows };
-      ws.send(JSON.stringify(msg));
+      session.ws.send(JSON.stringify(msg));
     }
   });
 
-  const session: TerminalSession = { term, ws, fitAddon, container, opened: false };
+  connectSocket(session, connectionId, false);
+
   sessions.set(connectionId, session);
   return session;
 }
@@ -153,6 +192,8 @@ export function applySettings(connectionId: string, settings: TerminalSettings) 
 export function closeSession(connectionId: string) {
   const session = sessions.get(connectionId);
   if (!session) return;
+  session.intentionallyClosed = true;
+  if (session.reconnectTimer) clearTimeout(session.reconnectTimer);
   session.ws.close();
   session.term.dispose();
   session.container.remove();
