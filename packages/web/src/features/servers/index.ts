@@ -3,6 +3,7 @@ export { ConnectionDialogProvider, useConnectionDialog } from "./components/conn
 export { ServerCard } from "./components/server-card";
 export { ServerListRow } from "./components/server-list-row";
 export { AddServerDropdown } from "./components/add-server-dropdown";
+export { ServerTagFilter, useServerTagFilter } from "./components/server-tag-filter";
 export {
   useConnections,
   useCreateConnection,

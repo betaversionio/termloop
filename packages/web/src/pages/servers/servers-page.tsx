@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Monitor, Grid2, RowVertical } from "iconsax-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,8 @@ import {
   AddServerDropdown,
   ServerCard,
   ServerListRow,
+  ServerTagFilter,
+  useServerTagFilter,
 } from "@/features/servers";
 
 const VIEW_MODE_KEY = "termloop-servers-view-mode";
@@ -27,8 +29,22 @@ export function ServersPage() {
   const { data, isLoading } = useConnections();
   const deleteMutation = useDeleteConnection();
   const [viewMode, setViewMode] = useState<ViewMode>(loadViewMode);
+  const [selectedTags] = useServerTagFilter();
 
   const connections = (data?.data as ServerConnection[] | undefined) ?? [];
+
+  const availableTags = useMemo(() => {
+    const tags = new Set<string>();
+    for (const conn of connections) {
+      for (const tag of conn.tags ?? []) tags.add(tag);
+    }
+    return [...tags].sort();
+  }, [connections]);
+
+  const filteredConnections = useMemo(() => {
+    if (selectedTags.length === 0) return connections;
+    return connections.filter((conn) => conn.tags?.some((tag) => selectedTags.includes(tag)));
+  }, [connections, selectedTags]);
 
   const setMode = (mode: ViewMode) => {
     setViewMode(mode);
@@ -59,6 +75,7 @@ export function ServersPage() {
               <RowVertical size={16} color="currentColor" />
             </Button>
           </div>
+          <ServerTagFilter availableTags={availableTags} />
           <AddServerDropdown />
         </div>
       </PageHeader>
@@ -81,9 +98,17 @@ export function ServersPage() {
           </p>
           <AddServerDropdown />
         </div>
+      ) : filteredConnections.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <Monitor size={48} color="currentColor" variant="Linear" className="text-muted-foreground/50 mb-4" />
+          <h2 className="text-lg font-semibold">No matching servers</h2>
+          <p className="text-muted-foreground max-w-sm">
+            No servers have any of the selected tags.
+          </p>
+        </div>
       ) : viewMode === "grid" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {connections.map((conn) => (
+          {filteredConnections.map((conn) => (
             <ServerCard
               key={conn.id}
               connection={conn}
@@ -93,7 +118,7 @@ export function ServersPage() {
         </div>
       ) : (
         <div className="flex flex-col gap-2">
-          {connections.map((conn) => (
+          {filteredConnections.map((conn) => (
             <ServerListRow
               key={conn.id}
               connection={conn}
