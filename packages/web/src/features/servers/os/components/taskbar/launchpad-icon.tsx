@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DockTooltip } from "./dock-tooltip";
 
 interface LaunchpadIconProps {
   onClick: () => void;
@@ -10,32 +11,17 @@ interface LaunchpadIconProps {
  * DockIcon, but for a fixed action rather than an app in the registry. */
 export function LaunchpadIcon({ onClick }: LaunchpadIconProps) {
   const [hovered, setHovered] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   return (
     <button
+      ref={buttonRef}
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className="relative flex items-center justify-center outline-none w-[60px] h-[50px]"
     >
-      <div
-        className={cn(
-          "absolute -top-[58px] px-[11px] py-[5px] rounded-[10px] text-[12.5px] font-medium text-white whitespace-nowrap pointer-events-none transition-opacity duration-100",
-          "bg-[linear-gradient(180deg,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0.05)_100%),rgba(30,30,30,0.6)]",
-          "backdrop-blur-[40px] backdrop-saturate-[2.2]",
-          "shadow-[0_0_0_0.5px_rgba(255,255,255,0.2),0_8px_20px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.25),inset_0_-1px_0_rgba(0,0,0,0.15)]",
-          hovered ? "opacity-100" : "opacity-0"
-        )}
-      >
-        Launchpad
-        <div
-          className={cn(
-            "absolute -bottom-[4px] left-1/2 -translate-x-1/2 rotate-45 w-2 h-2 rounded-br-[2px]",
-            "bg-[linear-gradient(180deg,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0.14)_100%),rgba(30,30,30,0.6)]",
-            "shadow-[1px_1px_0_0.5px_rgba(255,255,255,0.2)]"
-          )}
-        />
-      </div>
+      <DockTooltip label="Launchpad" hovered={hovered} anchorRef={buttonRef} />
 
       <div
         className={cn(

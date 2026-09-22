@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { appRegistry } from "../../lib/os-constants";
 import type { AppType } from "../../types/window";
 import { cn } from "@/lib/utils";
+import { DockTooltip } from "./dock-tooltip";
 
 interface DockIconProps {
   appType: AppType;
@@ -37,9 +38,11 @@ export function DockIcon({
   const app = appRegistry.get(appType);
   if (!app) return null;
   const [hovered, setHovered] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   return (
     <button
+      ref={buttonRef}
       onClick={onClick}
       onContextMenu={onContextMenu}
       onMouseEnter={() => setHovered(true)}
@@ -55,29 +58,7 @@ export function DockIcon({
         isDropTarget && "scale-110"
       )}
     >
-      {/* Tooltip — cleared generously above the icon's own max hover-magnified extent
-          (scale-[1.22] + -translate-y-3 lifts its top ~17.5px above rest), not just its
-          resting position, so it never collides with the enlarged icon. */}
-      <div
-        className={cn(
-          "absolute -top-[58px] px-[11px] py-[5px] rounded-[10px] text-[12.5px] font-medium text-white whitespace-nowrap pointer-events-none transition-opacity duration-100",
-          "bg-[linear-gradient(180deg,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0.05)_100%),rgba(30,30,30,0.6)]",
-          "backdrop-blur-[40px] backdrop-saturate-[2.2]",
-          "shadow-[0_0_0_0.5px_rgba(255,255,255,0.2),0_8px_20px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.25),inset_0_-1px_0_rgba(0,0,0,0.15)]",
-          hovered ? "opacity-100" : "opacity-0"
-        )}
-      >
-        {app.title}
-        {/* Downward-pointing arrow — same glass fill, tucked half under the tooltip's
-            rounded bottom edge so it reads as one continuous speech-bubble shape. */}
-        <div
-          className={cn(
-            "absolute -bottom-[4px] left-1/2 -translate-x-1/2 rotate-45 w-2 h-2 rounded-br-[2px]",
-            "bg-[linear-gradient(180deg,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0.14)_100%),rgba(30,30,30,0.6)]",
-            "shadow-[1px_1px_0_0.5px_rgba(255,255,255,0.2)]"
-          )}
-        />
-      </div>
+      <DockTooltip label={app.title} hovered={hovered} anchorRef={buttonRef} />
 
       {/* Icon with mac-style magnification — overflows above the dock on hover, not
           reserved for inside a taller box, matching real macOS Dock behavior. */}
