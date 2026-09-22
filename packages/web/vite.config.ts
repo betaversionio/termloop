@@ -1,4 +1,5 @@
 import { defineConfig } from "vite";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
@@ -10,7 +11,13 @@ const require = createRequire(import.meta.url);
 const cliVersion = require("../../apps/cli/package.json").version as string;
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  // tanstackRouter must run before react() — it transforms route files before the React
+  // plugin processes their JSX.
+  plugins: [
+    tanstackRouter({ target: "react", routesDirectory: "./src/routes", autoCodeSplitting: true }),
+    react(),
+    tailwindcss(),
+  ],
   define: {
     __APP_VERSION__: JSON.stringify(cliVersion),
   },

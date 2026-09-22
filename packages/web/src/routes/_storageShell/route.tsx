@@ -1,4 +1,4 @@
-import { Link, Outlet, useParams } from "react-router-dom";
+import { createFileRoute, Link, Outlet, useParams } from "@tanstack/react-router";
 import { SidebarProvider } from "@/components/layout/sidebar/sidebar-context";
 import { PageHeader } from "@/components/ui/page-header";
 import {
@@ -9,16 +9,16 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { useStorage } from "@/features/storage/hooks/use-storage";
-import type { StorageCredential } from "@termloop/shared";
 import { StorageSidebar } from "@/features/storage/components/storage-sidebar";
+import { useStorageCredential } from "@/features/storage";
+
+export const Route = createFileRoute("/_storageShell")({
+  component: StorageShell,
+});
 
 function StorageHeader() {
-  const { id } = useParams<{ id: string }>();
-
-  const { data } = useStorage();
-  const credentials = (data?.data as StorageCredential[] | undefined) ?? [];
-  const credential = credentials.find((c) => c.id === id);
+  const { id } = useParams({ strict: false });
+  const credential = useStorageCredential(id ?? "");
 
   return (
     <PageHeader>
@@ -43,7 +43,7 @@ function StorageHeader() {
   );
 }
 
-export function StorageLayout() {
+function StorageShell() {
   return (
     <SidebarProvider>
       <div className="fixed inset-0 flex bg-background md:bg-sidebar">

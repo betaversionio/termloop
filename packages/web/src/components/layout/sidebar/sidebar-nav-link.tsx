@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 import type { Icon } from "iconsax-react";
 import { cn } from "@/lib/utils";
 import {

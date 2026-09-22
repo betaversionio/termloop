@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import { SearchStatus } from "iconsax-react";
 import { Button } from "@/components/ui/button";
 
@@ -12,7 +12,7 @@ export function NotFoundPage() {
       <p className="text-muted-foreground mt-2 max-w-sm">
         The page you're looking for doesn't exist or has been moved.
       </p>
-      <Button className="mt-6" onClick={() => navigate("/")}>
+      <Button className="mt-6" onClick={() => navigate({ to: "/" })}>
         Back to Servers
       </Button>
     </div>

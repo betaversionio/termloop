@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Cpu,
@@ -122,7 +122,7 @@ function SystemInfoCard({
 }
 
 function QuickActions() {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams({ strict: false });
   const navigate = useNavigate();
 
   const actions = [
@@ -141,7 +141,7 @@ function QuickActions() {
             key={a.path}
             variant="outline"
             className="h-auto flex-col gap-2 py-3"
-            onClick={() => navigate(`/server/${id}/${a.path}`)}
+            onClick={() => navigate({ to: `/server/${id}/${a.path}` })}
           >
             <a.icon size={20} color="currentColor" variant="Bulk" />
             <span className="text-xs">{a.label}</span>

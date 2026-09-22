@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@tanstack/react-router';
 import { Trash, TickCircle, CloseCircle, Key } from 'iconsax-react';
 import type { StorageCredential } from '@termloop/shared';
 import {
@@ -68,7 +68,7 @@ export function StorageSettingsPage({ credential }: StorageSettingsPageProps) {
 
   const handleDelete = () => {
     deleteMutation.mutate(credential.id, {
-      onSuccess: () => navigate('/storage'),
+      onSuccess: () => navigate({ to: '/storage' }),
     });
   };
 

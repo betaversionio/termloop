@@ -9,6 +9,7 @@ export {
   useTestStorageCredential,
   useTestStorageDirect,
 } from "./hooks/use-storage";
+export { useStorageCredential } from "./hooks/use-storage-credential";
 export {
   useStorageBucketList,
   useStorageBucketObjects,

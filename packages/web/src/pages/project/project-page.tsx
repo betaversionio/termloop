@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from '@tanstack/react-router';
 import { Edit2, Monitor, CloudConnection, Add, Trash } from 'iconsax-react';
 import type {
   Project,
@@ -30,7 +30,7 @@ import { useConnections } from '@/features/servers';
 import { useStorage } from '@/features/storage';
 
 export function ProjectPage() {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams({ strict: false });
   const navigate = useNavigate();
   const { data, isLoading } = useProject(id!);
   const { data: connectionsData } = useConnections();
@@ -179,7 +179,7 @@ export function ProjectPage() {
         <Button
           variant="outline"
           className="mt-4"
-          onClick={() => navigate('/projects')}
+          onClick={() => navigate({ to: '/projects' })}
         >
           Back to Projects
         </Button>
@@ -264,7 +264,7 @@ export function ProjectPage() {
               <Card
                 key={conn.id}
                 className="group relative overflow-hidden border transition-all hover:shadow-md cursor-pointer"
-                onClick={() => navigate(`/server/${conn.id}`)}
+                onClick={() => navigate({ to: '/server/$id', params: { id: conn.id } })}
               >
                 <CardHeader className="flex-row items-start justify-between gap-3 space-y-0 p-4 pl-5 pb-2">
                   <div className="flex items-center gap-3 min-w-0">
@@ -373,7 +373,7 @@ export function ProjectPage() {
               <Card
                 key={bucket.id}
                 className="group relative overflow-hidden border transition-all hover:shadow-md cursor-pointer"
-                onClick={() => navigate(`/storage/${bucket.id}`)}
+                onClick={() => navigate({ to: '/storage/$id', params: { id: bucket.id } })}
               >
                 <CardHeader className="flex-row items-start justify-between gap-3 space-y-0 p-4 pl-5 pb-2">
                   <div className="flex items-center gap-3 min-w-0">

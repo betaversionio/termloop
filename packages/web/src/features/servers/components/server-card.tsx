@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@tanstack/react-router';
 import {
   Monitor,
   Trash,
@@ -40,7 +40,7 @@ export function ServerCard({ connection: conn, onDelete }: ServerCardProps) {
   return (
     <Card
       className="group relative overflow-hidden border transition-all hover:shadow-md cursor-pointer"
-      onClick={() => navigate(`/server/${conn.id}`)}
+      onClick={() => navigate({ to: '/server/$id', params: { id: conn.id } })}
     >
       {/* {conn.color && (
         <div

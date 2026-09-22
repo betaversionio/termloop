@@ -2,6 +2,7 @@ node_modules/
 dist/
 .turbo/
 *.tsbuildinfo
+routeTree.gen.ts
 *.vsix
 .env
 .env.local

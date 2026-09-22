@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, Minimize2, Maximize2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "@tanstack/react-router";
 import { useWindowManager } from "../../context/window-manager-context";
 import { appRegistry, MENU_BAR_HEIGHT } from "../../lib/os-constants";
 import { TaskbarClock } from "../taskbar/taskbar-clock";
@@ -8,7 +8,7 @@ import { useEdgeReveal } from "../../hooks/use-edge-reveal";
 import { cn } from "@/lib/utils";
 
 export function MenuBar() {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { state, dispatch } = useWindowManager();
 
   // Real browser Fullscreen API — takes over the whole physical screen (hides browser
@@ -56,7 +56,7 @@ export function MenuBar() {
     >
       <div className="flex items-center gap-2.5 pl-2.5 min-w-0">
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => router.history.back()}
           className="flex h-5 w-5 items-center justify-center rounded text-white/60 hover:text-white hover:bg-white/[0.12] transition-colors duration-100"
           title="Exit OS view"
         >

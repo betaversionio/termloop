@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useLocation, useParams, Link } from "react-router-dom";
+import { useNavigate, useLocation, useParams, Link } from "@tanstack/react-router";
 import { X } from "lucide-react";
 import { Monitor, Add } from "iconsax-react";
 import { cn } from "@/lib/utils";
@@ -9,8 +9,8 @@ import { useServerTabs } from "./server-tabs-context";
 
 export function ServerTabBar() {
   const { openIds, closeTab, reorderTabs } = useServerTabs();
-  const { id: activeId } = useParams<{ id: string }>();
-  const location = useLocation();
+  const { id: activeId } = useParams({ strict: false });
+  const pathname = useLocation({ select: (l) => l.pathname });
   const navigate = useNavigate();
   const { data } = useConnections();
   const connections = (data?.data as ServerConnection[] | undefined) ?? [];
@@ -21,9 +21,15 @@ export function ServerTabBar() {
   // also renders on non-server pages now (Dashboard, Servers list, ...), where the current
   // path's last segment isn't a server section at all, so switching/reopening a tab from
   // there should just land on its overview instead.
-  const activeSection = location.pathname.startsWith("/server/")
-    ? location.pathname.split("/").pop() || "overview"
+  const activeSection = pathname.startsWith("/server/")
+    ? pathname.split("/").pop() || "overview"
     : "overview";
+
+  // The section is a runtime string, not one of the statically-known route literals, so
+  // this goes through navigate's untyped string form rather than the typed { to, params }.
+  const goToServerSection = (id: string, section: string) => {
+    navigate({ to: `/server/${id}/${section}` });
+  };
 
   const handleClose = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -31,7 +37,8 @@ export function ServerTabBar() {
     closeTab(id);
     if (id === activeId) {
       const next = remaining[remaining.length - 1];
-      navigate(next ? `/server/${next}/${activeSection}` : "/");
+      if (next) goToServerSection(next, activeSection);
+      else navigate({ to: "/" });
     }
   };
 
@@ -64,9 +71,9 @@ export function ServerTabBar() {
               setDraggedId(null);
               setDragOverId(null);
             }}
-            onClick={() => navigate(`/server/${id}/${activeSection}`)}
+            onClick={() => goToServerSection(id, activeSection)}
             onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") navigate(`/server/${id}/${activeSection}`);
+              if (e.key === "Enter" || e.key === " ") goToServerSection(id, activeSection);
             }}
             className={cn(
               "group flex h-8 max-w-[180px] shrink-0 cursor-pointer items-center gap-2 rounded-md pl-2.5 pr-1.5 text-sm transition-colors",

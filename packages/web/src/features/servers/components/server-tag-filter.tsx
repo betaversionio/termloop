@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQueryState, parseAsArrayOf, parseAsString } from "nuqs";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { Filter } from "iconsax-react";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,15 @@ interface ServerTagFilterProps {
 }
 
 export function useServerTagFilter() {
-  return useQueryState("tags", parseAsArrayOf(parseAsString).withDefault([]));
+  const selected = useSearch({
+    strict: false,
+    select: (s: { tags?: string[] }) => s.tags ?? [],
+  });
+  const navigate = useNavigate();
+  const setSelected = (tags: string[]) => {
+    navigate({ to: "/", search: { tags } });
+  };
+  return [selected, setSelected] as const;
 }
 
 export function ServerTagFilter({ availableTags }: ServerTagFilterProps) {

@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@tanstack/react-router';
 import {
   FolderOpen,
   Trash,
@@ -36,7 +36,7 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
   return (
     <Card
       className="group relative overflow-hidden border transition-all hover:shadow-md cursor-pointer"
-      onClick={() => navigate(`/project/${project.id}`)}
+      onClick={() => navigate({ to: '/project/$id', params: { id: project.id } })}
     >
       <CardHeader className="flex-row items-start justify-between gap-3 space-y-0 p-4 pl-5 pb-0">
         <div className="flex items-center gap-3 min-w-0">

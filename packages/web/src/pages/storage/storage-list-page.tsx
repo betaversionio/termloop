@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@tanstack/react-router';
 import { CloudConnection, Add } from 'iconsax-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/shared/page-header';
@@ -117,7 +117,7 @@ export function StorageListPage() {
               onEdit={openEdit}
               onDelete={(id) => deleteMutation.mutate(id)}
               onTest={handleTest}
-              onClick={(c) => navigate(`/storage/${c.id}`)}
+              onClick={(c) => navigate({ to: '/storage/$id', params: { id: c.id } })}
             />
           ))}
         </div>

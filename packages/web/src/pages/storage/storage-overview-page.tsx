@@ -4,7 +4,7 @@ import { StorageStatsBar } from "@/features/storage/components/storage-stats-bar
 import { useStorageBucketList } from "@/features/storage/hooks/use-storage-explorer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Bucket } from "iconsax-react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
@@ -23,7 +23,7 @@ interface StorageOverviewPageProps {
 }
 
 export function StorageOverviewPage({ credential }: StorageOverviewPageProps) {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams({ strict: false });
   const { data: bucketsData, isLoading } = useStorageBucketList(credential.id);
   const buckets = bucketsData?.data ?? [];
 
@@ -80,7 +80,8 @@ export function StorageOverviewPage({ credential }: StorageOverviewPageProps) {
             {buckets.map((b) => (
               <Link
                 key={b.name}
-                to={`/storage/${id}/b/${encodeURIComponent(b.name)}`}
+                to="/storage/$id/b/$bucket"
+                params={{ id: id!, bucket: b.name }}
                 className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors"
               >
                 <Bucket size={18} color="currentColor" className="text-muted-foreground shrink-0" />

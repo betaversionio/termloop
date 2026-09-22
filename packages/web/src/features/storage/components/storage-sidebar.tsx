@@ -1,4 +1,4 @@
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation } from "@tanstack/react-router";
 import { Category, Setting2, Bucket, type Icon } from "iconsax-react";
 import { cn } from "@/lib/utils";
 import { SidebarShell } from "@/components/ui/sidebar";
@@ -22,13 +22,13 @@ const tabs: TabItem[] = [
 
 export function StorageSidebar() {
   const { collapsed } = useSidebar();
-  const { id } = useParams<{ id: string }>();
-  const location = useLocation();
+  const { id } = useParams({ strict: false });
+  const pathname = useLocation({ select: (l) => l.pathname });
 
   const { data: bucketsData, isLoading: bucketsLoading } = useStorageBucketList(id!);
   const buckets = bucketsData?.data ?? [];
 
-  const segments = location.pathname.split("/");
+  const segments = pathname.split("/");
   const afterId = segments[3] ?? "overview";
   const activeTab = afterId === "b" ? null : afterId;
   const activeBucket =

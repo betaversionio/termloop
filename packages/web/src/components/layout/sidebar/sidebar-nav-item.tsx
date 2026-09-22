@@ -1,4 +1,4 @@
-import { useLocation } from "react-router-dom";
+import { useLocation } from "@tanstack/react-router";
 import type { NavItem } from "./sidebar-config";
 import { SidebarNavLink } from "./sidebar-nav-link";
 
@@ -7,7 +7,7 @@ interface SidebarNavItemProps {
 }
 
 export function SidebarNavItem({ item }: SidebarNavItemProps) {
-  const { pathname } = useLocation();
+  const pathname = useLocation({ select: (l) => l.pathname });
   const isExactMatch = pathname === item.href;
   const isChildRoute =
     item.href !== "/" && pathname.startsWith(`${item.href}/`);

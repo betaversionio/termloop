@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import { Trash, Edit2, TickCircle, CloseCircle, Key, Lock, Monitor } from "iconsax-react";
 import type { ServerConnection } from "@termloop/shared";
 import {
@@ -63,7 +63,7 @@ export function ServerSettingsPage({ connection }: ServerSettingsPageProps) {
 
   const handleDelete = () => {
     deleteMutation.mutate(connection.id, {
-      onSuccess: () => navigate("/"),
+      onSuccess: () => navigate({ to: "/" }),
     });
   };
 

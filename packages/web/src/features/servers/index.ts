@@ -12,3 +12,4 @@ export {
   useTestConnection,
   useTestConnectionDirect,
 } from "./hooks/use-connections";
+export { useServerConnection } from "./hooks/use-server-connection";

@@ -1,4 +1,4 @@
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation } from "@tanstack/react-router";
 import { Category, CommandSquare, FolderOpen, Activity, Setting2, Monitor, type Icon } from "iconsax-react";
 import { cn } from "@/lib/utils";
 import { SidebarShell } from "@/components/ui/sidebar";
@@ -23,10 +23,10 @@ const tabs: TabItem[] = [
 
 export function ServerSidebar() {
   const { collapsed } = useSidebar();
-  const { id } = useParams<{ id: string }>();
-  const location = useLocation();
+  const { id } = useParams({ strict: false });
+  const pathname = useLocation({ select: (l) => l.pathname });
 
-  const activeTab = location.pathname.split("/").pop() ?? "terminal";
+  const activeTab = pathname.split("/").pop() ?? "terminal";
 
   return (
     <SidebarShell>
