@@ -2,6 +2,11 @@ packages:
   - "packages/*"
   - "apps/*"
   - "marketplace-apps/*"
+overrides:
+  # Force a single react-router instance across the tree — nuqs's peer dependency was
+  # resolving to a different copy (7.13.1) than react-router-dom actually uses (7.18.4),
+  # so useNavigate() inside nuqs's adapter read from a React Context nothing ever provided.
+  react-router: 7.18.4
 allowBuilds:
   '@nestjs/core': true
   '@swc/core': true

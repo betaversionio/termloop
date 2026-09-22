@@ -1,4 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
+import { NuqsAdapter } from "nuqs/adapters/react-router/v7";
 import { App } from "@/App";
 import { ErrorPage } from "@/pages/error";
 import { NotFoundPage } from "@/pages/not-found";
@@ -11,9 +12,17 @@ import { keychainRoutes } from "./keychain.routes";
 import { storageRoutes, storageDetailRoutes } from "./storage.routes";
 import { settingsRoutes } from "./settings.routes";
 
+// NuqsAdapter needs useNavigate()/useSearchParams(), which only work inside the router
+// tree — it has to wrap each top-level route element here, not RouterProvider from outside
+// (that's how it was previously wired in main.tsx, which crashes as soon as anything
+// actually calls useQueryState).
 export const router = createBrowserRouter([
   {
-    element: <App />,
+    element: (
+      <NuqsAdapter>
+        <App />
+      </NuqsAdapter>
+    ),
     errorElement: <ErrorPage />,
     children: [
       ...serversListRoute,
@@ -29,12 +38,20 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    element: <ServerLayout />,
+    element: (
+      <NuqsAdapter>
+        <ServerLayout />
+      </NuqsAdapter>
+    ),
     errorElement: <ErrorPage />,
     children: [...serverRoutes],
   },
   {
-    element: <StorageLayout />,
+    element: (
+      <NuqsAdapter>
+        <StorageLayout />
+      </NuqsAdapter>
+    ),
     errorElement: <ErrorPage />,
     children: [...storageDetailRoutes],
   },
