@@ -8,9 +8,32 @@ interface DockIconProps {
   isRunning: boolean;
   isActive: boolean;
   onClick: () => void;
+  onContextMenu?: (e: React.MouseEvent) => void;
+  draggable?: boolean;
+  /** This icon is the one currently being dragged (source). */
+  isDragging?: boolean;
+  /** A dragged icon is currently hovering over this one (drop target). */
+  isDropTarget?: boolean;
+  onDragStart?: () => void;
+  onDragOver?: (e: React.DragEvent) => void;
+  onDrop?: () => void;
+  onDragEnd?: () => void;
 }
 
-export function DockIcon({ appType, isRunning, isActive, onClick }: DockIconProps) {
+export function DockIcon({
+  appType,
+  isRunning,
+  isActive,
+  onClick,
+  onContextMenu,
+  draggable,
+  isDragging,
+  isDropTarget,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onDragEnd,
+}: DockIconProps) {
   const app = appRegistry.get(appType);
   if (!app) return null;
   const [hovered, setHovered] = useState(false);
@@ -18,9 +41,19 @@ export function DockIcon({ appType, isRunning, isActive, onClick }: DockIconProp
   return (
     <button
       onClick={onClick}
+      onContextMenu={onContextMenu}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="relative flex items-center justify-center outline-none w-[60px] h-[50px]"
+      draggable={draggable}
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      onDragEnd={onDragEnd}
+      className={cn(
+        "relative flex items-center justify-center outline-none w-[60px] h-[50px] transition-[opacity,transform]",
+        isDragging && "opacity-30",
+        isDropTarget && "scale-110"
+      )}
     >
       {/* Tooltip — cleared generously above the icon's own max hover-magnified extent
           (scale-[1.22] + -translate-y-3 lifts its top ~17.5px above rest), not just its

@@ -10,6 +10,8 @@ interface DesktopSettingsContext {
   setWallpaper: (id: string) => void;
   iconPositions: Record<string, IconPosition>;
   setIconPosition: (appType: string, pos: IconPosition) => void;
+  dockOrder: string[] | null;
+  setDockOrder: (order: string[]) => void;
 }
 
 const DesktopSettingsContext = createContext<DesktopSettingsContext>({
@@ -17,57 +19,86 @@ const DesktopSettingsContext = createContext<DesktopSettingsContext>({
   setWallpaper: () => {},
   iconPositions: {},
   setIconPosition: () => {},
+  dockOrder: null,
+  setDockOrder: () => {},
 });
 
-const STORAGE_KEY = "termloop-desktop-settings";
+const STORAGE_PREFIX = "termloop-desktop-settings";
 
 interface StoredSettings {
   wallpaper?: string;
   iconPositions?: Record<string, IconPosition>;
+  dockOrder?: string[];
 }
 
-function loadSettings(): StoredSettings {
+function storageKey(connectionId: string) {
+  return `${STORAGE_PREFIX}:${connectionId}`;
+}
+
+function loadSettings(connectionId: string): StoredSettings {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(storageKey(connectionId));
     if (stored) return JSON.parse(stored);
   } catch {}
   return {};
 }
 
-function saveSettings(settings: StoredSettings) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+function saveSettings(connectionId: string, settings: StoredSettings) {
+  localStorage.setItem(storageKey(connectionId), JSON.stringify(settings));
 }
 
-export function DesktopSettingsProvider({ children }: { children: ReactNode }) {
+interface DesktopSettingsProviderProps {
+  connectionId: string;
+  children: ReactNode;
+}
+
+export function DesktopSettingsProvider({ connectionId, children }: DesktopSettingsProviderProps) {
   const [wallpaper, setWallpaperState] = useState<string>(
-    () => loadSettings().wallpaper || "image-betaversion"
+    () => loadSettings(connectionId).wallpaper || "image-betaversion"
   );
 
   const [iconPositions, setIconPositions] = useState<Record<string, IconPosition>>(
-    () => loadSettings().iconPositions || {}
+    () => loadSettings(connectionId).iconPositions || {}
+  );
+
+  const [dockOrder, setDockOrderState] = useState<string[] | null>(
+    () => loadSettings(connectionId).dockOrder || null
+  );
+
+  const persist = useCallback(
+    (overrides: Partial<StoredSettings>) => {
+      saveSettings(connectionId, {
+        wallpaper,
+        iconPositions,
+        dockOrder: dockOrder ?? undefined,
+        ...overrides,
+      });
+    },
+    [connectionId, wallpaper, iconPositions, dockOrder]
   );
 
   const setWallpaper = useCallback((id: string) => {
     setWallpaperState(id);
-    setIconPositions((prev) => {
-      saveSettings({ wallpaper: id, iconPositions: prev });
-      return prev;
-    });
-  }, []);
+    persist({ wallpaper: id });
+  }, [persist]);
 
   const setIconPosition = useCallback((appType: string, pos: IconPosition) => {
     setIconPositions((prev) => {
       const next = { ...prev, [appType]: pos };
-      setWallpaperState((wp) => {
-        saveSettings({ wallpaper: wp, iconPositions: next });
-        return wp;
-      });
+      persist({ iconPositions: next });
       return next;
     });
-  }, []);
+  }, [persist]);
+
+  const setDockOrder = useCallback((order: string[]) => {
+    setDockOrderState(order);
+    persist({ dockOrder: order });
+  }, [persist]);
 
   return (
-    <DesktopSettingsContext value={{ wallpaper, setWallpaper, iconPositions, setIconPosition }}>
+    <DesktopSettingsContext
+      value={{ wallpaper, setWallpaper, iconPositions, setIconPosition, dockOrder, setDockOrder }}
+    >
       {children}
     </DesktopSettingsContext>
   );

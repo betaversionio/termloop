@@ -81,13 +81,10 @@ export const appRegistry = new Map<AppType, AppDefinition>(
   Object.entries(BUILTIN_REGISTRY) as [AppType, AppDefinition][],
 );
 
-export const BUILTIN_DESKTOP_APPS: BuiltInAppType[] = [
-  'file-manager',
-  'terminal',
-  'monitor',
-  'settings',
-  'browser',
-];
+// Empty by default — the Dock (and Launchpad) are the app launchers, matching real
+// macOS where the Desktop itself doesn't carry built-in app icons. Marketplace apps
+// can still opt into a desktop icon via their manifest's `showOnDesktop` flag.
+export const BUILTIN_DESKTOP_APPS: BuiltInAppType[] = [];
 
 export const BUILTIN_DOCK_APPS: BuiltInAppType[] = [
   'file-manager',
