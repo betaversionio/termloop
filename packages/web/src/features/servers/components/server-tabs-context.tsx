@@ -27,6 +27,20 @@ export function closeTab(id: string) {
   closeSession(id);
 }
 
+/** Moves the tab at `fromId` to sit right before/after `toId` (drag-to-reorder). */
+export function reorderTabs(fromId: string, toId: string) {
+  if (fromId === toId) return;
+  const from = openIds.indexOf(fromId);
+  const to = openIds.indexOf(toId);
+  if (from === -1 || to === -1) return;
+
+  const next = [...openIds];
+  next.splice(from, 1);
+  next.splice(to, 0, fromId);
+  openIds = next;
+  emit();
+}
+
 export function useServerTabs() {
   const [ids, setIds] = useState(openIds);
 
@@ -38,5 +52,5 @@ export function useServerTabs() {
     };
   }, []);
 
-  return { openIds: ids, openTab, closeTab };
+  return { openIds: ids, openTab, closeTab, reorderTabs };
 }

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/components/layout/sidebar/sidebar-context";
 import { HeaderActions } from "@/components/layout/header-actions";
+import { ServerTabBar } from "@/features/servers/components/server-tab-bar";
 
 export function PageHeader({ children }: { children?: ReactNode }) {
   const { collapsed, toggle, setMobileOpen } = useSidebar();
@@ -33,6 +34,7 @@ export function PageHeader({ children }: { children?: ReactNode }) {
         >
           <HambergerMenu size={20} color="currentColor" />
         </Button>
+        <ServerTabBar />
         {children}
       </div>
       <HeaderActions />
