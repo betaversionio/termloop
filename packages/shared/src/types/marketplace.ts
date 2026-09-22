@@ -20,6 +20,13 @@ export interface MarketplaceApp {
   showOnDesktop: boolean;
   showInDock: boolean;
   category: "tools" | "media" | "development" | "utilities" | "other";
+  /**
+   * "custom" lets the app draw its own title bar content (tabs, toolbar) — the host
+   * renders only the floating close/minimize/maximize buttons, and the app owns
+   * window-dragging itself via `sdk.ui.WindowDragRegion`. Defaults to "default"
+   * (the host's normal title bar + centered app name) when omitted.
+   */
+  titleBarStyle?: "default" | "custom";
   tags?: string[];
   /**
    * `uname -s` platform values (e.g. "Linux", "Darwin", "OS400") this app cannot

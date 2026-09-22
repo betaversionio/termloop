@@ -104,6 +104,24 @@ Pre-styled [shadcn/ui](https://ui.shadcn.com/) components matching TermLoop's ow
 
 `sdk.ui.toast({ title, description, variant })` shows a transient notification styled to match the host (same component TermLoop itself uses) — e.g. `sdk.ui.toast({ title: "Saved", description: file.name })`.
 
+## Custom title bars
+
+By default your app's window gets the host's normal title bar — traffic lights on the left, your app's name centered. Set `"titleBarStyle": "custom"` in your `termloop.manifest.json` to draw your own toolbar/tabs there instead (the same pattern VS Code, Spotify, and Discord use — Electron calls it `titleBarStyle: 'hiddenInset'`): the host renders only the floating close/minimize/maximize buttons, and your app's content fills the rest of the window, including the space the title bar used to occupy.
+
+Your app must leave room on the left (~80px) so its own UI doesn't sit under the floating buttons, and needs to mark whatever it wants draggable with `sdk.ui.WindowDragRegion` — without a host-owned title bar, there's no default drag handle anymore:
+
+```tsx
+function MyTabBar({ windowId }: MarketplaceAppProps) {
+  return (
+    <sdk.ui.WindowDragRegion windowId={windowId} className="h-9 flex items-center pl-20">
+      {/* your tabs/toolbar */}
+    </sdk.ui.WindowDragRegion>
+  );
+}
+```
+
+`WindowDragRegion` gives you the exact same drag + double-click-to-maximize behavior as the host's default title bar — you don't need to implement any of that yourself.
+
 ## Utilities
 
 - `sdk.utils.cn(...)` — Tailwind class merger (clsx + tailwind-merge)

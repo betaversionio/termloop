@@ -16,6 +16,7 @@ import { openFilePicker } from "@/hooks/use-file-picker";
 import { useTheme } from "@/components/theme-provider";
 import { useWindowManager } from "@/features/servers/os/context/window-manager-context";
 import { useDesktopSettings } from "@/features/servers/os/context/desktop-settings-context";
+import { WindowDragRegion } from "./window-drag-region";
 import type { RemoteFile, ServerConnection, ServerStats, ApiResponse } from "@termloop/shared";
 import type { TermLoopSDK, UseWindowResult, UseOSResult } from "@termloop/react";
 
@@ -305,6 +306,7 @@ export function buildSDK(): TermLoopSDK {
       Separator,
       toast,
       pickFile: openFilePicker,
+      WindowDragRegion,
     },
     utils: {
       cn,

@@ -363,6 +363,17 @@ export interface TermLoopSDK {
       initialPath?: string;
       extensions?: string[];
     }) => Promise<string[] | null>;
+
+    /**
+     * Only needed with `titleBarStyle: "custom"` in your manifest — wrap part of
+     * your own title bar/toolbar in this to make it draggable and
+     * double-click-to-maximize, the same way the host's normal title bar behaves.
+     * @example
+     * <sdk.ui.WindowDragRegion windowId={windowId} className="h-9 flex items-center pl-20">
+     *   {/* your tabs/toolbar — leave room on the left for the floating traffic lights *\/}
+     * </sdk.ui.WindowDragRegion>
+     */
+    WindowDragRegion: RC<{ windowId: string; className?: string; children?: React.ReactNode }>;
   };
 
   /** Utility functions */
@@ -497,6 +508,8 @@ export interface AppManifest {
   showOnDesktop: boolean;
   showInDock: boolean;
   category: "tools" | "media" | "development" | "utilities" | "other";
+  /** "custom" lets the app draw its own title bar — see WindowDragRegion. */
+  titleBarStyle?: "default" | "custom";
 }
 
 export interface WidgetManifest {

@@ -89,7 +89,7 @@ export function Desktop({ connectionId }: DesktopProps) {
     placedWidgets,
     setPlacedWidgets,
   } = useDesktopSettings();
-  const { desktopApps: allDesktopApps, uninstallApp } = useMarketplace();
+  const { desktopApps: allDesktopApps, installedApps, uninstallApp } = useMarketplace();
   const { catalog: widgetsCatalog, installWidget } = useWidgets();
   const dockApps = useDockApps();
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
@@ -264,16 +264,22 @@ export function Desktop({ connectionId }: DesktopProps) {
       ))}
 
       {/* Windows */}
-      {state.windows.map((win) => (
-        <WindowFrame key={win.id} window={win}>
-          <AppRenderer
-            appType={win.appType}
-            connectionId={connectionId}
-            payload={win.payload}
-            windowId={win.id}
-          />
-        </WindowFrame>
-      ))}
+      {state.windows.map((win) => {
+        const appType = win.appType;
+        const titleBarStyle = isMarketplaceApp(appType)
+          ? installedApps.find((a) => a.manifest.id === fromMarketAppType(appType))?.manifest.titleBarStyle
+          : undefined;
+        return (
+          <WindowFrame key={win.id} window={win} titleBarStyle={titleBarStyle}>
+            <AppRenderer
+              appType={win.appType}
+              connectionId={connectionId}
+              payload={win.payload}
+              windowId={win.id}
+            />
+          </WindowFrame>
+        );
+      })}
 
       {/* Desktop right-click context menu */}
       {contextMenu && (

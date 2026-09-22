@@ -1,0 +1,78 @@
+import { useCallback } from "react";
+import { X, Minus, Maximize2, Minimize2 } from "lucide-react";
+import type { WindowState } from "../../types/window";
+import { useWindowManager } from "../../context/window-manager-context";
+
+interface TrafficLightProps {
+  color: string;
+  onClick: (e: React.MouseEvent) => void;
+  title: string;
+  children: React.ReactNode;
+}
+
+function TrafficLight({ color, onClick, title, children }: TrafficLightProps) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      className="flex h-[13px] w-[13px] items-center justify-center rounded-full transition-[filter] duration-100 hover:brightness-90 shadow-[inset_0_0_0_0.5px_rgba(0,0,0,0.15)]"
+      style={{ backgroundColor: color }}
+    >
+      <span className="text-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-100 [&>svg]:h-[8px] [&>svg]:w-[8px]">
+        {children}
+      </span>
+    </button>
+  );
+}
+
+interface TrafficLightsProps {
+  window: WindowState;
+  onClose?: () => void;
+}
+
+/** The close/minimize/maximize button cluster — shared between the default title
+ * bar and the floating overlay used for `titleBarStyle: "custom"` apps, so the two
+ * rendering modes never visually drift apart. */
+export function TrafficLights({ window: win, onClose }: TrafficLightsProps) {
+  const { dispatch } = useWindowManager();
+
+  const handleClose = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (onClose) onClose();
+      else dispatch({ type: "CLOSE", id: win.id });
+    },
+    [onClose, dispatch, win.id]
+  );
+
+  const handleMinimize = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      dispatch({ type: "MINIMIZE", id: win.id });
+    },
+    [dispatch, win.id]
+  );
+
+  const handleZoom = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (win.maximized) dispatch({ type: "RESTORE", id: win.id });
+      else dispatch({ type: "MAXIMIZE", id: win.id });
+    },
+    [dispatch, win.id, win.maximized]
+  );
+
+  return (
+    <div className="group flex items-center gap-2">
+      <TrafficLight color="#ff5f57" onClick={handleClose} title="Close">
+        <X strokeWidth={3} />
+      </TrafficLight>
+      <TrafficLight color="#febc2e" onClick={handleMinimize} title="Minimize">
+        <Minus strokeWidth={3} />
+      </TrafficLight>
+      <TrafficLight color="#28c840" onClick={handleZoom} title={win.maximized ? "Restore" : "Zoom"}>
+        {win.maximized ? <Minimize2 strokeWidth={3} /> : <Maximize2 strokeWidth={3} />}
+      </TrafficLight>
+    </div>
+  );
+}
