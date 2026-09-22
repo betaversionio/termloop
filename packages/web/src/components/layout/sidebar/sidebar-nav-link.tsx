@@ -14,6 +14,8 @@ interface SidebarNavLinkProps {
   label: string;
   isActive: boolean;
   size?: "default" | "sm";
+  /** Open in a new browser tab instead of navigating the current one (e.g. the OS view, which takes over the whole viewport and would otherwise block the rest of the UI). */
+  newTab?: boolean;
 }
 
 export function SidebarNavLink({
@@ -22,12 +24,15 @@ export function SidebarNavLink({
   label,
   isActive,
   size = "default",
+  newTab = false,
 }: SidebarNavLinkProps) {
   const { collapsed, setMobileOpen } = useSidebar();
 
   const link = (
     <Link
       to={to}
+      target={newTab ? "_blank" : undefined}
+      rel={newTab ? "noopener noreferrer" : undefined}
       onClick={() => setMobileOpen(false)}
       className={cn(
         "flex w-full items-center rounded-md text-sm font-normal transition-colors",

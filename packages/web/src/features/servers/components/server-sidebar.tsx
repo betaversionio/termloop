@@ -10,6 +10,7 @@ interface TabItem {
   icon: Icon;
   label: string;
   value: string;
+  newTab?: boolean;
 }
 
 const tabs: TabItem[] = [
@@ -17,7 +18,7 @@ const tabs: TabItem[] = [
   { icon: CommandSquare, label: "Terminal", value: "terminal" },
   { icon: FolderOpen, label: "Files", value: "files" },
   { icon: Activity, label: "Monitor", value: "monitor" },
-  { icon: Monitor, label: "OS", value: "os" },
+  { icon: Monitor, label: "OS", value: "os", newTab: true },
   { icon: Setting2, label: "Settings", value: "settings" },
 ];
 
@@ -45,6 +46,7 @@ export function ServerSidebar() {
             icon={item.icon}
             label={item.label}
             isActive={activeTab === item.value}
+            newTab={item.newTab}
           />
         ))}
       </nav>

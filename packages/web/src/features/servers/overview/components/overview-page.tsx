@@ -129,7 +129,7 @@ function QuickActions() {
     { icon: CommandSquare, label: "Terminal", path: "terminal" },
     { icon: FolderOpen, label: "Files", path: "files" },
     { icon: Activity, label: "Monitor", path: "monitor" },
-    { icon: Monitor, label: "OS", path: "os" },
+    { icon: Monitor, label: "OS", path: "os", newTab: true },
   ];
 
   return (
@@ -141,7 +141,11 @@ function QuickActions() {
             key={a.path}
             variant="outline"
             className="h-auto flex-col gap-2 py-3"
-            onClick={() => navigate({ to: `/server/${id}/${a.path}` })}
+            onClick={() =>
+              a.newTab
+                ? window.open(`/server/${id}/${a.path}`, "_blank", "noopener,noreferrer")
+                : navigate({ to: `/server/${id}/${a.path}` })
+            }
           >
             <a.icon size={20} color="currentColor" variant="Bulk" />
             <span className="text-xs">{a.label}</span>
