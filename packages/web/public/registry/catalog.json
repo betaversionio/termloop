@@ -81,5 +81,22 @@
         "date": "2026-06-01"
       }
     ]
+  },
+  {
+    "id": "2048",
+    "name": "2048",
+    "description": "The classic sliding tile puzzle — join the numbers to reach 2048.",
+    "author": "TermLoop",
+    "version": "1.0.0",
+    "iconUrl": "/marketplace-icons/2048.png",
+    "bundleUrl": "/marketplace-apps/2048.js",
+    "fileAssociations": [],
+    "defaultSize": { "width": 420, "height": 560 },
+    "minWidth": 380,
+    "minHeight": 520,
+    "showOnDesktop": false,
+    "showInDock": false,
+    "category": "games",
+    "tags": ["game", "puzzle", "2048"]
   }
 ]

@@ -12,7 +12,7 @@ import path from "node:path";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REGISTRY_DIR = path.join(__dirname, "..", "packages", "web", "public", "registry");
 
-const CATEGORIES = new Set(["tools", "media", "development", "utilities", "other"]);
+const CATEGORIES = new Set(["tools", "media", "development", "utilities", "games", "other"]);
 const SIZES = new Set(["small", "medium", "large"]);
 
 let errors = [];

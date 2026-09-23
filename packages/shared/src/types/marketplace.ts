@@ -19,7 +19,7 @@ export interface MarketplaceApp {
   minHeight: number;
   showOnDesktop: boolean;
   showInDock: boolean;
-  category: "tools" | "media" | "development" | "utilities" | "other";
+  category: "tools" | "media" | "development" | "utilities" | "games" | "other";
   /**
    * "custom" lets the app draw its own title bar content (tabs, toolbar) — the host
    * renders only the floating close/minimize/maximize buttons, and the app owns

@@ -19,10 +19,11 @@ import {
   Image as ImageIcon,
   Code2,
   SlidersHorizontal,
+  Gamepad2,
   MoreHorizontal,
 } from "lucide-react";
 
-type Category = "tools" | "media" | "development" | "utilities" | "other";
+type Category = "tools" | "media" | "development" | "utilities" | "games" | "other";
 type SidebarKey = "all" | "installed" | Category;
 
 const CATEGORY_META: Record<Category, { label: string; icon: typeof Wrench; color: string }> = {
@@ -30,6 +31,7 @@ const CATEGORY_META: Record<Category, { label: string; icon: typeof Wrench; colo
   media: { label: "Media", icon: ImageIcon, color: "#FF375F" },
   tools: { label: "Tools", icon: Wrench, color: "#FF9500" },
   utilities: { label: "Utilities", icon: SlidersHorizontal, color: "#5E5CE6" },
+  games: { label: "Games", icon: Gamepad2, color: "#FF2D55" },
   other: { label: "Other", icon: MoreHorizontal, color: "#8E8E93" },
 };
 

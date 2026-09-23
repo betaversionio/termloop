@@ -89,24 +89,30 @@ export function MarketplaceProvider({ connectionId, children }: MarketplaceProvi
     [installedApps]
   );
 
-  // Register/unregister marketplace apps in the mutable appRegistry
-  useEffect(() => {
-    for (const { manifest } of installedApps) {
-      const marketType = toMarketAppType(manifest.id);
-      if (!appRegistry.has(marketType)) {
-        const def: AppDefinition = {
-          type: marketType,
-          title: manifest.name,
-          icon: "package",
-          iconUrl: manifest.iconUrl,
-          defaultSize: manifest.defaultSize,
-          minWidth: manifest.minWidth,
-          minHeight: manifest.minHeight,
-        };
-        appRegistry.set(marketType, def);
-      }
+  // Register marketplace apps in the mutable appRegistry — done synchronously during
+  // render (not in a useEffect) so it's already up to date by the time descendants
+  // like Launchpad read it during THEIR initial render. A useEffect here would run
+  // after the whole tree's first commit, and since mutating a plain Map isn't a React
+  // state change, nothing would ever trigger those descendants to recompute — on a
+  // fresh page load they'd render once with the marketplace apps missing and stay
+  // that way until something unrelated (e.g. typing in Launchpad's search box)
+  // happened to force a re-render. appRegistry.set() is idempotent, so doing this on
+  // every render (including React 18 StrictMode's double-render) is harmless.
+  for (const { manifest } of installedApps) {
+    const marketType = toMarketAppType(manifest.id);
+    if (!appRegistry.has(marketType)) {
+      const def: AppDefinition = {
+        type: marketType,
+        title: manifest.name,
+        icon: "package",
+        iconUrl: manifest.iconUrl,
+        defaultSize: manifest.defaultSize,
+        minWidth: manifest.minWidth,
+        minHeight: manifest.minHeight,
+      };
+      appRegistry.set(marketType, def);
     }
-  }, [installedApps]);
+  }
 
   // Persist to localStorage, scoped per server
   useEffect(() => {

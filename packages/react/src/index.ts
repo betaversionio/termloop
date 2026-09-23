@@ -507,7 +507,7 @@ export interface AppManifest {
   minHeight: number;
   showOnDesktop: boolean;
   showInDock: boolean;
-  category: "tools" | "media" | "development" | "utilities" | "other";
+  category: "tools" | "media" | "development" | "utilities" | "games" | "other";
   /** "custom" lets the app draw its own title bar — see WindowDragRegion. */
   titleBarStyle?: "default" | "custom";
 }
@@ -522,5 +522,5 @@ export interface WidgetManifest {
   bundleUrl: string;
   sizes: Partial<Record<"small" | "medium" | "large", { width: number; height: number }>>;
   requiresApp?: string;
-  category: "tools" | "media" | "development" | "utilities" | "other";
+  category: "tools" | "media" | "development" | "utilities" | "games" | "other";
 }
