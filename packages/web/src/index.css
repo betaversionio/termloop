@@ -196,8 +196,11 @@
 
 /* OS desktop — San Francisco, macOS's actual default system font, on real Apple devices;
    reasonable system-font fallbacks elsewhere since SF Pro itself can't be bundled/licensed
-   for the web. Scoped to the OS view only, not the rest of the app (which uses Geist Mono). */
-.os-desktop {
+   for the web. Scoped via a class OsPage toggles on <body> (not just .os-desktop itself) so
+   it's also inherited by Radix portals (Dialog/Select/DropdownMenu/etc.), which render as
+   direct children of <body>, outside .os-desktop's own DOM subtree. Not applied to the rest
+   of the app, which uses Geist Mono. */
+body.os-active {
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
 }
 

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { WindowManagerProvider } from "../context/window-manager-context";
 import { DesktopSettingsProvider } from "../context/desktop-settings-context";
 import { MarketplaceProvider } from "@/features/servers/marketplace/components/marketplace-context";
@@ -12,6 +13,16 @@ interface OsPageProps {
 }
 
 export function OsPage({ connectionId }: OsPageProps) {
+  // Marks <body> while the OS view is mounted so index.css can apply the Apple
+  // system-font stack at the body level, not just to .os-desktop's own subtree — Radix
+  // portals (Dialog, Select, DropdownMenu, etc.) render as direct children of <body>,
+  // outside .os-desktop's DOM, so scoping the font to .os-desktop alone left every
+  // portaled popover/dialog/dropdown in the OS falling back to the app's Geist Mono.
+  useEffect(() => {
+    document.body.classList.add("os-active");
+    return () => document.body.classList.remove("os-active");
+  }, []);
+
   return (
     // Keyed by connectionId so switching servers remounts the whole desktop tree
     // instead of reusing state initialized for a different server.
