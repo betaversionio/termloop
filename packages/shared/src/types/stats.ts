@@ -29,3 +29,12 @@ export interface DiskStats {
   freeGB: number;
   usagePercent: number;
 }
+
+export interface ProcessInfo {
+  pid: number;
+  user: string;
+  cpuPercent: number;
+  memPercent: number;
+  memoryMB: number;
+  command: string;
+}

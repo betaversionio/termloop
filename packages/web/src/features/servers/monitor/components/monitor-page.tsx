@@ -1,10 +1,12 @@
 import { Cpu, Driver, Ram, Clock, RefreshCircle } from "iconsax-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { formatUptime } from "@/lib/utils";
 import type { ServerStats } from "@termloop/shared";
 import { useStats } from "../hooks/use-stats";
 import { StatCard } from "./stat-card";
+import { ProcessListTable } from "./process-list-table";
 
 interface MonitorPageProps {
   connectionId: string;
@@ -72,62 +74,75 @@ export function MonitorPage({ connectionId }: MonitorPageProps) {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* CPU */}
-        <StatCard
-          title="CPU"
-          icon={<Cpu size={18} color="currentColor" variant="Bulk" />}
-          value={`${stats.cpu.usagePercent.toFixed(1)}%`}
-          percentage={stats.cpu.usagePercent}
-          details={[
-            { label: "Model", value: stats.cpu.model },
-            { label: "Cores", value: String(stats.cpu.cores) },
-            {
-              label: "Load Avg",
-              value: stats.loadAverage.map((l) => l.toFixed(2)).join(", "),
-            },
-          ]}
-        />
+      <Tabs defaultValue="overview">
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="processes">Processes</TabsTrigger>
+        </TabsList>
 
-        {/* Memory */}
-        <StatCard
-          title="Memory"
-          icon={<Ram size={18} color="currentColor" variant="Bulk" />}
-          value={`${stats.memory.usagePercent}%`}
-          percentage={stats.memory.usagePercent}
-          details={[
-            { label: "Total", value: `${stats.memory.totalMB} MB` },
-            { label: "Used", value: `${stats.memory.usedMB} MB` },
-            { label: "Free", value: `${stats.memory.freeMB} MB` },
-          ]}
-        />
+        <TabsContent value="overview" className="mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* CPU */}
+            <StatCard
+              title="CPU"
+              icon={<Cpu size={18} color="currentColor" variant="Bulk" />}
+              value={`${stats.cpu.usagePercent.toFixed(1)}%`}
+              percentage={stats.cpu.usagePercent}
+              details={[
+                { label: "Model", value: stats.cpu.model },
+                { label: "Cores", value: String(stats.cpu.cores) },
+                {
+                  label: "Load Avg",
+                  value: stats.loadAverage.map((l) => l.toFixed(2)).join(", "),
+                },
+              ]}
+            />
 
-        {/* Disk */}
-        {stats.disk.map((d, i) => (
-          <StatCard
-            key={i}
-            title={`Disk ${d.mount}`}
-            icon={<Driver size={18} color="currentColor" variant="Bulk" />}
-            value={`${d.usagePercent}%`}
-            percentage={d.usagePercent}
-            details={[
-              { label: "Filesystem", value: d.filesystem },
-              { label: "Total", value: `${d.totalGB} GB` },
-              { label: "Used", value: `${d.usedGB} GB` },
-              { label: "Free", value: `${d.freeGB} GB` },
-            ]}
-          />
-        ))}
+            {/* Memory */}
+            <StatCard
+              title="Memory"
+              icon={<Ram size={18} color="currentColor" variant="Bulk" />}
+              value={`${stats.memory.usagePercent}%`}
+              percentage={stats.memory.usagePercent}
+              details={[
+                { label: "Total", value: `${stats.memory.totalMB} MB` },
+                { label: "Used", value: `${stats.memory.usedMB} MB` },
+                { label: "Free", value: `${stats.memory.freeMB} MB` },
+              ]}
+            />
 
-        {/* Uptime */}
-        <div className="rounded-lg border border-border bg-card p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <Clock size={18} color="currentColor" variant="Bulk" className="text-muted-foreground" />
-            <h3 className="font-semibold text-sm">Uptime</h3>
+            {/* Disk */}
+            {stats.disk.map((d, i) => (
+              <StatCard
+                key={i}
+                title={`Disk ${d.mount}`}
+                icon={<Driver size={18} color="currentColor" variant="Bulk" />}
+                value={`${d.usagePercent}%`}
+                percentage={d.usagePercent}
+                details={[
+                  { label: "Filesystem", value: d.filesystem },
+                  { label: "Total", value: `${d.totalGB} GB` },
+                  { label: "Used", value: `${d.usedGB} GB` },
+                  { label: "Free", value: `${d.freeGB} GB` },
+                ]}
+              />
+            ))}
+
+            {/* Uptime */}
+            <div className="rounded-lg border border-border bg-card p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Clock size={18} color="currentColor" variant="Bulk" className="text-muted-foreground" />
+                <h3 className="font-semibold text-sm">Uptime</h3>
+              </div>
+              <p className="text-2xl font-bold">{formatUptime(stats.uptime)}</p>
+            </div>
           </div>
-          <p className="text-2xl font-bold">{formatUptime(stats.uptime)}</p>
-        </div>
-      </div>
+        </TabsContent>
+
+        <TabsContent value="processes" className="mt-4">
+          <ProcessListTable connectionId={connectionId} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

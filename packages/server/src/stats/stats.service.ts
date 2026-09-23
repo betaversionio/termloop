@@ -1,6 +1,6 @@
 import { Injectable, Inject } from "@nestjs/common";
 import { Client } from "ssh2";
-import type { ServerStats, ServerSystemInfo } from "@termloop/shared";
+import type { ServerStats, ServerSystemInfo, ProcessInfo } from "@termloop/shared";
 import { StoreService } from "../store/store.service.js";
 import { SshService } from "../ssh/ssh.service.js";
 
@@ -63,6 +63,38 @@ export class StatsService {
 
     const client = await this.ssh.createSSHConnection(config);
     return this.getServerStats(client);
+  }
+
+  async getProcesses(connectionId: string): Promise<ProcessInfo[]> {
+    const config = this.store.servers.findById(connectionId);
+    if (!config) {
+      throw new Error('Connection not found');
+    }
+
+    const client = await this.ssh.createSSHConnection(config);
+    const output = await this.execCommand(
+      client,
+      "ps -eo pid,user,pcpu,pmem,rss,comm --no-headers --sort=-pcpu 2>/dev/null | head -n 100"
+    );
+
+    return output
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line): ProcessInfo | null => {
+        const parts = line.split(/\s+/);
+        if (parts.length < 6) return null;
+        const [pid, user, cpu, mem, rss, ...commandParts] = parts;
+        return {
+          pid: parseInt(pid, 10) || 0,
+          user: user || "",
+          cpuPercent: parseFloat(cpu) || 0,
+          memPercent: parseFloat(mem) || 0,
+          memoryMB: Math.round((parseInt(rss, 10) || 0) / 1024),
+          command: commandParts.join(" "),
+        };
+      })
+      .filter((p): p is ProcessInfo => p !== null && p.pid > 0);
   }
 
   private execCommand(client: Client, command: string): Promise<string> {

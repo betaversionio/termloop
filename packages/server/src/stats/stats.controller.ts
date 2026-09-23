@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Query, Res, Inject } from "@nestjs/common";
 import type { Response } from "express";
-import type { ApiResponse, ServerStats, ServerSystemInfo } from "@termloop/shared";
+import type { ApiResponse, ServerStats, ServerSystemInfo, ProcessInfo } from "@termloop/shared";
 import { StatsService } from "./stats.service.js";
 
 @Controller("stats")
@@ -17,6 +17,21 @@ export class StatsController {
       return { success: true, data };
     } catch (err: unknown) {
       const error = err instanceof Error ? err.message : "Failed to get stats";
+      res.status(500);
+      return { success: false, error };
+    }
+  }
+
+  @Get(":connectionId/processes")
+  async getProcesses(
+    @Param("connectionId") connectionId: string,
+    @Res({ passthrough: true }) res: Response
+  ): Promise<ApiResponse<ProcessInfo[]>> {
+    try {
+      const data = await this.stats.getProcesses(connectionId);
+      return { success: true, data };
+    } catch (err: unknown) {
+      const error = err instanceof Error ? err.message : "Failed to get processes";
       res.status(500);
       return { success: false, error };
     }
