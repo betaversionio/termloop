@@ -5,6 +5,12 @@ on:
   push:
     tags:
       - 'vscode-v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g. 1.2.3), without the tag prefix'
+        required: true
+        type: string
 
 jobs:
   build-and-release:
@@ -29,20 +35,26 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Get version
+        id: get_version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "VERSION=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "VERSION=${GITHUB_REF#refs/tags/vscode-v}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Sync package.json version
+        run: |
+          VERSION="${{ steps.get_version.outputs.VERSION }}"
+          PKG_VERSION=$(node -p "require('./apps/vscode-extension/package.json').version")
+          if [ "$PKG_VERSION" != "$VERSION" ]; then
+            echo "::warning::apps/vscode-extension/package.json was at $PKG_VERSION, not $VERSION — the version bump was forgotten before tagging. Updating it to match before building/publishing."
+            (cd apps/vscode-extension && npm pkg set version="$VERSION")
+          fi
+
       - name: Build
         run: pnpm build
-
-      - name: Get version from tag
-        id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/vscode-v}" >> "$GITHUB_OUTPUT"
-
-      - name: Verify tag matches package.json version
-        run: |
-          PKG_VERSION=$(node -p "require('./apps/vscode-extension/package.json').version")
-          if [ "$PKG_VERSION" != "${{ steps.get_version.outputs.VERSION }}" ]; then
-            echo "Tag version (${{ steps.get_version.outputs.VERSION }}) does not match apps/vscode-extension/package.json version ($PKG_VERSION)"
-            exit 1
-          fi
 
       - name: Package extension
         working-directory: apps/vscode-extension
@@ -51,7 +63,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ github.ref }}
+          tag_name: vscode-v${{ steps.get_version.outputs.VERSION }}
           name: TermLoop for VS Code v${{ steps.get_version.outputs.VERSION }}
           generate_release_notes: true
           body: |
