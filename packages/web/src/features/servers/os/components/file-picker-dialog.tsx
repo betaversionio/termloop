@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
 import type { RemoteFile } from "@termloop/shared";
-import { ChevronRight, Folder } from "lucide-react";
+import { ChevronLeft, ChevronRight, LayoutGrid, List } from "lucide-react";
 import { CustomDialog } from "@/components/ui/custom-dialog";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { sftpApi } from "@/features/servers/files/api";
-import { getFileIconUrl, getFolderIconUrl } from "@/features/servers/files/lib/file-icon";
 import { useFilePickerState, resolveFilePicker } from "@/hooks/use-file-picker";
-import { SIDEBAR_SHORTCUTS } from "../lib/os-constants";
+import { FileManagerSidebar } from "./apps/file-manager/file-manager-sidebar";
+import { FilePickerGrid } from "./file-picker-grid";
+import { FilePickerList } from "./file-picker-list";
 
 function matchesExtension(name: string, extensions?: string[]): boolean {
   if (!extensions || extensions.length === 0) return true;
@@ -19,6 +20,9 @@ function matchesExtension(name: string, extensions?: string[]): boolean {
 export function FilePickerDialog() {
   const request = useFilePickerState();
   const [currentPath, setCurrentPath] = useState("/");
+  const [history, setHistory] = useState<string[]>(["/"]);
+  const [historyIndex, setHistoryIndex] = useState(0);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [files, setFiles] = useState<RemoteFile[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +31,8 @@ export function FilePickerDialog() {
   useEffect(() => {
     if (!request) return;
     setCurrentPath(request.initialPath);
+    setHistory([request.initialPath]);
+    setHistoryIndex(0);
     setSelected(new Set());
   }, [request]);
 
@@ -54,14 +60,50 @@ export function FilePickerDialog() {
 
   const close = (result: string[] | null) => resolveFilePicker(result);
 
+  const navigateTo = (path: string) => {
+    setCurrentPath(path);
+    setSelected(new Set());
+    const next = history.slice(0, historyIndex + 1);
+    next.push(path);
+    setHistory(next);
+    setHistoryIndex(next.length - 1);
+  };
+
+  const goBack = () => {
+    if (historyIndex === 0) return;
+    const nextIndex = historyIndex - 1;
+    setHistoryIndex(nextIndex);
+    setCurrentPath(history[nextIndex]);
+    setSelected(new Set());
+  };
+
+  const goForward = () => {
+    if (historyIndex === history.length - 1) return;
+    const nextIndex = historyIndex + 1;
+    setHistoryIndex(nextIndex);
+    setCurrentPath(history[nextIndex]);
+    setSelected(new Set());
+  };
+
+  const isDisabled = (file: RemoteFile) =>
+    mode === "file" && !matchesExtension(file.name, extensions);
+
   const toggleSelect = (file: RemoteFile) => {
-    if (!matchesExtension(file.name, extensions)) return;
+    if (isDisabled(file)) return;
     setSelected((prev) => {
       const next = new Set(multiple ? prev : []);
       if (next.has(file.path)) next.delete(file.path);
       else next.add(file.path);
       return next;
     });
+  };
+
+  const openEntry = (file: RemoteFile) => {
+    if (file.type === "directory") {
+      navigateTo(file.path);
+    } else if (mode === "file" && !isDisabled(file)) {
+      close([file.path]);
+    }
   };
 
   const breadcrumbs = currentPath.split("/").filter(Boolean);
@@ -74,7 +116,7 @@ export function FilePickerDialog() {
         if (!open) close(null);
       }}
       title={title}
-      className="sm:max-w-3xl"
+      className="sm:max-w-4xl"
       footer={
         <div className="flex w-full items-center justify-between gap-3">
           <span className="text-xs text-muted-foreground truncate">
@@ -99,56 +141,68 @@ export function FilePickerDialog() {
         </div>
       }
     >
-      <div className="flex h-[420px] -mx-6 -my-4">
-        {/* Shortcuts */}
-        <div className="w-[140px] shrink-0 border-r border-border py-2 px-1.5 space-y-0.5 overflow-y-auto">
-          {SIDEBAR_SHORTCUTS.map((s) => (
-            <button
-              key={s.path}
-              onClick={() => setCurrentPath(s.path)}
-              className={cn(
-                "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-left transition-colors",
-                currentPath === s.path
-                  ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground hover:bg-muted",
-              )}
-            >
-              <Folder className="h-3.5 w-3.5 shrink-0" />
-              {s.label}
-            </button>
-          ))}
-        </div>
+      <div className="flex h-[480px] -mx-6 -my-4">
+        <FileManagerSidebar currentPath={currentPath} onNavigate={navigateTo} />
 
         <div className="flex flex-1 flex-col min-w-0">
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-1 px-3 py-2 border-b border-border text-xs overflow-x-auto shrink-0">
+          {/* Toolbar */}
+          <div className="flex items-center gap-1.5 px-2 py-1.5 border-b border-border bg-card shrink-0">
             <button
-              className="shrink-0 text-muted-foreground hover:text-foreground"
-              onClick={() => setCurrentPath("/")}
+              onClick={goBack}
+              disabled={historyIndex === 0}
+              className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted disabled:opacity-30 disabled:pointer-events-none"
             >
-              /
+              <ChevronLeft className="h-4 w-4" />
             </button>
-            {breadcrumbs.map((seg, i) => {
-              const path = "/" + breadcrumbs.slice(0, i + 1).join("/");
-              return (
-                <span key={path} className="flex shrink-0 items-center gap-1">
-                  <ChevronRight className="h-3 w-3 text-muted-foreground/50" />
-                  <button
-                    className={cn(
-                      "hover:text-foreground",
-                      path === currentPath ? "font-medium text-foreground" : "text-muted-foreground",
-                    )}
-                    onClick={() => setCurrentPath(path)}
-                  >
-                    {seg}
-                  </button>
-                </span>
-              );
-            })}
+            <button
+              onClick={goForward}
+              disabled={historyIndex === history.length - 1}
+              className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted disabled:opacity-30 disabled:pointer-events-none"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+
+            {/* Breadcrumbs */}
+            <div className="flex flex-1 items-center gap-0.5 text-xs min-w-0 overflow-x-auto mx-1">
+              <button
+                onClick={() => navigateTo("/")}
+                className="shrink-0 text-muted-foreground hover:text-foreground px-1 py-0.5 rounded hover:bg-muted"
+              >
+                /
+              </button>
+              {breadcrumbs.map((part, i) => {
+                const path = "/" + breadcrumbs.slice(0, i + 1).join("/");
+                return (
+                  <span key={path} className="flex items-center gap-0.5 shrink-0">
+                    <span className="text-muted-foreground/50">/</span>
+                    <button
+                      onClick={() => navigateTo(path)}
+                      className={cn(
+                        "truncate px-1 py-0.5 rounded hover:bg-muted",
+                        path === currentPath
+                          ? "font-medium text-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      {part}
+                    </button>
+                  </span>
+                );
+              })}
+            </div>
+
+            {/* View mode */}
+            <button
+              onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
+              className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted shrink-0"
+              title={viewMode === "grid" ? "List view" : "Icon view"}
+            >
+              {viewMode === "grid" ? <List className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}
+            </button>
           </div>
 
           {/* File list */}
-          <div className="flex-1 overflow-y-auto px-2 py-2">
+          <div className="flex-1 overflow-y-auto">
             {loading ? (
               <div className="flex h-full items-center justify-center">
                 <Spinner className="h-5 w-5" />
@@ -159,40 +213,22 @@ export function FilePickerDialog() {
               <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
                 Empty directory
               </div>
+            ) : viewMode === "grid" ? (
+              <FilePickerGrid
+                files={files}
+                selected={selected}
+                isDisabled={isDisabled}
+                onSelect={toggleSelect}
+                onOpen={openEntry}
+              />
             ) : (
-              <div className="space-y-0.5">
-                {files.map((file) => {
-                  const isDir = file.type === "directory";
-                  const disabled = !isDir && mode === "file" && !matchesExtension(file.name, extensions);
-                  const isSelected = selected.has(file.path);
-                  return (
-                    <button
-                      key={file.path}
-                      disabled={disabled}
-                      onClick={() => (isDir ? setCurrentPath(file.path) : toggleSelect(file))}
-                      onDoubleClick={() => {
-                        if (!isDir && mode === "file" && matchesExtension(file.name, extensions)) {
-                          close([file.path]);
-                        }
-                      }}
-                      className={cn(
-                        "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors",
-                        isSelected ? "bg-primary/10" : "hover:bg-muted",
-                        disabled && "cursor-not-allowed opacity-40",
-                      )}
-                    >
-                      <img
-                        src={isDir ? getFolderIconUrl(file.name) : getFileIconUrl(file.name)}
-                        alt=""
-                        className="h-4 w-4 shrink-0"
-                        draggable={false}
-                      />
-                      <span className="flex-1 truncate">{file.name}</span>
-                      {isDir && <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />}
-                    </button>
-                  );
-                })}
-              </div>
+              <FilePickerList
+                files={files}
+                selected={selected}
+                isDisabled={isDisabled}
+                onSelect={toggleSelect}
+                onOpen={openEntry}
+              />
             )}
           </div>
         </div>
