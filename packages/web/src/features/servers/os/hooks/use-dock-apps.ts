@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useMarketplace } from "@/features/servers/marketplace/components/marketplace-context";
 import { useDesktopSettings } from "../context/desktop-settings-context";
+import { appRegistry } from "../lib/os-constants";
 import type { AppType } from "../types/window";
 
 /** The Dock's effective pinned app list — the default (install-order) list with the
@@ -14,8 +15,12 @@ export function useDockApps(): AppType[] {
   return useMemo<AppType[]>(() => {
     const visible = dockOrder
       ? (() => {
-          const known = new Set(defaultDockApps);
-          const ordered = dockOrder.filter((t): t is AppType => known.has(t as AppType));
+          // Validate against the full app registry, not just defaultDockApps —
+          // dockOrder is authoritative for anything the user has explicitly pinned
+          // or reordered, including a marketplace app (e.g. a game) that isn't one
+          // of the "shown in dock by default" apps. Restricting to defaultDockApps
+          // here silently dropped a freshly-pinned non-default app on every render.
+          const ordered = dockOrder.filter((t): t is AppType => appRegistry.has(t as AppType));
           const missing = defaultDockApps.filter((t) => !ordered.includes(t));
           return [...ordered, ...missing];
         })()
