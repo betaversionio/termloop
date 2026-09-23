@@ -10,6 +10,20 @@ on:
       - 'cli-v*.*.*'
       - 'create-app-v*.*.*'
       - 'react-v*.*.*'
+  workflow_dispatch:
+    inputs:
+      package:
+        description: 'Package to release'
+        required: true
+        type: choice
+        options:
+          - cli
+          - create-app
+          - react
+      version:
+        description: 'Version to release (e.g. 1.2.3), without the tag prefix'
+        required: true
+        type: string
 
 jobs:
   publish:
@@ -35,45 +49,63 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build
-        run: pnpm build
-
-      - name: Resolve package from tag
+      - name: Resolve package and version
         id: resolve
         run: |
-          REF="${GITHUB_REF#refs/tags/}"
-          case "$REF" in
-            cli-v*)
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            PACKAGE="${{ inputs.package }}"
+            VERSION="${{ inputs.version }}"
+          else
+            REF="${GITHUB_REF#refs/tags/}"
+            case "$REF" in
+              cli-v*) PACKAGE="cli"; VERSION="${REF#cli-v}" ;;
+              create-app-v*) PACKAGE="create-app"; VERSION="${REF#create-app-v}" ;;
+              react-v*) PACKAGE="react"; VERSION="${REF#react-v}" ;;
+              *)
+                echo "Unrecognized tag: $REF"
+                exit 1
+                ;;
+            esac
+          fi
+
+          case "$PACKAGE" in
+            cli)
               echo "DIR=apps/cli" >> "$GITHUB_OUTPUT"
               echo "FILTER=termloop" >> "$GITHUB_OUTPUT"
-              echo "VERSION=${REF#cli-v}" >> "$GITHUB_OUTPUT"
+              echo "TAG_PREFIX=cli-v" >> "$GITHUB_OUTPUT"
               echo "NEEDS_BUNDLE=true" >> "$GITHUB_OUTPUT"
               ;;
-            create-app-v*)
+            create-app)
               echo "DIR=apps/create-termloop-app" >> "$GITHUB_OUTPUT"
               echo "FILTER=create-termloop-app" >> "$GITHUB_OUTPUT"
-              echo "VERSION=${REF#create-app-v}" >> "$GITHUB_OUTPUT"
+              echo "TAG_PREFIX=create-app-v" >> "$GITHUB_OUTPUT"
               echo "NEEDS_BUNDLE=false" >> "$GITHUB_OUTPUT"
               ;;
-            react-v*)
+            react)
               echo "DIR=packages/react" >> "$GITHUB_OUTPUT"
               echo "FILTER=@termloop/react" >> "$GITHUB_OUTPUT"
-              echo "VERSION=${REF#react-v}" >> "$GITHUB_OUTPUT"
+              echo "TAG_PREFIX=react-v" >> "$GITHUB_OUTPUT"
               echo "NEEDS_BUNDLE=false" >> "$GITHUB_OUTPUT"
               ;;
             *)
-              echo "Unrecognized tag: $REF"
+              echo "Unrecognized package: $PACKAGE"
               exit 1
               ;;
           esac
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Verify tag matches package.json version
+      - name: Sync package.json version
         run: |
-          PKG_VERSION=$(node -p "require('./${{ steps.resolve.outputs.DIR }}/package.json').version")
-          if [ "$PKG_VERSION" != "${{ steps.resolve.outputs.VERSION }}" ]; then
-            echo "Tag version (${{ steps.resolve.outputs.VERSION }}) does not match ${{ steps.resolve.outputs.DIR }}/package.json version ($PKG_VERSION)"
-            exit 1
+          DIR="${{ steps.resolve.outputs.DIR }}"
+          VERSION="${{ steps.resolve.outputs.VERSION }}"
+          PKG_VERSION=$(node -p "require('./${DIR}/package.json').version")
+          if [ "$PKG_VERSION" != "$VERSION" ]; then
+            echo "::warning::${DIR}/package.json was at $PKG_VERSION, not $VERSION — the version bump was forgotten before tagging. Updating it to match the tag before building/publishing."
+            (cd "$DIR" && npm pkg set version="$VERSION")
           fi
+
+      - name: Build
+        run: pnpm build
 
       - name: Determine npm dist-tag
         id: npmtag
@@ -104,7 +136,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ github.ref }}
+          tag_name: ${{ steps.resolve.outputs.TAG_PREFIX }}${{ steps.resolve.outputs.VERSION }}
           name: ${{ steps.resolve.outputs.FILTER }}@${{ steps.resolve.outputs.VERSION }}
           generate_release_notes: true
           draft: false
