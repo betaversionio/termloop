@@ -25,6 +25,12 @@ interface DesktopSettingsContext {
   setDockOrder: (order: string[]) => void;
   hiddenDesktopApps: string[];
   setHiddenDesktopApps: (ids: string[]) => void;
+  /** Built-in dock apps the user explicitly removed — tracked separately from
+   * dockOrder because dockOrder's "anything missing gets auto-appended" merge
+   * (so newly-installed apps show up) can't otherwise tell "never seen yet" apart
+   * from "the user removed this on purpose". */
+  hiddenDockApps: string[];
+  setHiddenDockApps: (ids: string[]) => void;
   placedWidgets: PlacedWidget[];
   setPlacedWidgets: (widgets: PlacedWidget[]) => void;
 }
@@ -38,6 +44,8 @@ const DesktopSettingsContext = createContext<DesktopSettingsContext>({
   setDockOrder: () => {},
   hiddenDesktopApps: [],
   setHiddenDesktopApps: () => {},
+  hiddenDockApps: [],
+  setHiddenDockApps: () => {},
   placedWidgets: [],
   setPlacedWidgets: () => {},
 });
@@ -49,6 +57,7 @@ interface StoredSettings {
   iconPositions?: Record<string, IconPosition>;
   dockOrder?: string[];
   hiddenDesktopApps?: string[];
+  hiddenDockApps?: string[];
   placedWidgets?: PlacedWidget[];
 }
 
@@ -90,6 +99,10 @@ export function DesktopSettingsProvider({ connectionId, children }: DesktopSetti
     () => loadSettings(connectionId).hiddenDesktopApps || []
   );
 
+  const [hiddenDockApps, setHiddenDockAppsState] = useState<string[]>(
+    () => loadSettings(connectionId).hiddenDockApps || []
+  );
+
   const [placedWidgets, setPlacedWidgetsState] = useState<PlacedWidget[]>(
     () => loadSettings(connectionId).placedWidgets || []
   );
@@ -101,11 +114,12 @@ export function DesktopSettingsProvider({ connectionId, children }: DesktopSetti
         iconPositions,
         dockOrder: dockOrder ?? undefined,
         hiddenDesktopApps,
+        hiddenDockApps,
         placedWidgets,
         ...overrides,
       });
     },
-    [connectionId, wallpaper, iconPositions, dockOrder, hiddenDesktopApps, placedWidgets]
+    [connectionId, wallpaper, iconPositions, dockOrder, hiddenDesktopApps, hiddenDockApps, placedWidgets]
   );
 
   const setWallpaper = useCallback((id: string) => {
@@ -131,6 +145,11 @@ export function DesktopSettingsProvider({ connectionId, children }: DesktopSetti
     persist({ hiddenDesktopApps: ids });
   }, [persist]);
 
+  const setHiddenDockApps = useCallback((ids: string[]) => {
+    setHiddenDockAppsState(ids);
+    persist({ hiddenDockApps: ids });
+  }, [persist]);
+
   const setPlacedWidgets = useCallback((widgets: PlacedWidget[]) => {
     setPlacedWidgetsState(widgets);
     persist({ placedWidgets: widgets });
@@ -147,6 +166,8 @@ export function DesktopSettingsProvider({ connectionId, children }: DesktopSetti
         setDockOrder,
         hiddenDesktopApps,
         setHiddenDesktopApps,
+        hiddenDockApps,
+        setHiddenDockApps,
         placedWidgets,
         setPlacedWidgets,
       }}

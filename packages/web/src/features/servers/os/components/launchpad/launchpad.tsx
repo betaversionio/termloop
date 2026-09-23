@@ -1,17 +1,24 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
+import { createPortal } from 'react-dom';
 import { useWindowManager } from '../../context/window-manager-context';
 import { useMarketplace } from '@/features/servers/marketplace/components/marketplace-context';
-import { appRegistry } from '../../lib/os-constants';
+import { appRegistry, type AppDefinition } from '../../lib/os-constants';
 import type { AppType } from '../../types/window';
+
+const DRAG_THRESHOLD = 6;
 
 interface LaunchpadProps {
   open: boolean;
   onClose: () => void;
+  /** The Dock pill's DOM node — used to hit-test where a tile was dropped. */
+  dockRef: RefObject<HTMLDivElement | null>;
+  /** Called when a tile is dropped on the Dock. */
+  onDropOnDock: (appType: AppType) => void;
 }
 
 /** A mac-Launchpad-style overlay for discovering and launching every installed app
  * (built-in + marketplace), regardless of whether it's pinned to the Dock. */
-export function Launchpad({ open, onClose }: LaunchpadProps) {
+export function Launchpad({ open, onClose, dockRef, onDropOnDock }: LaunchpadProps) {
   const { dispatch } = useWindowManager();
   const { installedApps } = useMarketplace();
   const [query, setQuery] = useState('');
@@ -66,24 +73,16 @@ export function Launchpad({ open, onClose }: LaunchpadProps) {
         onClick={(e) => e.stopPropagation()}
       >
         {apps.map((app) => (
-          <button
+          <LaunchpadTile
             key={app.type}
-            onClick={() => handleOpen(app.type)}
-            className="flex flex-col items-center gap-2 group outline-none"
-          >
-            <img
-              src={app.iconUrl}
-              alt={app.title}
-              className="h-16 w-16 rounded-[16px] transition-transform duration-150 group-hover:scale-110 group-focus-visible:scale-110 drop-shadow-[0_4px_10px_rgba(0,0,0,0.4)]"
-              draggable={false}
-            />
-            <span
-              className="text-xs text-white text-center leading-tight max-w-full truncate px-1"
-              style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.6)' }}
-            >
-              {app.title}
-            </span>
-          </button>
+            app={app}
+            onOpen={handleOpen}
+            dockRef={dockRef}
+            onDropOnDock={(appType) => {
+              onDropOnDock(appType);
+              onClose();
+            }}
+          />
         ))}
 
         {apps.length === 0 && (
@@ -93,5 +92,106 @@ export function Launchpad({ open, onClose }: LaunchpadProps) {
         )}
       </div>
     </div>
+  );
+}
+
+interface LaunchpadTileProps {
+  app: AppDefinition;
+  onOpen: (appType: AppType) => void;
+  dockRef: RefObject<HTMLDivElement | null>;
+  onDropOnDock: (appType: AppType) => void;
+}
+
+/** Hand-rolled pointer-based drag (same technique as desktop-icon.tsx's icon
+ * dragging) instead of native HTML5 drag-and-drop — native DnD turned out unreliable
+ * here across browsers (a short/quick drag gesture can get silently reinterpreted as
+ * a plain click, which both failed to register the drop AND fired the tile's onClick,
+ * closing Launchpad and opening the app). This gives full explicit control over what
+ * counts as a drag vs. a click, with no browser heuristics involved. */
+function LaunchpadTile({ app, onOpen, dockRef, onDropOnDock }: LaunchpadTileProps) {
+  const dragging = useRef(false);
+  const didDrag = useRef(false);
+  const startPointer = useRef({ x: 0, y: 0 });
+  const elRef = useRef<HTMLButtonElement>(null);
+  const [ghostPos, setGhostPos] = useState<{ x: number; y: number } | null>(null);
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    if (e.button !== 0) return;
+    dragging.current = true;
+    didDrag.current = false;
+    startPointer.current = { x: e.clientX, y: e.clientY };
+    elRef.current?.setPointerCapture(e.pointerId);
+  };
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!dragging.current) return;
+    const dx = e.clientX - startPointer.current.x;
+    const dy = e.clientY - startPointer.current.y;
+    if (!didDrag.current && Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
+    didDrag.current = true;
+    setGhostPos({ x: e.clientX, y: e.clientY });
+  };
+
+  const onPointerUp = (e: React.PointerEvent) => {
+    if (!dragging.current) return;
+    dragging.current = false;
+    elRef.current?.releasePointerCapture(e.pointerId);
+    setGhostPos(null);
+
+    if (didDrag.current) {
+      // The ghost has pointer-events:none, so this correctly hits whatever is
+      // actually underneath the cursor (a Dock icon or the pill itself).
+      const target = document.elementFromPoint(e.clientX, e.clientY);
+      if (target && dockRef.current?.contains(target)) {
+        onDropOnDock(app.type);
+      }
+    } else {
+      onOpen(app.type);
+    }
+  };
+
+  return (
+    <>
+      <button
+        ref={elRef}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        className="flex flex-col items-center gap-2 group outline-none touch-none select-none"
+      >
+        <img
+          src={app.iconUrl}
+          alt={app.title}
+          className="h-16 w-16 rounded-[16px] transition-transform duration-150 group-hover:scale-110 group-focus-visible:scale-110 drop-shadow-[0_4px_10px_rgba(0,0,0,0.4)] pointer-events-none"
+          style={ghostPos ? { opacity: 0.3 } : undefined}
+          draggable={false}
+        />
+        <span
+          className="text-xs text-white text-center leading-tight max-w-full truncate px-1"
+          style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.6)' }}
+        >
+          {app.title}
+        </span>
+      </button>
+
+      {ghostPos &&
+        createPortal(
+          <img
+            src={app.iconUrl}
+            alt=""
+            className="rounded-[16px] drop-shadow-[0_8px_20px_rgba(0,0,0,0.5)]"
+            style={{
+              position: 'fixed',
+              left: ghostPos.x - 32,
+              top: ghostPos.y - 32,
+              width: 64,
+              height: 64,
+              zIndex: 10000,
+              pointerEvents: 'none',
+            }}
+          />,
+          document.body
+        )}
+    </>
   );
 }

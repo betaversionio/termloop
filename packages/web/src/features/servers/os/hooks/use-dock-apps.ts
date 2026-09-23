@@ -9,13 +9,17 @@ import type { AppType } from "../types/window";
  * context menu offering "Keep in Dock"). */
 export function useDockApps(): AppType[] {
   const { dockApps: defaultDockApps } = useMarketplace();
-  const { dockOrder } = useDesktopSettings();
+  const { dockOrder, hiddenDockApps } = useDesktopSettings();
 
   return useMemo<AppType[]>(() => {
-    if (!dockOrder) return defaultDockApps;
-    const known = new Set(defaultDockApps);
-    const ordered = dockOrder.filter((t): t is AppType => known.has(t as AppType));
-    const missing = defaultDockApps.filter((t) => !ordered.includes(t));
-    return [...ordered, ...missing];
-  }, [defaultDockApps, dockOrder]);
+    const visible = dockOrder
+      ? (() => {
+          const known = new Set(defaultDockApps);
+          const ordered = dockOrder.filter((t): t is AppType => known.has(t as AppType));
+          const missing = defaultDockApps.filter((t) => !ordered.includes(t));
+          return [...ordered, ...missing];
+        })()
+      : defaultDockApps;
+    return visible.filter((t) => !hiddenDockApps.includes(t));
+  }, [defaultDockApps, dockOrder, hiddenDockApps]);
 }

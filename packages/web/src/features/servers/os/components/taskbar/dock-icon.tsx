@@ -17,7 +17,7 @@ interface DockIconProps {
   isDropTarget?: boolean;
   onDragStart?: () => void;
   onDragOver?: (e: React.DragEvent) => void;
-  onDrop?: () => void;
+  onDrop?: (e: React.DragEvent) => void;
   onDragEnd?: () => void;
 }
 
@@ -50,7 +50,12 @@ export function DockIcon({
       draggable={draggable}
       onDragStart={onDragStart}
       onDragOver={onDragOver}
-      onDrop={onDrop}
+      onDrop={(e) => {
+        // Stops this from also bubbling up to the dock pill's own onDrop (which
+        // handles dropping on empty dock space) and double-inserting the app.
+        e.stopPropagation();
+        onDrop?.(e);
+      }}
       onDragEnd={onDragEnd}
       className={cn(
         "relative flex items-center justify-center outline-none w-[60px] h-[50px] transition-[opacity,transform]",
@@ -61,7 +66,10 @@ export function DockIcon({
       <DockTooltip label={app.title} hovered={hovered} anchorRef={buttonRef} />
 
       {/* Icon with mac-style magnification — overflows above the dock on hover, not
-          reserved for inside a taller box, matching real macOS Dock behavior. */}
+          reserved for inside a taller box, matching real macOS Dock behavior.
+          No draggable={false} — that would block dragstart from ever firing when
+          the cursor is over it (the dominant hit-area), overriding the button's own
+          draggable=true per the HTML5 DnD spec. */}
       <img
         src={app.iconUrl}
         alt={app.title}
@@ -71,7 +79,6 @@ export function DockIcon({
             ? "scale-[1.22] -translate-y-3 drop-shadow-[0_10px_14px_rgba(0,0,0,0.35)]"
             : "scale-100 drop-shadow-[0_2px_4px_rgba(0,0,0,0.25)]"
         )}
-        draggable={false}
       />
 
       {/* Running dot — overlaid just below the icon, doesn't add its own layout height */}

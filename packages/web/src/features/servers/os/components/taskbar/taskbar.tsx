@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useWindowManager } from '../../context/window-manager-context';
 import { useDesktopSettings } from '../../context/desktop-settings-context';
 import { useDockApps } from '../../hooks/use-dock-apps';
@@ -12,12 +12,13 @@ import { cn } from '@/lib/utils';
 
 export function Taskbar() {
   const { state, dispatch } = useWindowManager();
-  const { setDockOrder } = useDesktopSettings();
+  const { setDockOrder, hiddenDockApps, setHiddenDockApps } = useDesktopSettings();
   const dockApps = useDockApps();
   const [launchpadOpen, setLaunchpadOpen] = useState(false);
   const [draggedType, setDraggedType] = useState<AppType | null>(null);
   const [dragOverType, setDragOverType] = useState<AppType | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; appType: AppType } | null>(null);
+  const dockRef = useRef<HTMLDivElement>(null);
 
   const topWindow = state.windows
     .filter((w) => !w.minimized)
@@ -64,15 +65,18 @@ export function Taskbar() {
   const extraRunning = runningTypes.filter((t) => !dockApps.includes(t));
 
   const handleDrop = (targetType: AppType) => {
-    if (!draggedType || draggedType === targetType) {
+    const dragged = draggedType;
+    if (!dragged || dragged === targetType) {
       setDraggedType(null);
       setDragOverType(null);
       return;
     }
-    const next = dockApps.filter((t) => t !== draggedType);
+    const next = dockApps.filter((t) => t !== dragged);
     const targetIndex = next.indexOf(targetType);
-    next.splice(targetIndex, 0, draggedType);
+    next.splice(targetIndex, 0, dragged);
     setDockOrder(next);
+    if (hiddenDockApps.includes(dragged)) setHiddenDockApps(hiddenDockApps.filter((t) => t !== dragged));
+    setLaunchpadOpen(false);
     setDraggedType(null);
     setDragOverType(null);
   };
@@ -91,10 +95,26 @@ export function Taskbar() {
 
   const handlePin = (appType: AppType) => {
     if (!dockApps.includes(appType)) setDockOrder([...dockApps, appType]);
+    if (hiddenDockApps.includes(appType)) setHiddenDockApps(hiddenDockApps.filter((t) => t !== appType));
+  };
+
+  /** A Launchpad tile was pointer-dropped anywhere over the dock pill — appends it
+   * to the end if it isn't pinned already. Launchpad itself does the hit-testing
+   * (via a pointer-event drag, not native HTML5 DnD — see launchpad.tsx) and calls
+   * this directly with the dropped app's type. */
+  const handleDropOnDock = (appType: AppType) => {
+    if (!dockApps.includes(appType)) {
+      setDockOrder([...dockApps, appType]);
+      if (hiddenDockApps.includes(appType)) setHiddenDockApps(hiddenDockApps.filter((t) => t !== appType));
+    }
   };
 
   const handleUnpin = (appType: AppType) => {
     setDockOrder(dockApps.filter((t) => t !== appType));
+    // dockOrder alone won't stick for a built-in dock app — it'd just get
+    // auto-re-appended by useDockApps' "missing" merge on the next render, since
+    // that merge can't tell "the user removed this" apart from "never seen yet".
+    if (!hiddenDockApps.includes(appType)) setHiddenDockApps([...hiddenDockApps, appType]);
   };
 
   return (
@@ -103,6 +123,7 @@ export function Taskbar() {
     // instead of the viewport if nested inside it.
     <>
       <div
+        ref={dockRef}
         className={cn(
           'fixed bottom-3 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-[4px] px-[10px] py-[9px] rounded-[24px] overflow-visible',
         'bg-[linear-gradient(180deg,rgba(255,255,255,0.1)_0%,rgba(255,255,255,0.03)_100%),rgba(22,22,24,0.5)]',
@@ -162,7 +183,12 @@ export function Taskbar() {
       ))}
     </div>
 
-    <Launchpad open={launchpadOpen} onClose={() => setLaunchpadOpen(false)} />
+    <Launchpad
+      open={launchpadOpen}
+      onClose={() => setLaunchpadOpen(false)}
+      dockRef={dockRef}
+      onDropOnDock={handleDropOnDock}
+    />
 
     {contextMenu && (
       <DockContextMenu

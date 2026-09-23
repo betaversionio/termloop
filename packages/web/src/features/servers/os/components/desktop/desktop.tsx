@@ -86,6 +86,8 @@ export function Desktop({ connectionId }: DesktopProps) {
     hiddenDesktopApps,
     setHiddenDesktopApps,
     setDockOrder,
+    hiddenDockApps,
+    setHiddenDockApps,
     placedWidgets,
     setPlacedWidgets,
   } = useDesktopSettings();
@@ -169,8 +171,9 @@ export function Desktop({ connectionId }: DesktopProps) {
   const handlePinToDock = useCallback(
     (appType: AppType) => {
       if (!dockApps.includes(appType)) setDockOrder([...dockApps, appType]);
+      if (hiddenDockApps.includes(appType)) setHiddenDockApps(hiddenDockApps.filter((t) => t !== appType));
     },
-    [dockApps, setDockOrder]
+    [dockApps, setDockOrder, hiddenDockApps, setHiddenDockApps]
   );
 
   const handleRemoveFromDesktop = useCallback(
