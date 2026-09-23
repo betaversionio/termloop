@@ -5,7 +5,8 @@ export type BuiltInAppType =
   | "notepad"
   | "settings"
   | "browser"
-  | "app-store";
+  | "app-store"
+  | "calculator";
 
 export type MarketplaceAppType = `market:${string}`;
 

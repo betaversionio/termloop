@@ -74,6 +74,15 @@ export const BUILTIN_REGISTRY: Record<BuiltInAppType, AppDefinition> = {
     minWidth: 700,
     minHeight: 480,
   },
+  calculator: {
+    type: 'calculator',
+    title: 'Calculator',
+    icon: 'calculator',
+    iconUrl: '/app-icons/calculator.png',
+    defaultSize: { width: 260, height: 460 },
+    minWidth: 240,
+    minHeight: 400,
+  },
 };
 
 /** Mutable runtime registry — built-in apps + installed marketplace apps */

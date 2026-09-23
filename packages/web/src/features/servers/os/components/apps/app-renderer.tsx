@@ -9,6 +9,7 @@ import { NotepadApp } from "./notepad-app";
 import { SettingsApp } from "./settings-app";
 import { BrowserApp } from "./browser-app";
 import { AppStoreApp } from "./app-store-app";
+import { CalculatorApp } from "./calculator-app";
 
 interface AppRendererProps {
   appType: AppType;
@@ -44,6 +45,8 @@ export function AppRenderer({ appType, connectionId, payload, windowId }: AppRen
       return <BrowserApp connectionId={connectionId} />;
     case "app-store":
       return <AppStoreApp />;
+    case "calculator":
+      return <CalculatorApp />;
     default:
       return (
         <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
