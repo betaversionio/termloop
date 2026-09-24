@@ -3,6 +3,7 @@
 import { Command } from "commander";
 import open from "open";
 import path from "path";
+import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import express, { type Request, type Response, type NextFunction } from "express";
 import { findRunningDaemon, registerAsDaemon } from "./daemon/discover.js";
@@ -10,12 +11,19 @@ import { dynamicImport } from "./dynamicImport.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// Read from package.json rather than hardcoding, so `termloop --version` can't drift
+// out of sync with the actual published version. dist/index.js always ships one
+// directory below package.json, both when run from the repo and after npm install.
+const { version } = JSON.parse(
+  readFileSync(path.join(__dirname, "../package.json"), "utf-8")
+) as { version: string };
+
 const program = new Command();
 
 program
   .name("termloop")
   .description("Browser-based OS-like UI for managing remote servers via SSH")
-  .version("0.1.1")
+  .version(version)
   .option("-p, --port <number>", "Port to run on", "3721")
   .option("--no-open", "Don't open browser automatically")
   .action(async (opts) => {
