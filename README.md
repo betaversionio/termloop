@@ -45,6 +45,23 @@ Options:
   -h, --help           Display help
 ```
 
+## Docker
+
+Self-host TermLoop with Docker instead of running it locally:
+
+```bash
+docker build -t termloop docker
+docker run -d --name termloop -p 3721:3721 -v termloop-data:/home/termloop/.termloop termloop
+```
+
+Opens at `http://localhost:3721`. The named volume persists your connections, SSH keys, and settings across container restarts/upgrades — without it, everything is lost when the container is removed.
+
+To run TermLoop itself on a different port inside the container, set `PORT` and update both `-p` mappings to match:
+
+```bash
+docker run -d --name termloop -e PORT=8080 -p 8080:8080 -v termloop-data:/home/termloop/.termloop termloop
+```
+
 ## Features
 
 ### 🖥️ Interactive Terminal
