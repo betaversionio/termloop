@@ -1,7 +1,8 @@
 import { useState, useRef } from "react";
 import { DocumentUpload, TickCircle, Folder2 } from "iconsax-react";
-import type { ServerConnectionInput } from "@termloop/shared";
+import type { ApiResponse, ServerConnectionInput, SSHKey } from "@termloop/shared";
 import { useCreateConnection } from "../hooks/use-connections";
+import { useCreateKey } from "../../keychain/hooks/use-keychain";
 import { CustomDialog } from "@/components/ui/custom-dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -58,7 +59,13 @@ function parseSSHConfig(config: string): ParsedHost[] {
           currentHost.username = value;
           break;
         case "identityfile":
-          currentHost.identityFile = value.replace(/^~/, "");
+          // ssh_config allows quoting paths that contain spaces (common on Windows,
+          // e.g. `IdentityFile "C:\Users\Jane Doe\.ssh\id_rsa"`) — strip them so the
+          // stored path is usable as-is. Keep any leading "~" intact rather than
+          // stripping it: the server resolves "~" against its own HOME/USERPROFILE
+          // at connect time (see ssh.service.ts's resolveKeychainKey), the same way
+          // it does for keys added manually via the keychain.
+          currentHost.identityFile = value.replace(/^"(.*)"$/, "$1");
           break;
       }
     }
@@ -84,6 +91,7 @@ export function SSHConfigImportDialog({ open, onClose }: SSHConfigImportDialogPr
   const [parsedHosts, setParsedHosts] = useState<ParsedHost[]>([]);
   const [step, setStep] = useState<"input" | "select">("input");
   const createMutation = useCreateConnection();
+  const createKeyMutation = useCreateKey();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -127,14 +135,34 @@ export function SSHConfigImportDialog({ open, onClose }: SSHConfigImportDialogPr
 
     // Import hosts one by one
     for (const host of selectedHosts) {
+      // A path-based keychain key: the same mechanism a user gets from Keychain →
+      // Add Key → Path, resolved lazily on the server at connect time (so this only
+      // works when that path exists on the machine termloop's server is running on —
+      // the common case for local `npx termloop`, not necessarily for a remote/Docker
+      // deployment of a config imported from a different machine).
+      let keychainKeyId: string | undefined;
+      if (host.identityFile) {
+        const result = await new Promise<ApiResponse<SSHKey>>((resolve) => {
+          createKeyMutation.mutate(
+            { name: `${host.name} (imported)`, type: "path", keyPath: host.identityFile },
+            {
+              onSuccess: resolve,
+              onError: () => resolve({ success: false, error: "Failed to create key" }),
+            }
+          );
+        });
+        keychainKeyId = result.success ? result.data?.id : undefined;
+      }
+
       const payload: ServerConnectionInput = {
         name: host.name,
         host: host.host,
         port: host.port,
         username: host.username,
-        authMethod: "password", // Default to password, user can edit later
+        authMethod: keychainKeyId ? "key" : "password",
         password: "",
         privateKey: "",
+        keychainKeyId,
         color: "#6366f1",
       };
 
@@ -231,8 +259,9 @@ export function SSHConfigImportDialog({ open, onClose }: SSHConfigImportDialogPr
 
           <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
             <p className="text-sm text-blue-600 dark:text-blue-400">
-              💡 <strong>Note:</strong> Private keys referenced in the config are not imported.
-              You'll need to add them manually or through the keychain.
+              💡 <strong>Note:</strong> An <code className="text-xs">IdentityFile</code> path is
+              linked from where it lives on disk rather than its contents being copied in — this
+              only works if that path exists on the machine termloop's server is running on.
             </p>
           </div>
         </div>
@@ -273,7 +302,7 @@ export function SSHConfigImportDialog({ open, onClose }: SSHConfigImportDialogPr
                       </div>
                       {host.identityFile && (
                         <div className="text-xs text-amber-600 dark:text-amber-400">
-                          ⚠️ Key: {host.identityFile} (not imported)
+                          🔑 Key: {host.identityFile}
                         </div>
                       )}
                     </div>
