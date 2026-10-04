@@ -2,6 +2,24 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { TermLoopClient } from "@termloop/client";
 
+const MAX_OUTPUT_CHARS = 20000;
+const DEFAULT_LINE_LIMIT = 2000;
+
+/** Keeps the last `maxChars` of `text` — the tail is usually what matters most for
+ * command output (final status, error at the end of a build) — noting how much was
+ * cut so the model knows to narrow the command (e.g. pipe through `grep`/`tail`)
+ * instead of re-running it broad again. Unbounded output is the single biggest
+ * source of wasted context from these tools, so every tool below caps its own. */
+function truncateOutput(text: string, maxChars = MAX_OUTPUT_CHARS): string {
+  if (text.length <= maxChars) return text;
+  const omitted = text.length - maxChars;
+  return (
+    `(truncated — showing the last ${maxChars} of ${text.length} characters, ` +
+    `${omitted} omitted from the start; narrow the command if you need what was cut)\n\n` +
+    text.slice(-maxChars)
+  );
+}
+
 /**
  * Runs a shell command to completion and returns its output.
  * If `visible` is set, attaches to an already-open terminal session for this connection so a
@@ -82,7 +100,7 @@ export function registerTermLoopTools(server: McpServer, client: TermLoopClient)
         port: c.port,
         username: c.username,
       }));
-      return { content: [{ type: "text", text: JSON.stringify(summarized, null, 2) }] };
+      return { content: [{ type: "text", text: JSON.stringify(summarized) }] };
     }
   );
 
@@ -117,7 +135,7 @@ export function registerTermLoopTools(server: McpServer, client: TermLoopClient)
         sessionId
       );
       const note = wantsVisible && !attached ? "(No open terminal session for this connection — ran in the background.)\n\n" : "";
-      return { content: [{ type: "text", text: note + output }] };
+      return { content: [{ type: "text", text: note + truncateOutput(output) }] };
     }
   );
 
@@ -164,20 +182,31 @@ export function registerTermLoopTools(server: McpServer, client: TermLoopClient)
         connectionId: s.connectionId,
         connectionName: names.get(s.connectionId) ?? "(unknown)",
       }));
-      return { content: [{ type: "text", text: JSON.stringify(summarized, null, 2) }] };
+      return { content: [{ type: "text", text: JSON.stringify(summarized) }] };
     }
   );
 
   server.tool(
     "read_file",
-    "Read a file from a remote server over SFTP",
+    "Read a file from a remote server over SFTP. Returns up to 2000 lines by default — pass " +
+      "offset/limit to page through larger files instead of re-reading the whole thing.",
     {
       connectionId: z.string(),
       path: z.string(),
+      offset: z.number().optional().describe("1-indexed line number to start reading from (default 1)"),
+      limit: z.number().optional().describe("Max number of lines to return (default 2000)"),
     },
-    async ({ connectionId, path }) => {
+    async ({ connectionId, path, offset, limit }) => {
       const content = await client.sftp.readFile(connectionId, path);
-      return { content: [{ type: "text", text: content }] };
+      const lines = content.split("\n");
+      const start = Math.max(0, (offset ?? 1) - 1);
+      const end = Math.min(lines.length, start + (limit ?? DEFAULT_LINE_LIMIT));
+      const slice = lines.slice(start, end).join("\n");
+      const note =
+        start > 0 || end < lines.length
+          ? `(showing lines ${start + 1}-${end} of ${lines.length} total — pass offset/limit to read more)\n\n`
+          : "";
+      return { content: [{ type: "text", text: note + slice }] };
     }
   );
 
@@ -203,7 +232,7 @@ export function registerTermLoopTools(server: McpServer, client: TermLoopClient)
     },
     async ({ connectionId }) => {
       const stats = await client.stats.get(connectionId);
-      return { content: [{ type: "text", text: JSON.stringify(stats, null, 2) }] };
+      return { content: [{ type: "text", text: JSON.stringify(stats) }] };
     }
   );
 }
