@@ -1,0 +1,13 @@
+{
+  "name": "termloop",
+  "description": "Manage SSH servers, run remote commands, browse remote files, and monitor server stats through a running TermLoop daemon",
+  "version": "0.1.0",
+  "author": {
+    "name": "Satyam Lohiya",
+    "url": "https://github.com/betaversionio"
+  },
+  "homepage": "https://github.com/betaversionio/termloop",
+  "repository": "https://github.com/betaversionio/termloop",
+  "license": "MIT",
+  "keywords": ["ssh", "server", "terminal", "devops", "remote", "sftp"]
+}

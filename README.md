@@ -62,6 +62,16 @@ To run TermLoop itself on a different port inside the container, set `PORT` and 
 docker run -d --name termloop -e PORT=8080 -p 8080:8080 -v termloop-data:/home/termloop/.termloop termloop
 ```
 
+## Claude Code Plugin
+
+[`claude-plugin/`](claude-plugin) bundles TermLoop's MCP server (manage connections, run remote commands, browse files over SFTP, check live stats) together with a skill that teaches Claude how to use those tools well — with a running `npx termloop` daemon:
+
+```bash
+claude --plugin-dir ./claude-plugin
+```
+
+See [`claude-plugin/README.md`](claude-plugin/README.md) for details, or use the VS Code extension's MCP sidebar for a plain `claude mcp add` connect string instead.
+
 ## Features
 
 ### 🖥️ Interactive Terminal
