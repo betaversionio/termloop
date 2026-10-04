@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import type { TermLoopClient } from "@termloop/client";
+import { connectDaemon } from "./daemonConnection.js";
 
 export interface SessionItem {
   sessionId: string;
@@ -7,17 +7,28 @@ export interface SessionItem {
   connectionName: string;
 }
 
-export class SessionsTreeProvider implements vscode.TreeDataProvider<SessionItem> {
+type Row = SessionItem | { placeholder: string };
+
+function isPlaceholder(row: Row): row is { placeholder: string } {
+  return "placeholder" in row;
+}
+
+export class SessionsTreeProvider implements vscode.TreeDataProvider<Row> {
   private readonly emitter = new vscode.EventEmitter<void>();
   readonly onDidChangeTreeData = this.emitter.event;
-
-  constructor(private readonly client: TermLoopClient) {}
 
   refresh(): void {
     this.emitter.fire();
   }
 
-  getTreeItem(session: SessionItem): vscode.TreeItem {
+  getTreeItem(row: Row): vscode.TreeItem {
+    if (isPlaceholder(row)) {
+      const item = new vscode.TreeItem(row.placeholder, vscode.TreeItemCollapsibleState.None);
+      item.iconPath = new vscode.ThemeIcon("warning");
+      item.command = { command: "termloop.refreshSessions", title: "Retry" };
+      return item;
+    }
+    const session = row;
     const item = new vscode.TreeItem(session.connectionName, vscode.TreeItemCollapsibleState.None);
     item.description = session.sessionId.slice(0, 8);
     item.tooltip = `Session ${session.sessionId}`;
@@ -31,16 +42,22 @@ export class SessionsTreeProvider implements vscode.TreeDataProvider<SessionItem
     return item;
   }
 
-  async getChildren(): Promise<SessionItem[]> {
-    const [sessions, connections] = await Promise.all([
-      this.client.terminal.listSessions(),
-      this.client.connections.list(),
-    ]);
-    const names = new Map(connections.map((c) => [c.id, c.name]));
-    return sessions.map((s) => ({
-      sessionId: s.sessionId,
-      connectionId: s.connectionId,
-      connectionName: names.get(s.connectionId) ?? "(unknown)",
-    }));
+  async getChildren(): Promise<Row[]> {
+    try {
+      const { client } = await connectDaemon();
+      const [sessions, connections] = await Promise.all([
+        client.terminal.listSessions(),
+        client.connections.list(),
+      ]);
+      const names = new Map(connections.map((c) => [c.id, c.name]));
+      return sessions.map((s) => ({
+        sessionId: s.sessionId,
+        connectionId: s.connectionId,
+        connectionName: names.get(s.connectionId) ?? "(unknown)",
+      }));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Not connected";
+      return [{ placeholder: `${message} — click to retry` }];
+    }
   }
 }

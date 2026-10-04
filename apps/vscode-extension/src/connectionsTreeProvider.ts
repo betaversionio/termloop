@@ -1,19 +1,31 @@
 import * as vscode from "vscode";
-import type { ServerConnection, TermLoopClient } from "@termloop/client";
+import type { ServerConnection } from "@termloop/client";
+import { connectDaemon } from "./daemonConnection.js";
 
 export type ConnectionItem = ServerConnection & { isActive: boolean };
 
-export class ConnectionsTreeProvider implements vscode.TreeDataProvider<ConnectionItem> {
+type Row = ConnectionItem | { placeholder: string };
+
+function isPlaceholder(row: Row): row is { placeholder: string } {
+  return "placeholder" in row;
+}
+
+export class ConnectionsTreeProvider implements vscode.TreeDataProvider<Row> {
   private readonly emitter = new vscode.EventEmitter<void>();
   readonly onDidChangeTreeData = this.emitter.event;
-
-  constructor(private readonly client: TermLoopClient) {}
 
   refresh(): void {
     this.emitter.fire();
   }
 
-  getTreeItem(connection: ConnectionItem): vscode.TreeItem {
+  getTreeItem(row: Row): vscode.TreeItem {
+    if (isPlaceholder(row)) {
+      const item = new vscode.TreeItem(row.placeholder, vscode.TreeItemCollapsibleState.None);
+      item.iconPath = new vscode.ThemeIcon("warning");
+      item.command = { command: "termloop.refreshConnections", title: "Retry" };
+      return item;
+    }
+    const connection = row;
     const item = new vscode.TreeItem(connection.name, vscode.TreeItemCollapsibleState.None);
     const address = `${connection.username}@${connection.host}:${connection.port}`;
     const tags = connection.tags ?? [];
@@ -47,14 +59,20 @@ export class ConnectionsTreeProvider implements vscode.TreeDataProvider<Connecti
     return item;
   }
 
-  async getChildren(): Promise<ConnectionItem[]> {
-    const [connections, sessions] = await Promise.all([
-      this.client.connections.list(),
-      this.client.terminal.listSessions(),
-    ]);
-    const activeIds = new Set(sessions.map((s) => s.connectionId));
-    return [...connections]
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .map((c) => ({ ...c, isActive: activeIds.has(c.id) }));
+  async getChildren(): Promise<Row[]> {
+    try {
+      const { client } = await connectDaemon();
+      const [connections, sessions] = await Promise.all([
+        client.connections.list(),
+        client.terminal.listSessions(),
+      ]);
+      const activeIds = new Set(sessions.map((s) => s.connectionId));
+      return [...connections]
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((c) => ({ ...c, isActive: activeIds.has(c.id) }));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Not connected";
+      return [{ placeholder: `${message} — click to retry` }];
+    }
   }
 }

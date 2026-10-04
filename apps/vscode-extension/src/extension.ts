@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import { createClient, type ServerConnection, type ServerConnectionInput, type TermLoopClient } from "@termloop/client";
-import { ensureDaemon } from "./daemonManager.js";
+import type { ServerConnection, ServerConnectionInput } from "@termloop/client";
+import { connectDaemon, withDaemon } from "./daemonConnection.js";
 import { ConnectionsTreeProvider } from "./connectionsTreeProvider.js";
 import { SessionsTreeProvider, type SessionItem } from "./sessionsTreeProvider.js";
 import { McpTreeProvider, type McpTargetItem } from "./mcpTreeProvider.js";
@@ -69,27 +69,24 @@ async function promptForConnection(existing?: ServerConnection): Promise<ServerC
 }
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-  let client: TermLoopClient;
-  let baseUrl: string;
-  try {
-    baseUrl = await ensureDaemon();
-    client = createClient({ baseUrl });
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Failed to connect to TermLoop";
-    vscode.window.showErrorMessage(`TermLoop: ${message}`);
-    return;
-  }
-
-  const treeProvider = new ConnectionsTreeProvider(client);
+  // Tree views, the filesystem provider, and every command below register
+  // unconditionally and immediately — none of them wait on a daemon connection being
+  // established first. Each resolves the connection lazily (via connectDaemon/withDaemon)
+  // only when actually invoked, retrying every time it isn't yet connected. This is what
+  // lets a slow/failed first connection attempt recover from the Refresh button (or just
+  // retrying the action) instead of the only fix being "Reload Window" — previously, a
+  // failed initial connection in `activate()` returned early and left every
+  // `termloop.*` command unregistered for the rest of that window's lifetime.
+  const treeProvider = new ConnectionsTreeProvider();
   context.subscriptions.push(vscode.window.registerTreeDataProvider("termloopConnections", treeProvider));
 
-  const sessionsProvider = new SessionsTreeProvider(client);
+  const sessionsProvider = new SessionsTreeProvider();
   context.subscriptions.push(vscode.window.registerTreeDataProvider("termloopSessions", sessionsProvider));
 
-  const mcpProvider = new McpTreeProvider(baseUrl);
+  const mcpProvider = new McpTreeProvider();
   context.subscriptions.push(vscode.window.registerTreeDataProvider("termloopMcp", mcpProvider));
 
-  const fsProvider = new TermLoopFsProvider(client);
+  const fsProvider = new TermLoopFsProvider();
   context.subscriptions.push(
     vscode.workspace.registerFileSystemProvider("termloop", fsProvider, { isCaseSensitive: true })
   );
@@ -113,20 +110,29 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("termloop.refreshConnections", () => treeProvider.refresh()),
+    vscode.commands.registerCommand("termloop.refreshConnections", async () => {
+      await withDaemon(() => {});
+      treeProvider.refresh();
+      sessionsProvider.refresh();
+      mcpProvider.refresh();
+    }),
 
     vscode.commands.registerCommand("termloop.addConnection", async () => {
       const input = await promptForConnection();
       if (!input) return;
-      await client.connections.create(input);
-      treeProvider.refresh();
+      await withDaemon(async ({ client }) => {
+        await client.connections.create(input);
+        treeProvider.refresh();
+      });
     }),
 
     vscode.commands.registerCommand("termloop.editConnection", async (connection: ServerConnection) => {
       const input = await promptForConnection(connection);
       if (!input) return;
-      await client.connections.update(connection.id, input);
-      treeProvider.refresh();
+      await withDaemon(async ({ client }) => {
+        await client.connections.update(connection.id, input);
+        treeProvider.refresh();
+      });
     }),
 
     vscode.commands.registerCommand("termloop.deleteConnection", async (connection: ServerConnection) => {
@@ -136,15 +142,19 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         "Delete"
       );
       if (confirmed !== "Delete") return;
-      await client.connections.delete(connection.id);
-      treeProvider.refresh();
+      await withDaemon(async ({ client }) => {
+        await client.connections.delete(connection.id);
+        treeProvider.refresh();
+      });
     }),
 
-    vscode.commands.registerCommand("termloop.openTerminal", (connection: ServerConnection) => {
-      const terminal = openTerminal(client, connection, () => ({ manifest: commandManifest, folder: manifestFolder }));
-      terminalConnections.set(terminal, connection);
-      treeProvider.refresh();
-      sessionsProvider.refresh();
+    vscode.commands.registerCommand("termloop.openTerminal", async (connection: ServerConnection) => {
+      await withDaemon(({ client }) => {
+        const terminal = openTerminal(client, connection, () => ({ manifest: commandManifest, folder: manifestFolder }));
+        terminalConnections.set(terminal, connection);
+        treeProvider.refresh();
+        sessionsProvider.refresh();
+      });
     }),
 
     vscode.commands.registerCommand("termloop.browseFiles", (connection: ServerConnection) => {
@@ -154,12 +164,16 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       });
     }),
 
-    vscode.commands.registerCommand("termloop.openConnectionInBrowser", (connection: ServerConnection) => {
-      vscode.env.openExternal(vscode.Uri.parse(`${baseUrl}/server/${connection.id}/terminal`));
+    vscode.commands.registerCommand("termloop.openConnectionInBrowser", async (connection: ServerConnection) => {
+      await withDaemon(({ baseUrl }) => {
+        vscode.env.openExternal(vscode.Uri.parse(`${baseUrl}/server/${connection.id}/terminal`));
+      });
     }),
 
-    vscode.commands.registerCommand("termloop.openOsDesktop", (connection: ServerConnection) => {
-      openOsDesktop(baseUrl, connection);
+    vscode.commands.registerCommand("termloop.openOsDesktop", async (connection: ServerConnection) => {
+      await withDaemon(({ baseUrl }) => {
+        openOsDesktop(baseUrl, connection);
+      });
     }),
 
     vscode.commands.registerCommand("termloop.copyMcpTarget", async (target: McpTargetItem) => {
@@ -167,17 +181,22 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       vscode.window.showInformationMessage(`Copied to clipboard: ${target.value}`);
     }),
 
-    vscode.commands.registerCommand("termloop.refreshSessions", () => sessionsProvider.refresh()),
+    vscode.commands.registerCommand("termloop.refreshSessions", async () => {
+      await withDaemon(() => {});
+      sessionsProvider.refresh();
+    }),
 
     vscode.commands.registerCommand("termloop.attachSessionTerminal", async (session: SessionItem) => {
-      const connection = await client.connections.get(session.connectionId);
-      const terminal = openTerminal(
-        client,
-        connection,
-        () => ({ manifest: commandManifest, folder: manifestFolder }),
-        session.sessionId
-      );
-      terminalConnections.set(terminal, connection);
+      await withDaemon(async ({ client }) => {
+        const connection = await client.connections.get(session.connectionId);
+        const terminal = openTerminal(
+          client,
+          connection,
+          () => ({ manifest: commandManifest, folder: manifestFolder }),
+          session.sessionId
+        );
+        terminalConnections.set(terminal, connection);
+      });
     }),
 
     vscode.commands.registerCommand("termloop.copySessionId", async (session: SessionItem) => {
@@ -185,8 +204,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       vscode.window.showInformationMessage(`Copied session id: ${session.sessionId}`);
     }),
 
-    vscode.commands.registerCommand("termloop.openSessionInBrowser", (session: SessionItem) => {
-      vscode.env.openExternal(vscode.Uri.parse(`${baseUrl}/server/${session.connectionId}/terminal`));
+    vscode.commands.registerCommand("termloop.openSessionInBrowser", async (session: SessionItem) => {
+      await withDaemon(({ baseUrl }) => {
+        vscode.env.openExternal(vscode.Uri.parse(`${baseUrl}/server/${session.connectionId}/terminal`));
+      });
     }),
 
     vscode.commands.registerCommand("termloop.insertCommandAlias", async () => {
@@ -221,16 +242,18 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
           vscode.window.showErrorMessage("TermLoop: can't resolve local script — no workspace folder found.");
           return;
         }
-        try {
-          const cmd = await vscode.window.withProgress(
-            { location: vscode.ProgressLocation.Notification, title: `TermLoop: uploading ${result.localScript}...` },
-            () => uploadLocalScript(client, connection, manifestFolder!, alias, result.localScript!)
-          );
-          terminal.sendText(cmd, true);
-        } catch (err) {
-          const message = err instanceof Error ? err.message : String(err);
-          vscode.window.showErrorMessage(`TermLoop: failed to upload "${result.localScript}" — ${message}`);
-        }
+        await withDaemon(async ({ client }) => {
+          try {
+            const cmd = await vscode.window.withProgress(
+              { location: vscode.ProgressLocation.Notification, title: `TermLoop: uploading ${result.localScript}...` },
+              () => uploadLocalScript(client, connection, manifestFolder!, alias, result.localScript!)
+            );
+            terminal.sendText(cmd, true);
+          } catch (err) {
+            const message = err instanceof Error ? err.message : String(err);
+            vscode.window.showErrorMessage(`TermLoop: failed to upload "${result.localScript}" — ${message}`);
+          }
+        });
         return;
       }
 
@@ -238,6 +261,22 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         vscode.window.showErrorMessage(result.error);
       }
     })
+  );
+
+  // Kick off the initial connection in the background — nothing above waited on this,
+  // so every command/tree view already exists regardless of how long it takes (or
+  // whether it fails). connectDaemon() shows its own "Starting TermLoop…" progress
+  // notification when it has to spawn a fresh daemon (see daemonManager.ensureDaemon).
+  connectDaemon().then(
+    () => {
+      treeProvider.refresh();
+      sessionsProvider.refresh();
+      mcpProvider.refresh();
+    },
+    (err: unknown) => {
+      const message = err instanceof Error ? err.message : "Failed to connect to TermLoop";
+      vscode.window.showErrorMessage(`TermLoop: ${message}`);
+    }
   );
 }
 

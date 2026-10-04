@@ -1,9 +1,16 @@
 import * as vscode from "vscode";
+import { connectDaemon } from "./daemonConnection.js";
 
 export interface McpTargetItem {
   id: string;
   label: string;
   value: string;
+}
+
+type Row = McpTargetItem | { placeholder: string };
+
+function isPlaceholder(row: Row): row is { placeholder: string } {
+  return "placeholder" in row;
 }
 
 function targets(baseUrl: string): McpTargetItem[] {
@@ -15,10 +22,22 @@ function targets(baseUrl: string): McpTargetItem[] {
   ];
 }
 
-export class McpTreeProvider implements vscode.TreeDataProvider<McpTargetItem> {
-  constructor(private readonly baseUrl: string) {}
+export class McpTreeProvider implements vscode.TreeDataProvider<Row> {
+  private readonly emitter = new vscode.EventEmitter<void>();
+  readonly onDidChangeTreeData = this.emitter.event;
 
-  getTreeItem(target: McpTargetItem): vscode.TreeItem {
+  refresh(): void {
+    this.emitter.fire();
+  }
+
+  getTreeItem(row: Row): vscode.TreeItem {
+    if (isPlaceholder(row)) {
+      const item = new vscode.TreeItem(row.placeholder, vscode.TreeItemCollapsibleState.None);
+      item.iconPath = new vscode.ThemeIcon("warning");
+      item.command = { command: "termloop.refreshConnections", title: "Retry" };
+      return item;
+    }
+    const target = row;
     const item = new vscode.TreeItem(target.label, vscode.TreeItemCollapsibleState.None);
     item.description = target.value;
     item.contextValue = "termloopMcpTarget";
@@ -32,7 +51,13 @@ export class McpTreeProvider implements vscode.TreeDataProvider<McpTargetItem> {
     return item;
   }
 
-  getChildren(): McpTargetItem[] {
-    return targets(this.baseUrl);
+  async getChildren(): Promise<Row[]> {
+    try {
+      const { baseUrl } = await connectDaemon();
+      return targets(baseUrl);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Not connected";
+      return [{ placeholder: `${message} — click to retry` }];
+    }
   }
 }
