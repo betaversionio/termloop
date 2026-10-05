@@ -307,6 +307,28 @@ importers:
         specifier: ^6.0.0
         version: 6.4.3(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.33.0)(tsx@4.23.13)
 
+  marketplace-apps/tn5250:
+    dependencies:
+      '@termloop/react':
+        specifier: workspace:*
+        version: link:../../packages/react
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.3.0
+      '@vitejs/plugin-react':
+        specifier: ^4.3.0
+        version: 4.7.0(vite@6.4.3(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.33.0)(tsx@4.23.15))
+      react:
+        specifier: ^19.0.0
+        version: 19.3.0
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+      vite:
+        specifier: ^6.0.0
+        version: 6.4.3(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.33.0)(tsx@4.23.15)
+
   packages/client-sdk:
     dependencies:
       '@modelcontextprotocol/sdk':
@@ -7055,6 +7077,18 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@vitejs/plugin-react@4.7.0(vite@6.4.3(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.33.0)(tsx@4.23.15))':
+    dependencies:
+      '@babel/core': 7.29.7
+      '@babel/plugin-transform-react-jsx-self': 7.29.7(@babel/core@7.29.7)
+      '@babel/plugin-transform-react-jsx-source': 7.29.7(@babel/core@7.29.7)
+      '@rolldown/pluginutils': 1.0.0-beta.27
+      '@types/babel__core': 7.20.5
+      react-refresh: 0.17.0
+      vite: 6.4.3(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.33.0)(tsx@4.23.15)
+    transitivePeerDependencies:
+      - supports-color
+
   '@vitejs/plugin-react@6.1.1(vite@8.3.0(@types/node@25.3.2)(esbuild@0.28.2)(jiti@2.6.1)(tsx@4.21.0))':
     dependencies:
       '@rolldown/pluginutils': 1.0.1
@@ -8893,6 +8927,21 @@ snapshots:
       jiti: 2.6.1
       lightningcss: 1.33.0
       tsx: 4.23.13
+
+  vite@6.4.3(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.33.0)(tsx@4.23.15):
+    dependencies:
+      esbuild: 0.25.12
+      fdir: 6.5.0(picomatch@4.0.7)
+      picomatch: 4.0.7
+      postcss: 8.5.28
+      rollup: 4.63.4
+      tinyglobby: 0.2.17
+    optionalDependencies:
+      '@types/node': 25.3.2
+      fsevents: 2.3.3
+      jiti: 2.6.1
+      lightningcss: 1.33.0
+      tsx: 4.23.15
 
   vite@8.3.0(@types/node@25.3.2)(esbuild@0.28.2)(jiti@2.6.1)(tsx@4.21.0):
     dependencies:

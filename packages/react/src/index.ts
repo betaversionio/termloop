@@ -374,6 +374,26 @@ export interface TermLoopSDK {
      * </sdk.ui.WindowDragRegion>
      */
     WindowDragRegion: RC<{ windowId: string; className?: string; children?: React.ReactNode }>;
+
+    /**
+     * A real, live interactive terminal — a full PTY session on the connected server,
+     * rendered with the host's own xterm.js. Unlike `hooks.useSSH().execute()` (which runs
+     * a command to completion and returns its output once), this is for anything
+     * interactive or long-running: a full-screen TUI, a REPL, `tail -f`, etc.
+     *
+     * Pass `windowId` so the session is cleaned up when your app's window closes — each
+     * instance gets its own dedicated session, independent of the user's own Terminal app
+     * or any other embedded instance for the same connection. Pass `initialCommand` to
+     * auto-run something once the shell connects instead of leaving a blank shell.
+     * @example
+     * <sdk.ui.Terminal connectionId={connectionId} windowId={windowId} initialCommand="htop" className="h-full" />
+     */
+    Terminal: RC<{
+      connectionId: string;
+      initialCommand?: string;
+      windowId?: string;
+      className?: string;
+    }>;
   };
 
   /** Utility functions */

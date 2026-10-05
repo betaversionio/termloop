@@ -17,6 +17,7 @@ import { useTheme } from "@/components/theme-provider";
 import { useWindowManager } from "@/features/servers/os/context/window-manager-context";
 import { useDesktopSettings } from "@/features/servers/os/context/desktop-settings-context";
 import { WindowDragRegion } from "./window-drag-region";
+import { EmbeddedTerminal } from "./embedded-terminal";
 import type { RemoteFile, ServerConnection, ServerStats, ApiResponse } from "@termloop/shared";
 import type { TermLoopSDK, UseWindowResult, UseOSResult } from "@termloop/react";
 
@@ -307,6 +308,7 @@ export function buildSDK(): TermLoopSDK {
       toast,
       pickFile: openFilePicker,
       WindowDragRegion,
+      Terminal: EmbeddedTerminal,
     },
     utils: {
       cn,

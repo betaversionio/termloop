@@ -1,0 +1,19 @@
+{
+  "id": "tn5250",
+  "name": "tn5250",
+  "description": "5250 green-screen terminal emulator for IBM i systems",
+  "author": "TermLoop",
+  "version": "0.1.0",
+  "iconUrl": "/marketplace-icons/tn5250.png",
+  "bundleUrl": "/marketplace-apps/tn5250.js",
+  "fileAssociations": [],
+  "defaultSize": {
+    "width": 800,
+    "height": 500
+  },
+  "minWidth": 480,
+  "minHeight": 320,
+  "showOnDesktop": true,
+  "showInDock": true,
+  "category": "development"
+}
