@@ -1,6 +1,6 @@
 {
   "name": "@termloop/react",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "SDK for building TermLoop marketplace apps",
   "homepage": "https://github.com/betaversionio/termloop#readme",
   "repository": {
